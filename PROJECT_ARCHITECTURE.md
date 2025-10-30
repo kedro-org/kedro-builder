@@ -13,9 +13,7 @@
 9. [Validation & Export Implementation](#validation--export-implementation)
 10. [Project Structure](#project-structure)
 11. [Implementation Patterns](#implementation-patterns)
-12. [Persistence & Onboarding](#persistence--onboarding)
-13. [Performance & Accessibility Notes](#performance--accessibility-notes)
-14. [Testing Strategy](#testing-strategy)
+12. [Testing Strategy](#testing-strategy)
 
 ---
 
@@ -406,24 +404,6 @@ if (!/^[a-z][a-z0-9_]*$/.test(trimmed)) {
   return 'Must start with lowercase letter and contain only lowercase letters, numbers, and underscores';
 }
 ```
-
----
-
-## Persistence & Onboarding
-
-- `useAppInitialization` determines whether to show the tutorial or walkthrough based on `kedro_builder_tutorial_completed` and `kedro_builder_walkthrough_completed` flags.  
-- If a serialized project exists under `kedro_builder_current_project`, the store is hydrated before the UI renders.  
-- Tutorial/walkthrough/theme preferences, the active project, and pipeline graph state are all stored in localStorage so the app resumes exactly where a user left off.
-
----
-
-## Performance & Accessibility Notes
-
-- ReactFlow interactions are memoized; expensive UI components use `React.memo` and `useCallback`.  
-- Validation runs off the UI thread except for the final Redux dispatch, keeping the canvas responsive.  
-- Radix UI ensures focus trapping and ARIA labelling for modals.  
-- Theme switching relies on CSS custom properties to avoid repaint-heavy DOM mutations.  
-- Future considerations: virtualize massive pipelines, migrate persistence to IndexedDB (Dexie dependency placeholder), and offload validation to a worker for very large graphs.
 
 ---
 
