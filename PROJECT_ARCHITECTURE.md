@@ -19,21 +19,7 @@
 
 ## Project Overview
 
-### Vision
 Enable Kedro newcomers and data practitioners to build production-ready pipelines without writing boilerplate. Kedro Builder turns drag-and-drop diagrams into validated Kedro projects that can be inspected, downloaded, and run immediately.
-
-### Delivered Capabilities
-- Visual canvas (ReactFlow) with custom node/dataset components, bulk selection, keyboard shortcuts, and edge validation.
-- Form-driven configuration for nodes (snake_case names, optional Python function bodies) and datasets (type presets, filepath builder, versioning toggle).
-- Guided onboarding: five-step tutorial, contextual walkthrough overlays, empty state coaching, and enforced project setup.
-- Auto-save middleware and theme/tutorial persistence via localStorage so users can resume work later.
-- Validation pipeline that detects circular dependencies, duplicate/invalid names, orphaned components, and missing configuration.
-- Code viewer with live Kedro project preview and export wizard that packages a full Kedro project ZIP (pyproject, conf, src, data directories, .gitignore).
-
-### Target Users
-- Data scientists and ML engineers experimenting with Kedro.
-- Data engineers documenting ETL/ELT flows.
-- Teams onboarding to Kedro and needing guided project scaffolding.
 
 ---
 
