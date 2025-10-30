@@ -1,9 +1,0 @@
-@use '../../../styles/variables' as *;
-
-.custom-edge {
-  transition: stroke 0.2s ease, stroke-width 0.2s ease;
-
-  &--selected {
-    filter: drop-shadow(0 0 4px rgba($ocean-400, 0.5));
-  }
-}
