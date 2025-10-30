@@ -65,7 +65,7 @@ Issues are surfaced in the validation panel with actionable messages and severit
 - `src/features/` – Redux slices for project, nodes, datasets, connections, validation, theme, and UI flow
 - `src/utils/export/` – Kedro project generators and tests
 - `src/utils/validation.ts` – Pipeline validation rules
-- `PROJECT_ARCHITECTURE.md` – In-depth architecture notes and decision log
+- `PROJECT_ARCHITECTURE.md` – In-depth architecture notes and diagrams
 
 ## Development Scripts
 ```bash
