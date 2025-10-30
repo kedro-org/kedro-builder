@@ -11,9 +11,9 @@
 2. [Technology Stack](#technology-stack)
 3. [Key Architecture Decisions](#key-architecture-decisions)
 4. [Architecture Overview](#architecture-overview)
-5. [End-to-End User Flow](#end-to-end-user-flow)
-6. [Component Interaction Sequence](#component-interaction-sequence)
-7. [Code Generation Pipeline](#code-generation-pipeline)
+5. [User Flow Diagram](#user-flow-diagram)
+6. [Data Flow Diagram](#data-flow-diagram)
+7. [Code Generation Flow](#code-generation-flow)
 8. [State Management & Data Flow](#state-management--data-flow)
 9. [Validation & Export Implementation](#validation--export-implementation)
 10. [Project Structure](#project-structure)
@@ -83,89 +83,123 @@ Node.js `18.20.1` and npm `10+` are recommended for parity with local dev script
 6. **Guided Onboarding as Gatekeeping**  
    Canvas interactions stay disabled until a project exists; tutorial/walkthrough completion is persisted to avoid re-onboarding experienced users.
 
----
+
 
 ## Architecture Overview
 
 ```mermaid
-graph TD
-    subgraph UI[Frontend UI Layer]
-        Header[Header & Toolbar]
+graph TB
+    subgraph UI["🎨 Frontend Layer"]
+        Canvas[Visual Canvas]
         Palette[Component Palette]
-        Canvas[ReactFlow Canvas]
-        Panels[Config Panels & Modals]
-        Viewer[Code Viewer & Export Wizard]
+        ConfigPanel[Config Panel]
+        ExportWizard[Export Wizard]
     end
 
-    subgraph State[State Management]
-        Store[Redux Toolkit Store]
-        Slices[Project, Nodes, Datasets, Connections, UI, Validation, Theme]
-        Middleware[Auto-save Middleware]
+    subgraph State["⚡ State Management"]
+        Redux[Redux Store]
+        Nodes[Nodes State]
+        Datasets[Datasets State]
+        Connections[Connections State]
     end
 
-    subgraph Services[Utilities & Generators]
-        Validation[Validation Utilities]
-        Export[Export Generators]
-        Storage[localStorage Helpers]
+    subgraph Logic["🛠️ Business Logic"]
+        Validation[Validation Engine]
+        CodeGen[Code Generators]
+        Storage[localStorage]
     end
 
-    subgraph Output[Outputs]
-        CodePreview[Virtual File Tree]
-        Zip[ZIP Download]
+    subgraph Output["📥 Output"]
+        Preview[Code Preview]
+        ZIP[ZIP Download]
     end
 
-    Header --> Store
-    Palette --> Store
-    Canvas --> Store
-    Panels --> Store
-    Viewer --> Store
-    Store --> Slices
-    Store --> Middleware
-    Store --> Validation
-    Store --> Export
-    Validation --> Viewer
-    Export --> Viewer
-    Export --> Zip
-    Middleware --> Storage
+    %% User interactions
+    Palette --> Canvas
+    Canvas --> Redux
+    ConfigPanel --> Redux
+    
+    %% State management
+    Redux --> Nodes
+    Redux --> Datasets
+    Redux --> Connections
+    Redux --> Storage
+    
+    %% Export flow
+    ExportWizard --> Validation
+    Validation --> CodeGen
+    CodeGen --> Preview
+    CodeGen --> ZIP
+    
+    %% Data flow
+    Redux --> Validation
+    Redux --> CodeGen
+
+    style UI fill:#e3f2fd
+    style State fill:#fff3e0
+    style Logic fill:#e8f5e9
+    style Output fill:#fce4ec
 ```
 
 ---
 
-## End-to-End User Flow
+## User Flow Diagram
 
 ```mermaid
 flowchart TD
-    Start([Open Kedro Builder])
-    Tutorial{Tutorial Completed?}
-    Walkthrough{Walkthrough Completed?}
-    ProjectSetup[Create or Load Project]
-    Canvas[Drag Datasets & Nodes]
-    Configure[Configure via Side Panel]
-    Connect[Link Nodes & Datasets]
-    Validate[Run Validation / View Code]
-    Errors{Blocking Errors?}
-    Fix[Resolve Errors or Accept Warnings]
-    Export[Open Export Wizard]
-    Download[Download Kedro Project ZIP]
-    Iterate([Iterate or Close App])
-
-    Start --> Tutorial
-    Tutorial -- No --> Walkthrough
-    Tutorial -- Yes --> Walkthrough
-    Walkthrough -- No --> ProjectSetup
-    Walkthrough -- Yes --> ProjectSetup
-    ProjectSetup --> Canvas
-    Canvas --> Configure
-    Configure --> Connect
-    Connect --> Validate
-    Validate --> Errors
-    Errors -- Yes --> Fix --> Validate
-    Errors -- No --> Export --> Download --> Iterate
+    Start([User Opens App]) --> Tutorial{First Time User?}
+    
+    Tutorial -->|Yes| TutorialMode[Interactive Tutorial]
+    Tutorial -->|No| Canvas[Visual Canvas]
+    
+    TutorialMode --> Canvas
+    
+    Canvas --> DragDrop[Drag & Drop Components]
+    
+    DragDrop --> AddNode[Add Node to Canvas]
+    DragDrop --> AddDataset[Add Dataset to Canvas]
+    
+    AddNode --> AutoConfig1[Auto-open Config Panel]
+    AddDataset --> AutoConfig2[Auto-open Config Panel]
+    
+    AutoConfig1 --> ConfigNode[Configure Node Properties]
+    AutoConfig2 --> ConfigDataset[Configure Dataset Properties]
+    
+    ConfigNode --> Connect[Connect Nodes & Datasets]
+    ConfigDataset --> Connect
+    
+    Connect --> Validate{Validation Check}
+    
+    Validate -->|Invalid| ShowErrors[Show Validation Errors]
+    ShowErrors --> FixErrors[Fix Errors]
+    FixErrors --> Validate
+    
+    Validate -->|Valid| MoreComponents{Add More Components?}
+    
+    MoreComponents -->|Yes| DragDrop
+    MoreComponents -->|No| Generate[Generate Kedro Code]
+    
+    Generate --> Preview[Preview Generated Code]
+    
+    Preview --> Satisfied{Satisfied with Code?}
+    
+    Satisfied -->|No| Modify[Modify Pipeline]
+    Modify --> DragDrop
+    
+    Satisfied -->|Yes| Export[Export to ZIP]
+    Export --> Download[Download Kedro Project]
+    Download --> End([Complete])
+    
+    style Start fill:#4AE290
+    style End fill:#4AE290
+    style Validate fill:#E24A4A
+    style Generate fill:#4A90E2
+    style Download fill:#E2C44A
 ```
 
 ---
 
-## Component Interaction Sequence
+## Data Flow Diagram
 
 ```mermaid
 sequenceDiagram
@@ -194,35 +228,68 @@ sequenceDiagram
 
 ---
 
-## Code Generation Pipeline
+## Code Generation Flow
 
 ```mermaid
-flowchart LR
-    State[Redux State\n(nodes, datasets, connections, project)]
-    Validate[validatePipeline()]
-    Meta[Export Wizard Metadata\n(project name, package, pipeline)]
-    Orchestrator[generateKedroProject()]
-    Catalog[Generate catalog.yml]
-    PipelineFiles[Generate nodes.py & pipeline.py]
-    StaticFiles[Generate settings.py,\npipeline_registry.py, logging, etc.]
-    Zip[Bundle with JSZip]
-    Download[Trigger browser download]
-
-    State --> Validate
-    Validate -->|isValid| Orchestrator
-    Meta --> Orchestrator
-    Orchestrator --> Catalog
-    Orchestrator --> PipelineFiles
-    Orchestrator --> StaticFiles
-    Catalog --> Zip
-    PipelineFiles --> Zip
-    StaticFiles --> Zip
-    Zip --> Download
+flowchart TD
+    Start([User Triggers Export/View Code]) --> GetState[Get Pipeline State from Redux]
+    
+    GetState --> ExtractNodes[Extract Nodes Array]
+    GetState --> ExtractDatasets[Extract Datasets Array]
+    GetState --> ExtractEdges[Extract Edges Array]
+    
+    ExtractNodes --> ProcessNodes[Process Node Data]
+    ProcessNodes --> NodeTemplate[Load Node Template]
+    NodeTemplate --> GenerateFunctions[Generate Python Functions]
+    
+    ExtractDatasets --> ProcessDatasets[Process Dataset Data]
+    ProcessDatasets --> DatasetTemplate[Load Dataset Template]
+    DatasetTemplate --> GenerateCatalog[Generate catalog.yml]
+    
+    ExtractEdges --> ProcessEdges[Process Edge Data]
+    ProcessEdges --> PipelineTemplate[Load Pipeline Template]
+    PipelineTemplate --> GeneratePipeline[Generate pipeline.py]
+    
+    GenerateFunctions --> CombineCode[Combine Python Code]
+    GenerateCatalog --> CombineYAML[Combine YAML Config]
+    GeneratePipeline --> CombineCode
+    
+    CombineCode --> FormatCode[Format Python Code]
+    CombineYAML --> FormatYAML[Format YAML]
+    
+    FormatCode --> BuildProject[Build Project Structure]
+    FormatYAML --> BuildProject
+    
+    BuildProject --> CreateStructure[Create Directory Structure]
+    CreateStructure --> CreateFiles[Create File Templates]
+    
+    CreateFiles --> GenerateZIP{Export Mode?}
+    
+    GenerateZIP -->|Export to ZIP| CreateZIPFile[Create ZIP Archive]
+    GenerateZIP -->|View Code| DisplayCode[Display Code Preview]
+    
+    CreateZIPFile --> AddFiles[Add Files to ZIP]
+    AddFiles --> DownloadFile[Trigger Download]
+    
+    DisplayCode --> UpdateStore[Update Code State]
+    DownloadFile --> End([End])
+    UpdateStore --> End
+    
+    style Start fill:#61dafb
+    style GenerateFunctions fill:#4ecdc4
+    style GenerateCatalog fill:#95e1d3
+    style GeneratePipeline fill:#ff6b6b
+    style CreateZIPFile fill:#feca57
+    style End fill:#ff9ff3
 ```
 
 ---
 
 ## State Management & Data Flow
+
+Kedro Builder uses **Redux Toolkit** with a **normalized state structure** for efficient lookups and updates. The state is organized into domain-specific slices, with middleware handling persistence and side effects.
+
+### Key Implementation Details
 
 1. **Initialization**  
    `useAppInitialization` inspects localStorage: it decides whether to show onboarding, restores saved projects, and hydrates Redux slices by replaying `addNode/addDataset/addConnection`.
@@ -238,6 +305,16 @@ flowchart LR
    - `useValidation` listens for configuration changes during export and re-runs validation, pushing results into `validationSlice`.  
    - Toast notifications surface validation/export feedback.
 
+4. **Normalized State Benefits**
+   - O(1) lookups by ID
+   - Efficient updates (no array scanning)
+   - Easy serialization for localStorage
+   - Simplified ReactFlow reconciliation
+
+5. **ID Prefix Strategy**
+   - `node-*`: Function nodes
+   - `dataset-*`: Dataset nodes
+   - `connection-*`: Edges between nodes and datasets
 ---
 
 ## Validation & Export Implementation
