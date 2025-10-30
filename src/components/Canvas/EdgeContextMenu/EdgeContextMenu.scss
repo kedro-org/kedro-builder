@@ -1,0 +1,75 @@
+@import '../../../styles/variables';
+@import '../../../styles/mixins';
+@import '../../../styles/extends';
+
+.edge-context-menu {
+  min-width: 180px;
+  padding: 4px;
+
+  background: var(--color-bg-1);
+  border: 1px solid var(--color-border-line);
+  border-radius: 6px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+
+  z-index: 1000;
+
+  animation: slideIn 0.15s ease-out;
+
+  @keyframes slideIn {
+    from {
+      opacity: 0;
+      transform: scale(0.95);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+
+  &__item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 12px;
+
+    font-size: 14px;
+    color: var(--color-text);
+    border-radius: 4px;
+    cursor: pointer;
+    outline: none;
+    user-select: none;
+
+    transition: background-color 0.15s;
+
+    svg {
+      flex-shrink: 0;
+      color: var(--color-text-muted);
+    }
+
+    &:hover {
+      background: var(--color-bg-hover);
+    }
+
+    &:focus {
+      background: var(--color-bg-hover);
+    }
+
+    &--danger {
+      color: var(--color-danger);
+
+      svg {
+        color: var(--color-danger);
+      }
+
+      &:hover {
+        background: rgba(255, 82, 82, 0.1);
+      }
+    }
+  }
+
+  &__separator {
+    height: 1px;
+    margin: 4px 0;
+    background: var(--color-border-line);
+  }
+}

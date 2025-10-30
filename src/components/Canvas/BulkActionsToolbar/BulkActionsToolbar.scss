@@ -1,0 +1,108 @@
+@import '../../../styles/variables';
+@import '../../../styles/mixins';
+@import '../../../styles/extends';
+
+.bulk-actions-toolbar {
+  position: absolute;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10;
+
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 8px 16px;
+
+  background: var(--color-bg-1);
+  border: 1px solid var(--color-border-line);
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+
+  animation: slideUp 0.2s ease-out;
+
+  @keyframes slideUp {
+    from {
+      opacity: 0;
+      transform: translateX(-50%) translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+  }
+
+  &__info {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding-right: 16px;
+    border-right: 1px solid var(--color-border-line);
+  }
+
+  &__count {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 24px;
+    height: 24px;
+    padding: 0 6px;
+
+    background: var(--color-primary);
+    color: $white-0;
+    border-radius: 12px;
+
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 1;
+  }
+
+  &__label {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--color-text);
+    white-space: nowrap;
+  }
+
+  &__actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    button {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+
+      svg {
+        flex-shrink: 0;
+      }
+    }
+  }
+
+  &__close {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    margin-left: 4px;
+    padding: 0;
+
+    background: transparent;
+    border: none;
+    border-radius: 4px;
+    color: var(--color-text-muted);
+    cursor: pointer;
+    transition: all 0.2s;
+
+    &:hover {
+      background: var(--color-bg-hover);
+      color: var(--color-text);
+    }
+
+    &:active {
+      background: var(--color-bg-active);
+    }
+  }
+}

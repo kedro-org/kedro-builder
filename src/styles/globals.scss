@@ -1,0 +1,155 @@
+@use './variables' as *;
+@use './mixins' as *;
+@use './extends';
+
+/**
+ * Global styles for Kedro Builder
+ * Based on Kedro-Viz design system
+ */
+
+/* CSS Reset */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+code {
+  font-family: $font-monospace;
+}
+
+/* Theme CSS Variables */
+.kedro-builder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+
+  /* Light theme colors */
+  &.kui-theme--light {
+    --color-bg-1: #{$white-0};
+    --color-bg-2: #{$white-200};
+    --color-bg-3: #{$grey-100};
+    --color-bg-alt: #{$white-100};
+
+    --color-text: #{$black-900};
+    --color-text-alt: #{$grey-900};
+    --color-text-disabled: #{$grey-500};
+
+    --color-border-line: #{$grey-300};
+    --color-border-subtle: #{$grey-200};
+
+    --color-sidebar-background: #{$white-0};
+    --color-sidebar-border: #{$grey-300};
+
+    --color-primary: #{$ocean-500};
+    --color-primary-hover: #{$ocean-600};
+    --color-primary-light: #{$ocean-100};
+
+    --color-connection: #{$grey-600};
+
+    --color-node-data-ingestion: #{$blue-600};
+    --color-node-data-processing: #{$green-600};
+    --color-node-model-training: #{$purple-600};
+    --color-node-model-evaluation: #{$yellow-600};
+    --color-node-custom: #{$grey-600};
+
+    --color-error: #{$red-0};
+    --color-warning: #{$yellow-600};
+    --color-success: #{$green-600};
+
+    background-color: var(--color-bg-1);
+    color: var(--color-text);
+  }
+
+  /* Dark theme colors (default) */
+  &.kui-theme--dark {
+    --color-bg-1: #{$slate-900};
+    --color-bg-2: #{$slate-700};
+    --color-bg-3: #{$slate-600};
+    --color-bg-alt: #{$slate-800};
+
+    --color-text: #{$white-0};
+    --color-text-alt: #{$grey-300};
+    --color-text-disabled: #{$grey-600};
+
+    --color-border-line: #{$slate-500};
+    --color-border-subtle: #{$slate-600};
+
+    --color-sidebar-background: #{$slate-800};
+    --color-sidebar-border: #{$slate-600};
+
+    --color-primary: #{$ocean-400};
+    --color-primary-hover: #{$ocean-300};
+    --color-primary-light: #{$ocean-600};
+
+    --color-connection: #{$grey-400};
+
+    --color-node-data-ingestion: #{$blue-300};
+    --color-node-data-processing: #{$green-300};
+    --color-node-model-training: #{$purple-300};
+    --color-node-model-evaluation: #{$yellow-300};
+    --color-node-custom: #{$grey-400};
+
+    --color-error: #{$red-0};
+    --color-warning: #{$yellow-300};
+    --color-success: #{$green-300};
+
+    background-color: var(--color-bg-1);
+    color: var(--color-text);
+  }
+}
+
+/* Scrollbar styling (Kedro-Viz style) */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--color-bg-2);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-border-line);
+  border-radius: 4px;
+
+  &:hover {
+    background: var(--color-text-disabled);
+  }
+}
+
+/* Focus styles (accessibility) */
+[data-whatintent='keyboard'] *:focus {
+  outline: 2px solid $blue-300;
+  outline-offset: 2px;
+}
+
+/* Button reset */
+button {
+  @extend %button;
+}
+
+/* Input reset */
+input,
+textarea {
+  @extend %input;
+}

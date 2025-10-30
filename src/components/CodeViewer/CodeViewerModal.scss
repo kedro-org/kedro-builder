@@ -1,0 +1,137 @@
+@use '../../styles/variables' as *;
+
+.code-viewer-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  &__backdrop {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.6);
+  }
+
+  &__container {
+    position: relative;
+    width: 90vw;
+    height: 85vh;
+    max-width: 1600px;
+    background: var(--color-bg-3);
+    border-radius: 8px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  &__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1.25rem 2rem;
+    border-bottom: 1px solid var(--color-border-line);
+    background: var(--color-bg-0);
+  }
+
+  &__title {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: var(--color-text);
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  &__project-name {
+    color: var(--color-text-alt);
+    font-weight: 400;
+  }
+
+  &__close {
+    background: none;
+    border: none;
+    color: var(--color-text-alt);
+    cursor: pointer;
+    padding: 0.5rem;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    &:hover {
+      background: var(--color-bg-1);
+      color: var(--color-text);
+    }
+
+    &:active {
+      transform: scale(0.95);
+    }
+  }
+
+  &__content {
+    flex: 1;
+    display: flex;
+    overflow: hidden;
+  }
+
+  &__sidebar {
+    width: 300px;
+    min-width: 250px;
+    max-width: 400px;
+    border-right: 1px solid var(--color-border-line);
+    overflow-y: auto;
+    overflow-x: hidden;
+    background: var(--color-bg-0);
+  }
+
+  &__main {
+    flex: 1;
+    overflow: hidden;
+    background: var(--color-bg-1);
+    display: flex;
+    flex-direction: column;
+  }
+
+  &__footer {
+    padding: 1rem 2rem;
+    border-top: 1px solid var(--color-border-line);
+    display: flex;
+    justify-content: flex-end;
+    background: var(--color-bg-0);
+  }
+
+  &__export {
+    padding: 0.75rem 1.5rem;
+    background: var(--color-primary);
+    color: white;
+    border: none;
+    border-radius: 4px;
+    font-size: 0.9375rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+
+    &:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    }
+
+    &:active {
+      transform: translateY(0);
+    }
+  }
+}

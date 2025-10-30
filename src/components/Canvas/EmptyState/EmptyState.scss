@@ -1,0 +1,190 @@
+@use '../../../styles/variables' as *;
+
+.empty-state {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-bg-1);
+  z-index: 1; // Lower z-index so walkthrough (10000) appears above
+  pointer-events: none; // Allow drops to pass through to canvas
+  animation: fadeIn 0.3s ease-out;
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+
+  &__drop-zone {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 80%;
+    max-width: 600px;
+    height: 60%;
+    max-height: 400px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 3px dashed var(--color-primary);
+    border-radius: 12px;
+    background: rgba($ocean-400, 0.05);
+    pointer-events: none; // Don't block drops
+    animation: pulse 1.5s ease-in-out infinite;
+
+    @keyframes pulse {
+      0%, 100% {
+        border-color: var(--color-primary);
+        background: rgba($ocean-400, 0.05);
+      }
+      50% {
+        border-color: var(--color-primary-light);
+        background: rgba($ocean-400, 0.1);
+      }
+    }
+  }
+
+  &__drop-zone-content {
+    text-align: center;
+
+    p {
+      margin: 0;
+      font-size: 1.25rem;
+      font-weight: 500;
+      color: var(--color-primary);
+    }
+  }
+
+  &__content {
+    text-align: center;
+    max-width: 600px;
+    padding: 2rem;
+    pointer-events: auto; // Re-enable pointer events for content
+  }
+
+  &__title {
+    margin: 0 0 1rem 0;
+    font-size: 2rem;
+    font-weight: 600;
+    color: var(--color-text);
+  }
+
+  &__description {
+    margin: 0 0 2rem 0;
+    font-size: 1rem;
+    line-height: 1.6;
+    color: var(--color-text-alt);
+  }
+
+  &__tip {
+    margin: 0 0 2.5rem 0;
+    font-size: 0.9375rem;
+    color: var(--color-text-muted);
+    font-style: italic;
+  }
+
+  &__actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+  }
+
+  &__button {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 1rem 1.75rem;
+    font-size: 0.9375rem;
+    font-weight: 500;
+    border-radius: 8px;
+    border: 2px solid var(--color-border-line);
+    background: var(--color-bg-2);
+    color: var(--color-text);
+    cursor: pointer;
+    transition: all 0.2s ease;
+
+    &:hover {
+      background: var(--color-bg-3);
+      border-color: var(--color-primary);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+
+    &:active {
+      transform: translateY(0);
+    }
+
+    svg {
+      flex-shrink: 0;
+    }
+
+    &--dataset {
+      svg {
+        color: $grey-800;
+      }
+    }
+
+    &--node {
+      svg text {
+        fill: var(--color-primary);
+      }
+    }
+  }
+
+  &__create-project-button {
+    padding: 1rem 2.5rem;
+    font-size: 1rem;
+    font-weight: 500;
+    border-radius: 8px;
+    border: none;
+    background: var(--color-text);
+    color: var(--color-bg-1);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    margin-top: 1rem;
+
+    &:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+      opacity: 0.9;
+    }
+
+    &:active:not(:disabled) {
+      transform: translateY(0);
+    }
+
+    &:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+  }
+
+  // Responsive
+  @media (max-width: 768px) {
+    &__content {
+      padding: 1.5rem;
+    }
+
+    &__title {
+      font-size: 1.5rem;
+    }
+
+    &__actions {
+      flex-direction: column;
+    }
+
+    &__button {
+      width: 100%;
+      justify-content: center;
+    }
+  }
+}
