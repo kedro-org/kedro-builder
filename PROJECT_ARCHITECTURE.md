@@ -1,7 +1,5 @@
 # Kedro Builder – Architecture & Technical Notes
 
----
-
 ## 📚 Table of Contents
 
 1. [Project Overview](#project-overview)
@@ -18,8 +16,6 @@
 12. [Persistence & Onboarding](#persistence--onboarding)
 13. [Performance & Accessibility Notes](#performance--accessibility-notes)
 14. [Testing Strategy](#testing-strategy)
-15. [Roadmap & Open Questions](#roadmap--open-questions)
-16. [Reference Material](#reference-material)
 
 ---
 
@@ -436,38 +432,6 @@ if (!/^[a-z][a-z0-9_]*$/.test(trimmed)) {
 - **Implemented:**  
   - Vitest unit tests for validation helpers and export generators.  
   - Slice reducer tests covering node/dataset/connection mutations.
-
-- **Planned Enhancements:**  
-  - Integration tests simulating canvas interactions with Testing Library.  
-  - Playwright end-to-end flows (project creation → export).  
-  - Accessibility audits (axe) and Lighthouse checks.  
-  - Snapshot or DOM-diff tests for core modals.
-
----
-
-## Roadmap & Open Questions
-
-| Theme | Planned Enhancements | Notes |
-| --- | --- | --- |
-| Templates | Pre-built Kedro pipeline templates, template gallery | Requires UX for preview + insertion |
-| Editing UX | Undo/redo stack, minimap, search/filter, zoom presets | Redux middleware + ReactFlow extensions |
-| Collaboration | Import/export JSON, shareable links, team workflows | Likely needs IndexedDB/Dexie or backend |
-| Validation | Type-aware dataset compatibility, parameter coverage | Extend `validatePipeline` with schema info |
-| Persistence | Migrate autosave to IndexedDB for large projects | Dexie dependency already available |
-| Deployment | Hosted demo, documentation site, GitHub Pages | Align with README quick start |
-
-Open questions: How should dataset type compatibility be modelled (mapping table vs plugin system)? Do we need multi-pipeline support within one project? What does collaboration look like (local file vs remote)?
-
----
-
-## Reference Material
-
-- `README.md` – Quick start, feature highlights, dev scripts.  
-- `src/utils/export/*.ts` – Source of project generation logic.  
-- `src/utils/validation.ts` – Validation rules discussed above.  
-- `src/store/middleware/autoSaveMiddleware.ts` – Persistence implementation.  
-- `src/components/App/hooks/useValidation.ts` – Export orchestration glue.
-
 ---
 
 **Built with AI assistance.**
