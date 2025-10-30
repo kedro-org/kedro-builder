@@ -1,8 +1,5 @@
 # Kedro Builder – Architecture & Technical Notes
 
-> **Last Updated:** February 2026  
-> **Status:** ✅ Visual builder, validation, and export complete | 🔄 Enhancements underway
-
 ---
 
 ## 📚 Table of Contents
