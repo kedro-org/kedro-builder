@@ -4,6 +4,7 @@ import { selectCodeFile } from '../../features/ui/uiSlice';
 import { generateFileTree } from '../../utils/fileTreeGenerator';
 import type { FileNode } from '../../utils/fileTreeGenerator';
 import { ChevronRight, ChevronDown, Folder, File } from 'lucide-react';
+import { calculateTreeIndent } from '../../constants/fileTree';
 import './FileTree.scss';
 
 export const FileTree: React.FC = () => {
@@ -63,7 +64,7 @@ export const FileTree: React.FC = () => {
         <div key={node.path} className="file-tree__folder">
           <div
             className="file-tree__folder-header"
-            style={{ paddingLeft: `${level * 16 + 12}px` }}
+            style={{ '--tree-indent': calculateTreeIndent(level) } as React.CSSProperties}
             onClick={() => toggleFolder(node.path)}
           >
             {hasChildren && (
@@ -92,7 +93,7 @@ export const FileTree: React.FC = () => {
         <div
           key={node.path}
           className={`file-tree__file ${isSelected ? 'file-tree__file--selected' : ''}`}
-          style={{ paddingLeft: `${(level + 1) * 16 + 12}px` }}
+          style={{ '--tree-indent': calculateTreeIndent(level, true) } as React.CSSProperties}
           onClick={() => handleFileClick(node.path)}
         >
           <File size={16} className="file-tree__icon" />

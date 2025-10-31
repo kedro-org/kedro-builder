@@ -44,7 +44,6 @@ const PipelineCanvasInner = ({ exportWizardOpen = false }: PipelineCanvasProps) 
     reduxDatasets,
     selectedNodeIds,
     selectedEdgeIds,
-    theme,
     isEmpty,
     isDraggingOver,
     setIsDraggingOver,
@@ -135,7 +134,6 @@ const PipelineCanvasInner = ({ exportWizardOpen = false }: PipelineCanvasProps) 
       }`}
       ref={reactFlowWrapper}
       tabIndex={0}
-      style={{ outline: 'none' }}
       onDragLeave={handleDragLeave}
     >
       {/* Canvas Overlay - Empty state and bulk actions toolbar */}
@@ -194,7 +192,7 @@ const PipelineCanvasInner = ({ exportWizardOpen = false }: PipelineCanvasProps) 
         edgesReconnectable={false}
         proOptions={{ hideAttribution: true }}
       >
-        <CanvasControls theme={theme} getNodeColor={getNodeColor} />
+        <CanvasControls getNodeColor={getNodeColor} />
       </ReactFlow>
     </div>
   );

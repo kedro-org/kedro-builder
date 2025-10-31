@@ -1,6 +1,7 @@
 import { memo } from 'react';
 import { BaseEdge, getBezierPath } from '@xyflow/react';
 import type { EdgeProps } from '@xyflow/react';
+import { CANVAS } from '../../../constants/canvas';
 import './CustomEdge.scss';
 
 export const CustomEdge = memo<EdgeProps>(
@@ -33,7 +34,7 @@ export const CustomEdge = memo<EdgeProps>(
         style={{
           ...style,
           stroke: selected ? 'var(--color-primary)' : 'var(--color-connection)',
-          strokeWidth: selected ? 4 : 3,
+          strokeWidth: selected ? CANVAS.EDGE.STROKE_WIDTH_SELECTED : CANVAS.EDGE.STROKE_WIDTH_DEFAULT,
         }}
         className={`custom-edge ${selected ? 'custom-edge--selected' : ''}`}
       />

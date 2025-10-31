@@ -76,6 +76,16 @@ code {
     --color-warning: #{$yellow-600};
     --color-success: #{$green-600};
 
+    // Canvas specific colors
+    --color-canvas-dot: #d0d0d0;
+    --color-minimap-mask: rgba(255, 255, 255, 0.6);
+
+    // Brand colors
+    --color-kedro-yellow: #ffc900;
+
+    // Fallback colors
+    --color-node-fallback: #999999;
+
     background-color: var(--color-bg-1);
     color: var(--color-text);
   }
@@ -112,6 +122,16 @@ code {
     --color-error: #{$red-0};
     --color-warning: #{$yellow-300};
     --color-success: #{$green-300};
+
+    // Canvas specific colors
+    --color-canvas-dot: #3a3a3a;
+    --color-minimap-mask: rgba(0, 0, 0, 0.6);
+
+    // Brand colors
+    --color-kedro-yellow: #ffc900;
+
+    // Fallback colors
+    --color-node-fallback: #999999;
 
     background-color: var(--color-bg-1);
     color: var(--color-text);

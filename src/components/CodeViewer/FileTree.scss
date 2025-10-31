@@ -22,6 +22,8 @@
     align-items: center;
     gap: 0.5rem;
     padding: 0.5rem 0.75rem;
+    // Dynamic padding-left via CSS custom property (set inline with --tree-indent)
+    padding-left: var(--tree-indent, 0.75rem);
     cursor: pointer;
     color: var(--color-text);
     transition: background 0.15s ease;

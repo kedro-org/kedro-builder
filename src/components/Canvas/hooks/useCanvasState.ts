@@ -125,7 +125,7 @@ export const useCanvasState = () => {
       model_evaluation: 'var(--color-node-model-evaluation)',
       custom: 'var(--color-node-custom)',
     };
-    return colors[node.data?.type as keyof typeof colors] || '#999';
+    return colors[node.data?.type as keyof typeof colors] || 'var(--color-node-fallback)';
   };
 
   return {

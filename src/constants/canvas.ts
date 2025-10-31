@@ -10,4 +10,12 @@ export const CANVAS = {
     MEDIUM: 16,
     LARGE: 20,
   },
+  BACKGROUND: {
+    DOT_GAP: 20,
+    DOT_SIZE: 1.5,
+  },
+  EDGE: {
+    STROKE_WIDTH_DEFAULT: 3,
+    STROKE_WIDTH_SELECTED: 4,
+  },
 } as const;

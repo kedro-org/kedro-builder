@@ -31,7 +31,7 @@ export const AppHeader: React.FC<AppHeaderProps> = ({ hasPipelineContent, onView
       <div className="app__header-content">
         <div className="app__header-title">
           <svg className="app__kedro-icon" viewBox="0 0 32 32" fill="none">
-            <path d="M16 0L6.55651e-07 16L16 32L32 16L16 0Z" fill="#FFC900" />
+            <path d="M16 0L6.55651e-07 16L16 32L32 16L16 0Z" fill="var(--color-kedro-yellow)" />
           </svg>
           <div className="app__header-project">
             <h1>Kedro</h1>
