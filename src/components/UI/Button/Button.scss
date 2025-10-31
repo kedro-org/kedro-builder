@@ -1,3 +1,4 @@
+@use 'sass:color';
 @use '../../../styles/variables' as *;
 @use '../../../styles/extends';
 
@@ -61,7 +62,7 @@
     color: $white-0;
 
     &:hover:not(:disabled) {
-      background: darken($red-0, 10%);
+      background: color.adjust($red-0, $lightness: -10%);
     }
 
     &:active:not(:disabled) {

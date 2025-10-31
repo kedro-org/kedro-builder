@@ -4,7 +4,14 @@ import react from '@vitejs/plugin-react'
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react()],
-  // @ts-ignore - test config is valid but not in Vite's types
+  css: {
+    preprocessorOptions: {
+      scss: {
+        api: 'modern-compiler', // Use modern Sass API instead of legacy
+      },
+    },
+  },
+  // @ts-expect-error - test config is valid but not in Vite's types
   test: {
     globals: true,
     environment: 'jsdom',

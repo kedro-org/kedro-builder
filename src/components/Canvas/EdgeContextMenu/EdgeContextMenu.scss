@@ -1,6 +1,6 @@
-@import '../../../styles/variables';
-@import '../../../styles/mixins';
-@import '../../../styles/extends';
+@use '../../../styles/variables' as *;
+@use '../../../styles/mixins' as *;
+@use '../../../styles/extends' as *;
 
 .edge-context-menu {
   min-width: 180px;
