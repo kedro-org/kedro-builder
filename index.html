@@ -5,6 +5,26 @@
     <link rel="shortcut icon" href="./favicon.ico" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>kedro-builder</title>
+
+    <!-- Heap Analytics - Opt-Out Model -->
+    <script type="text/javascript">
+      // Load Heap by default unless user has explicitly opted out
+      // Consent is stored in localStorage as 'kedro-builder-telemetry' = 'enabled' | 'disabled'
+      // Opt-out model: Telemetry is ON by default, users can opt out if they choose
+      window.heap=window.heap||[],heap.load=function(e,t){window.heap.appid=e,window.heap.config=t=t||{};var r=document.createElement("script");r.type="text/javascript",r.async=!0,r.src="https://cdn.heapanalytics.com/js/heap-"+e+".js";var a=document.getElementsByTagName("script")[0];a.parentNode.insertBefore(r,a);for(var n=function(e){return function(){heap.push([e].concat(Array.prototype.slice.call(arguments,0)))}},p=["addEventProperties","addUserProperties","clearEventProperties","identify","resetIdentity","removeEventProperty","setEventProperties","track","unsetEventProperty"],o=0;o<p.length;o++)heap[p[o]]=n(p[o])};
+
+      // Check if user has opted out
+      var telemetryConsent = localStorage.getItem('kedro-builder-telemetry');
+      if (telemetryConsent !== 'disabled') {
+        // Load Heap by default (on first visit or if enabled)
+        var heapAppId = '4039408868'; // This will be replaced by Vite
+
+        heap.load(heapAppId, {
+          disableTextCapture: true,  // Critical: Don't capture any text content
+          secureCookie: true,         // Use secure cookies
+        });
+      }
+    </script>
     <script type="module" crossorigin src="./assets/index--V6Ftz9K.js"></script>
     <link rel="stylesheet" crossorigin href="./assets/index-1zWB_pMu.css">
   </head>
