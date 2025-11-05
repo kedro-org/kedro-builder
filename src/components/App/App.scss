@@ -46,12 +46,30 @@
   }
 
   &__header-project {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+
     h1 {
       margin: 0;
       font-size: 1.25rem;
       font-weight: 600;
       color: var(--color-text);
     }
+  }
+
+  &__header-beta-tag {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.25rem 0.5rem;
+    font-size: 0.625rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    color: var(--color-primary);
+    background: rgba(255, 185, 0, 0.15);
+    border: 1px solid var(--color-primary);
+    border-radius: 4px;
+    text-transform: uppercase;
   }
 
   &__header-project-controls {
@@ -220,6 +238,11 @@
 // Dark theme adjustments
 [data-theme='dark'] {
   .app {
+    &__header-beta-tag {
+      background: rgba(255, 185, 0, 0.2);
+      border-color: var(--color-primary);
+    }
+
     &__project-name-edit {
       border-color: rgba(255, 255, 255, 0.2);
 

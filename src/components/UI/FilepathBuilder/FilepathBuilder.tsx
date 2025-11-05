@@ -159,6 +159,14 @@ export const FilepathBuilder: React.FC<FilepathBuilderProps> = ({
         <span className="filepath-builder__preview-label">Full path:</span>
         <code className="filepath-builder__preview-path">{generateFullPath()}</code>
       </div>
+
+      {/* Privacy Notice */}
+      <div className="filepath-builder__privacy-notice">
+        <span className="filepath-builder__privacy-icon">ℹ️</span>
+        <p className="filepath-builder__privacy-text">
+          <strong>Privacy:</strong>No data is uploaded. The browse button only helps you select a filename.
+        </p>
+      </div>
     </div>
   );
 };

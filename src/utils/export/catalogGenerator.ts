@@ -3,25 +3,8 @@
  */
 
 import type { KedroDataset } from '../../types/kedro';
+import { DATASET_TYPE_MAPPING } from '../../constants/datasetTypes';
 import { inferDataLayer, getFileExtension, escapeYamlString, toSnakeCase } from './helpers';
-
-/**
- * Dataset type mapping from UI to Kedro
- */
-const DATASET_TYPE_MAPPING: Record<string, string> = {
-  csv: 'pandas.CSVDataset',
-  parquet: 'pandas.ParquetDataset',
-  excel: 'pandas.ExcelDataset',
-  json: 'pandas.JSONDataset',
-  pickle: 'pandas.PickleDataset',
-  feather: 'pandas.FeatherDataset',
-  hdf: 'pandas.HDFDataset',
-  sql_table: 'pandas.SQLTableDataset',
-  sql_query: 'pandas.SQLQueryDataset',
-  text: 'text.TextDataset',
-  yaml: 'yaml.YAMLDataset',
-  memory: 'MemoryDataset',
-};
 
 /**
  * Generate catalog.yml content

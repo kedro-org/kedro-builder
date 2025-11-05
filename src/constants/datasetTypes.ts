@@ -75,6 +75,81 @@ export const DATASET_TYPES: { value: DatasetType; label: string; category: strin
 ];
 
 /**
+ * Dataset type mapping from UI to Kedro dataset classes
+ * Maps UI dataset type values to their corresponding Kedro dataset class names
+ * Used for generating catalog.yml entries
+ */
+export const DATASET_TYPE_MAPPING: Record<string, string> = {
+  // Pandas datasets (most common)
+  csv: 'pandas.CSVDataset',
+  parquet: 'pandas.ParquetDataset',
+  json: 'pandas.JSONDataset',
+  excel: 'pandas.ExcelDataset',
+  feather: 'pandas.FeatherDataset',
+  hdf: 'pandas.HDFDataset',
+  sql_table: 'pandas.SQLTableDataset',
+  sql_query: 'pandas.SQLQueryDataset',
+  gbq_table: 'pandas.GBQTableDataset',
+  gbq_query: 'pandas.GBQQueryDataset',
+
+  // Spark datasets
+  spark_dataframe: 'spark.SparkDataset',
+  spark_hive: 'spark.SparkHiveDataset',
+  spark_jdbc: 'spark.SparkJDBCDataset',
+
+  // Delta Lake
+  delta_table: 'databricks.ManagedTableDataset',
+
+  // Polars datasets
+  polars_csv: 'polars.PolarsCSVDataset',
+  polars_parquet: 'polars.PolarsParquetDataset',
+  polars_lazy: 'polars.PolarsLazyDataset',
+
+  // Dask datasets
+  dask_parquet: 'dask.ParquetDataset',
+  dask_csv: 'dask.CSVDataset',
+
+  // Pickle datasets
+  pickle: 'pickle.PickleDataset',
+
+  // Text datasets
+  text: 'text.TextDataset',
+  yaml: 'yaml.YAMLDataset',
+  xml: 'xml.XMLDataset',
+
+  // Image & Visualization
+  image: 'pillow.ImageDataset',
+  matplotlib: 'matplotlib.MatplotlibWriter',
+  plotly_json: 'plotly.JSONDataset',
+  video: 'video.VideoDataset',
+  holoviews: 'holoviews.HoloviewsWriter',
+
+  // Graph/Network datasets
+  networkx_json: 'networkx.JSONDataset',
+  networkx_gml: 'networkx.GMLDataset',
+  networkx_graphml: 'networkx.GraphMLDataset',
+
+  // Geospatial
+  geojson: 'geopandas.GeoJSONDataset',
+
+  // Machine Learning Models
+  tensorflow: 'tensorflow.TensorFlowModelDataset',
+  pytorch: 'pytorch.PyTorchDataset',
+  huggingface_dataset: 'huggingface.HFDataset',
+  huggingface_model: 'huggingface.HFTransformerPipelineDataset',
+
+  // Specialized formats
+  api: 'api.APIDataset',
+  tracking: 'tracking.MetricsDataset',
+  biosequence: 'biosequence.BioSequenceDataset',
+  matlab: 'matlab.MatlabDataset',
+  ibis_table: 'ibis.TableDataset',
+
+  // Memory (no file)
+  memory: 'MemoryDataset',
+};
+
+/**
  * Group dataset types by category for organized display
  */
 export const groupDatasetTypesByCategory = (): Record<string, typeof DATASET_TYPES> => {

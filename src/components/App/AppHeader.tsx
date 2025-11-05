@@ -44,6 +44,7 @@ export const AppHeader: React.FC<AppHeaderProps> = ({ hasPipelineContent, onView
           </svg>
           <div className="app__header-project">
             <h1>Kedro</h1>
+            <span className="app__header-beta-tag">BETA</span>
           </div>
 
           <div className="app__header-project-controls">

@@ -10,7 +10,6 @@ import { generateCatalog } from './catalogGenerator';
 import { generateNodes } from './nodesGenerator';
 import { generatePipeline } from './pipelineGenerator';
 import {
-  generateLoggingConfig,
   generateParametersConfig,
   generateCredentialsTemplate,
   generateGitignore,
@@ -58,7 +57,6 @@ export async function generateKedroProject(
   // Base configuration
   zip.file('conf/base/catalog.yml', generateCatalog(datasetsList));
   zip.file('conf/base/parameters.yml', generateParametersConfig());
-  zip.file('conf/base/logging.yml', generateLoggingConfig(pythonPackage));
 
   // Local configuration (templates)
   zip.file('conf/local/credentials.yml', generateCredentialsTemplate());

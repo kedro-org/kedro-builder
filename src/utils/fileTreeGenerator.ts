@@ -9,7 +9,6 @@ import { generateCatalog } from './export/catalogGenerator';
 import { generateNodes } from './export/nodesGenerator';
 import { generatePipeline } from './export/pipelineGenerator';
 import {
-  generateLoggingConfig,
   generateParametersConfig,
   generateCredentialsTemplate,
   generateGitignore,
@@ -67,7 +66,6 @@ export function generateFileTree(state: RootState): FileNode {
     // Config files
     'conf/base/catalog.yml': generateCatalog(datasetsList),
     'conf/base/parameters.yml': generateParametersConfig(),
-    'conf/base/logging.yml': generateLoggingConfig(pythonPackage),
     'conf/local/credentials.yml': generateCredentialsTemplate(),
 
     // Source files
@@ -119,12 +117,6 @@ export function generateFileTree(state: RootState): FileNode {
                 type: 'file',
                 path: 'conf/base/parameters.yml',
                 content: files['conf/base/parameters.yml'],
-              },
-              {
-                name: 'logging.yml',
-                type: 'file',
-                path: 'conf/base/logging.yml',
-                content: files['conf/base/logging.yml'],
               },
             ],
           },
