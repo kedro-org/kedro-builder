@@ -11,6 +11,7 @@ import { validatePipeline } from '../../../utils/validation';
 import type { ValidationResult } from '../../../utils/validation';
 import { generateKedroProject, downloadProject } from '../../../utils/export';
 import { logger } from '../../../utils/logger';
+import { trackEvent } from '../../../utils/telemetry';
 import toast from 'react-hot-toast';
 
 interface UseValidationProps {
@@ -75,6 +76,12 @@ export const useValidation = ({ showExportWizard }: UseValidationProps) => {
       return;
     }
 
+    // Track code viewer opened
+    trackEvent('code_viewed', {
+      nodeCount: state.nodes.allIds.length,
+      datasetCount: state.datasets.allIds.length,
+    });
+
     // Validation passed - open code viewer
     dispatch(openCodeViewer());
   };
@@ -108,6 +115,13 @@ export const useValidation = ({ showExportWizard }: UseValidationProps) => {
 
       // Download the file
       downloadProject(zipBlob, metadata.projectName);
+
+      // Track successful export
+      trackEvent('project_exported', {
+        nodeCount: state.nodes.allIds.length,
+        datasetCount: state.datasets.allIds.length,
+        connectionCount: state.connections.allIds.length,
+      });
 
       // Close dialog using Redux action
       dispatch(closeExportWizard());

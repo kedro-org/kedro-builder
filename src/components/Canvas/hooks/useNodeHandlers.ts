@@ -19,6 +19,7 @@ import { openConfigPanel, closeConfigPanel, setPendingComponent } from '../../..
 import { clearConnectionSelection } from '../../../features/connections/connectionsSlice';
 import { logger } from '../../../utils/logger';
 import { TIMING } from '../../../constants/timing';
+import { trackEvent } from '../../../utils/telemetry';
 import type { NodeType, DatasetType } from '../../../types/kedro';
 
 interface NodeHandlersProps {
@@ -143,6 +144,11 @@ export const useNodeHandlers = ({ onNodesChange, setIsDraggingOver, isDraggingOv
           })
         );
 
+        // Track node addition
+        trackEvent('node_added', {
+          type: nodeType,
+        });
+
         dispatch(setPendingComponent({ type: 'node', id: newNodeId }));
 
         setTimeout(() => {
@@ -158,6 +164,11 @@ export const useNodeHandlers = ({ onNodesChange, setIsDraggingOver, isDraggingOv
             position,
           })
         );
+
+        // Track dataset addition
+        trackEvent('dataset_added', {
+          type: datasetType,
+        });
 
         dispatch(setPendingComponent({ type: 'dataset', id: newDatasetId }));
 

@@ -1,0 +1,1 @@
+export { TelemetryConsent } from './TelemetryConsent';

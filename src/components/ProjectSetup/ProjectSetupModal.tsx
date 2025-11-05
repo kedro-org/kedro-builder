@@ -7,6 +7,7 @@ import { clearNodes } from '../../features/nodes/nodesSlice';
 import { clearDatasets } from '../../features/datasets/datasetsSlice';
 import { clearConnections } from '../../features/connections/connectionsSlice';
 import { clearProjectFromLocalStorage } from '../../utils/localStorage';
+import { trackEvent } from '../../utils/telemetry';
 import './ProjectSetupModal.scss';
 
 export const ProjectSetupModal: React.FC = () => {
@@ -51,6 +52,11 @@ export const ProjectSetupModal: React.FC = () => {
         pythonPackage: projectName.replace(/-/g, '_'), // Convert kebab-case to snake_case
         pipelineName: '__default__',
       }));
+
+      // Track project creation
+      trackEvent(isEditing ? 'project_updated' : 'project_created', {
+        hasDescription: description.trim().length > 0,
+      });
 
       // Set hasActiveProject to true so EmptyState is hidden
       dispatch(setHasActiveProject(true));

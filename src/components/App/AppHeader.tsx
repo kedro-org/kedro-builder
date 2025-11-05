@@ -1,8 +1,8 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useAppSelector, useAppDispatch } from '../../store/hooks';
 import { openTutorial, openProjectSetup } from '../../features/ui/uiSlice';
-import { ThemeToggle } from '../UI/ThemeToggle/ThemeToggle';
-import { Code, Download, Edit2 } from 'lucide-react';
+import { SettingsModal } from '../Settings';
+import { Code, Download, Edit2, Settings } from 'lucide-react';
 
 interface AppHeaderProps {
   hasPipelineContent: boolean;
@@ -17,6 +17,7 @@ export const AppHeader: React.FC<AppHeaderProps> = ({ hasPipelineContent, onView
   const dispatch = useAppDispatch();
   const hasActiveProject = useAppSelector((state) => state.ui.hasActiveProject);
   const currentProject = useAppSelector((state) => state.project.current);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
   const handleOpenTutorial = () => {
     dispatch(openTutorial());
@@ -24,6 +25,14 @@ export const AppHeader: React.FC<AppHeaderProps> = ({ hasPipelineContent, onView
 
   const handleEditProject = () => {
     dispatch(openProjectSetup());
+  };
+
+  const handleOpenSettings = () => {
+    setIsSettingsOpen(true);
+  };
+
+  const handleCloseSettings = () => {
+    setIsSettingsOpen(false);
   };
 
   return (
@@ -77,9 +86,20 @@ export const AppHeader: React.FC<AppHeaderProps> = ({ hasPipelineContent, onView
             <Download size={18} />
             Validate & Export
           </button>
-          <ThemeToggle />
+          <button
+            className="app__header-button"
+            onClick={handleOpenSettings}
+            title="Settings"
+            aria-label="Open settings"
+            data-heap-redact-text
+          >
+            <Settings size={20} />
+          </button>
         </div>
       </div>
+
+      {/* Settings Modal */}
+      <SettingsModal isOpen={isSettingsOpen} onClose={handleCloseSettings} />
     </header>
   );
 };
