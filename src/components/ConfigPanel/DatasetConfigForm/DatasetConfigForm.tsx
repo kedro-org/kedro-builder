@@ -50,6 +50,11 @@ export const DatasetConfigForm: React.FC<DatasetConfigFormProps> = ({ dataset, o
     setValue,
   });
 
+  // Handle full path edit directly
+  const handleFullPathChange = (fullPath: string) => {
+    setValue('filepath', fullPath, { shouldDirty: true });
+  };
+
   const onSubmit = (data: DatasetFormData) => {
     dispatch(
       updateDataset({
@@ -114,10 +119,10 @@ export const DatasetConfigForm: React.FC<DatasetConfigFormProps> = ({ dataset, o
             baseLocation={baseLocation}
             dataLayer={dataLayer}
             fileName={fileName}
-            datasetType={watchType}
             onBaseLocationChange={setBaseLocation}
             onDataLayerChange={setDataLayer}
             onFileNameChange={setFileName}
+            onFullPathChange={handleFullPathChange}
           />
         </div>
       )}

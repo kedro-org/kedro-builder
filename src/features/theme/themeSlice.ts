@@ -2,11 +2,11 @@ import { createSlice } from '@reduxjs/toolkit';
 import type { PayloadAction } from '@reduxjs/toolkit';
 import type { ThemeState } from '../../types/redux';
 
-// Load theme from localStorage or default to dark
+// Load theme from localStorage or default to light
 const savedTheme = localStorage.getItem('kedro_builder_theme') as 'light' | 'dark' | null;
 
 const initialState: ThemeState = {
-  theme: savedTheme || 'dark', // Default to dark theme (like Kedro-Viz)
+  theme: savedTheme || 'light', // Default to light theme
 };
 
 const themeSlice = createSlice({

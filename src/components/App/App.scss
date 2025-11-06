@@ -239,8 +239,9 @@
 [data-theme='dark'] {
   .app {
     &__header-beta-tag {
-      background: rgba(255, 185, 0, 0.2);
-      border-color: var(--color-primary);
+      color: #ffd700;
+      background: rgba(255, 215, 0, 0.25);
+      border-color: #ffd700;
     }
 
     &__project-name-edit {

@@ -1,15 +1,14 @@
-import { useRef } from 'react';
-import { Folder } from 'lucide-react';
+import { useState, useEffect } from 'react';
 import './FilepathBuilder.scss';
 
 interface FilepathBuilderProps {
   baseLocation: string;
   dataLayer: string;
   fileName: string;
-  datasetType: string;
   onBaseLocationChange: (value: string) => void;
   onDataLayerChange: (value: string) => void;
   onFileNameChange: (value: string) => void;
+  onFullPathChange?: (value: string) => void;
 }
 
 const DATA_LAYERS = [
@@ -23,57 +22,16 @@ const DATA_LAYERS = [
   { value: '08_reporting', label: '08_reporting - Reporting datasets' },
 ];
 
-// Map dataset types to file extensions
-const FILE_EXTENSIONS: Record<string, string> = {
-  csv: '.csv',
-  json: '.json',
-  parquet: '.parquet',
-  excel: '.xlsx,.xls',
-  pickle: '.pkl,.pickle',
-  sql: '.sql',
-  memory: '', // Memory datasets don't have files
-};
-
 export const FilepathBuilder: React.FC<FilepathBuilderProps> = ({
   baseLocation,
   dataLayer,
   fileName,
-  datasetType,
   onBaseLocationChange,
   onDataLayerChange,
   onFileNameChange,
+  onFullPathChange,
 }) => {
-  const fileInputRef = useRef<HTMLInputElement>(null);
-
-  // Get file extension for dataset type
-  const getExtension = (type: string): string => {
-    const ext = FILE_EXTENSIONS[type] || '';
-    return ext.split(',')[0]; // Get first extension if multiple
-  };
-
-  // Get accept attribute for file input
-  const getAcceptAttribute = (type: string): string => {
-    return FILE_EXTENSIONS[type] || '*';
-  };
-
-  // Handle file selection
-  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      onFileNameChange(file.name);
-    }
-    // Reset input so same file can be selected again
-    if (fileInputRef.current) {
-      fileInputRef.current.value = '';
-    }
-  };
-
-  // Handle browse button click
-  const handleBrowseClick = () => {
-    fileInputRef.current?.click();
-  };
-
-  // Generate full path
+  // Generate full path from segments
   const generateFullPath = (): string => {
     const base = baseLocation.trim() || 'data';
     const layer = dataLayer.trim();
@@ -84,6 +42,20 @@ export const FilepathBuilder: React.FC<FilepathBuilderProps> = ({
     }
 
     return `${base}/${layer}/${file}`;
+  };
+
+  // Local state for full path to make it editable
+  const [fullPath, setFullPath] = useState(generateFullPath());
+
+  // Sync full path when segments change
+  useEffect(() => {
+    setFullPath(generateFullPath());
+  }, [baseLocation, dataLayer, fileName]);
+
+  // Handle full path edit
+  const handleFullPathChange = (value: string) => {
+    setFullPath(value);
+    onFullPathChange?.(value);
   };
 
   return (
@@ -124,48 +96,28 @@ export const FilepathBuilder: React.FC<FilepathBuilderProps> = ({
         <span className="filepath-builder__separator">/</span>
 
         {/* File Name */}
-        <div className="filepath-builder__segment filepath-builder__segment--with-button">
+        <div className="filepath-builder__segment">
           <label className="filepath-builder__segment-label">File name:</label>
-          <div className="filepath-builder__input-wrapper">
-            <input
-              type="text"
-              className="filepath-builder__input"
-              value={fileName}
-              onChange={(e) => onFileNameChange(e.target.value)}
-              placeholder={`example${getExtension(datasetType)}`}
-            />
-            <button
-              type="button"
-              className="filepath-builder__browse-button"
-              onClick={handleBrowseClick}
-              title="Browse for file"
-            >
-              <Folder size={20} />
-            </button>
-            <input
-              ref={fileInputRef}
-              type="file"
-              className="filepath-builder__file-input"
-              accept={getAcceptAttribute(datasetType)}
-              onChange={handleFileSelect}
-              style={{ display: 'none' }}
-            />
-          </div>
+          <input
+            type="text"
+            className="filepath-builder__input"
+            value={fileName}
+            onChange={(e) => onFileNameChange(e.target.value)}
+            placeholder="example.csv"
+          />
         </div>
       </div>
 
-      {/* Generated Path Preview */}
-      <div className="filepath-builder__preview">
-        <span className="filepath-builder__preview-label">Full path:</span>
-        <code className="filepath-builder__preview-path">{generateFullPath()}</code>
-      </div>
-
-      {/* Privacy Notice */}
-      <div className="filepath-builder__privacy-notice">
-        <span className="filepath-builder__privacy-icon">ℹ️</span>
-        <p className="filepath-builder__privacy-text">
-          <strong>Privacy:</strong>No data is uploaded. The browse button only helps you select a filename.
-        </p>
+      {/* Full Path - Editable Input */}
+      <div className="filepath-builder__fullpath">
+        <label className="filepath-builder__fullpath-label">Full path (editable):</label>
+        <input
+          type="text"
+          className="filepath-builder__fullpath-input"
+          value={fullPath}
+          onChange={(e) => handleFullPathChange(e.target.value)}
+          placeholder="data/01_raw/example.csv"
+        />
       </div>
     </div>
   );
