@@ -21,6 +21,7 @@ function App() {
   const showWalkthrough = useAppSelector((state) => state.ui.showWalkthrough);
   const showProjectSetup = useAppSelector((state) => state.ui.showProjectSetup);
   const showExportWizard = useAppSelector((state) => state.ui.showExportWizard);
+  const showConfigPanel = useAppSelector((state) => state.ui.showConfigPanel);
   const nodes = useAppSelector((state) => state.nodes.allIds);
   const datasets = useAppSelector((state) => state.datasets.allIds);
 
@@ -90,7 +91,7 @@ function App() {
       <Toaster />
 
       {/* Feedback button */}
-      <FeedbackButton />
+      <FeedbackButton showConfigPanel={showConfigPanel} />
     </div>
   );
 }
