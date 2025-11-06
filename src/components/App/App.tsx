@@ -7,6 +7,7 @@ import { ValidationPanel } from '../ValidationPanel/ValidationPanel';
 import { ExportWizard } from '../ExportWizard/ExportWizard';
 import { CodeViewerModal } from '../CodeViewer';
 import { TelemetryConsent } from '../TelemetryConsent';
+import { FeedbackButton } from '../Feedback';
 import { AppHeader } from './AppHeader';
 import { AppLayout } from './AppLayout';
 import { useAppInitialization } from './hooks/useAppInitialization';
@@ -87,6 +88,9 @@ function App() {
 
       {/* Toast notifications */}
       <Toaster />
+
+      {/* Feedback button */}
+      <FeedbackButton />
     </div>
   );
 }

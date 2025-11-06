@@ -1,0 +1,44 @@
+@use '../../styles/variables' as *;
+
+.feedback-button {
+  position: fixed;
+  bottom: 175px;
+  right: 24px;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: var(--color-primary);
+  color: white;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  transition: all 0.2s ease;
+  z-index: 900; // Below modals (1000), above canvas
+
+  &:hover {
+    transform: scale(1.1);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+  }
+
+  &:active {
+    transform: scale(1.05);
+  }
+
+  svg {
+    flex-shrink: 0;
+  }
+}
+
+// Dark theme adjustments
+[data-theme='dark'] {
+  .feedback-button {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+
+    &:hover {
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.5);
+    }
+  }
+}
