@@ -69,12 +69,12 @@ export const TelemetryConsent: React.FC = () => {
         <div className="telemetry-consent__content">
           <h3 className="telemetry-consent__title">Help us improve Kedro Builder</h3>
           <p className="telemetry-consent__description" data-heap-redact-text>
-            We are collecting anonymous usage data to help improve Kedro Builder. We only
-            track behavioral data like clicks and counts - never your project names, node names,
-            or any other personal information.
+            We use <strong>Heap Analytics</strong> (a third-party service) to collect anonymous usage data.
+            This includes behavioral data like clicks, button interactions, and feature usage counts.
+            Heap uses <strong>cookies</strong> to track your session across visits.
           </p>
           <p className="telemetry-consent__privacy" data-heap-redact-text>
-            You can change this preference at any time in Settings.
+            Your preference is stored locally in your browser. You can opt out at any time via Settings.
           </p>
         </div>
 
