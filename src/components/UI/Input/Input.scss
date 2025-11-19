@@ -17,6 +17,7 @@
   border-radius: 4px;
   color: var(--color-text);
   transition: all 0.2s ease;
+  cursor: text;
 
   &::placeholder {
     color: var(--color-text-disabled);

@@ -53,13 +53,6 @@ export const TutorialModal = () => {
           <div className="tutorial-modal__left">
             <header className="tutorial-modal__header">
               <h2 className="tutorial-modal__main-title">Introduction to Kedro</h2>
-              <button
-                className="tutorial-modal__close"
-                onClick={handleSkip}
-                aria-label="Close tutorial"
-              >
-                <X size={20} />
-              </button>
             </header>
 
             {/* Progress Indicators */}
@@ -82,6 +75,14 @@ export const TutorialModal = () => {
             <div className="tutorial-modal__step-content">
               <h3 className="tutorial-modal__step-title">{step.title}</h3>
               <p className="tutorial-modal__step-description">{step.content}</p>
+              <a
+                href="https://docs.kedro.org"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="tutorial-modal__docs-link"
+              >
+                View Kedro documentation →
+              </a>
             </div>
 
             {/* Action Buttons */}
@@ -116,6 +117,13 @@ export const TutorialModal = () => {
 
           {/* Right Panel - Icon */}
           <div className="tutorial-modal__right">
+            <button
+              className="tutorial-modal__close"
+              onClick={handleSkip}
+              aria-label="Close tutorial"
+            >
+              <X size={20} />
+            </button>
             <div className="tutorial-modal__icon-container">
               <Icon className="tutorial-modal__icon" size={80} strokeWidth={1.5} />
             </div>

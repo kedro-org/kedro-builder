@@ -29,7 +29,15 @@ export const DatasetTypeSelect: React.FC<DatasetTypeSelectProps> = ({ register }
         ))}
       </select>
       <span className="dataset-config-form__helper">
-        Choose from {DATASET_TYPES.length} supported dataset types from kedro-datasets 3.0+
+        Choose from {DATASET_TYPES.length} supported dataset types from kedro-datasets 3.0+.{' '}
+        <a
+          href="https://docs.kedro.org/projects/kedro-datasets/en/latest/"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="dataset-config-form__link"
+        >
+          View docs
+        </a>
       </span>
     </div>
   );

@@ -3,6 +3,96 @@ import { addEdge } from '@xyflow/react';
 import type { Connection, Edge, Node, OnConnect, OnConnectStart, OnConnectEnd } from '@xyflow/react';
 import { useAppDispatch } from '../../../store/hooks';
 import { addConnection } from '../../../features/connections/connectionsSlice';
+import { store } from '../../../store';
+import toast from 'react-hot-toast';
+
+/**
+ * Check if adding a new connection would create a cycle
+ * Uses DFS to detect cycles in the graph
+ */
+function wouldCreateCycle(
+  newSource: string,
+  newTarget: string,
+  existingConnections: Array<{ source: string; target: string }>,
+  nodeIds: string[],
+  datasetIds: string[]
+): boolean {
+  // Build dependency graph including the new connection
+  // We need to trace: node → dataset → node paths
+
+  // Map of dataset inputs and outputs
+  const datasetInputs = new Map<string, string[]>(); // dataset -> nodes that produce it
+  const datasetOutputs = new Map<string, string[]>(); // dataset -> nodes that consume it
+
+  // Add existing connections
+  existingConnections.forEach((conn) => {
+    // node → dataset
+    if (conn.source.startsWith('node-') && conn.target.startsWith('dataset-')) {
+      if (!datasetInputs.has(conn.target)) datasetInputs.set(conn.target, []);
+      datasetInputs.get(conn.target)!.push(conn.source);
+    }
+    // dataset → node
+    else if (conn.source.startsWith('dataset-') && conn.target.startsWith('node-')) {
+      if (!datasetOutputs.has(conn.source)) datasetOutputs.set(conn.source, []);
+      datasetOutputs.get(conn.source)!.push(conn.target);
+    }
+  });
+
+  // Add the new connection
+  if (newSource.startsWith('node-') && newTarget.startsWith('dataset-')) {
+    if (!datasetInputs.has(newTarget)) datasetInputs.set(newTarget, []);
+    datasetInputs.get(newTarget)!.push(newSource);
+  } else if (newSource.startsWith('dataset-') && newTarget.startsWith('node-')) {
+    if (!datasetOutputs.has(newSource)) datasetOutputs.set(newSource, []);
+    datasetOutputs.get(newSource)!.push(newTarget);
+  }
+
+  // Build node-to-node graph through datasets
+  const graph = new Map<string, Set<string>>();
+  nodeIds.forEach((nodeId) => graph.set(nodeId, new Set()));
+
+  datasetIds.forEach((datasetId) => {
+    const producers = datasetInputs.get(datasetId) || [];
+    const consumers = datasetOutputs.get(datasetId) || [];
+
+    producers.forEach((producerNode) => {
+      consumers.forEach((consumerNode) => {
+        if (!graph.has(producerNode)) graph.set(producerNode, new Set());
+        graph.get(producerNode)!.add(consumerNode);
+      });
+    });
+  });
+
+  // DFS to detect cycle
+  const visited = new Set<string>();
+  const recStack = new Set<string>();
+
+  function hasCycle(node: string): boolean {
+    visited.add(node);
+    recStack.add(node);
+
+    const neighbors = graph.get(node) || new Set();
+    for (const neighbor of neighbors) {
+      if (!visited.has(neighbor)) {
+        if (hasCycle(neighbor)) return true;
+      } else if (recStack.has(neighbor)) {
+        return true;
+      }
+    }
+
+    recStack.delete(node);
+    return false;
+  }
+
+  // Check all nodes for cycles
+  for (const nodeId of nodeIds) {
+    if (!visited.has(nodeId)) {
+      if (hasCycle(nodeId)) return true;
+    }
+  }
+
+  return false;
+}
 
 interface ConnectionHandlersProps {
   setEdges: React.Dispatch<React.SetStateAction<Edge<any>[]>>;
@@ -103,6 +193,23 @@ export const useConnectionHandlers = ({
   const handleConnect: OnConnect = useCallback(
     (connection) => {
       if (!connection.source || !connection.target) return;
+
+      // Get current state to check for cycles
+      const state = store.getState();
+      const existingConnections = state.connections.allIds.map(
+        (id) => state.connections.byId[id]
+      );
+      const nodeIds = state.nodes.allIds;
+      const datasetIds = state.datasets.allIds;
+
+      // Check if this connection would create a cycle
+      if (wouldCreateCycle(connection.source, connection.target, existingConnections, nodeIds, datasetIds)) {
+        toast.error('Cannot create connection: This would create a circular dependency', {
+          duration: 4000,
+          position: 'bottom-right',
+        });
+        return;
+      }
 
       const newEdge: Edge = {
         id: `${connection.source}-${connection.target}`,

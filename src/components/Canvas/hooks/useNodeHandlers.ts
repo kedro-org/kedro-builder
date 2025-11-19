@@ -1,4 +1,4 @@
-import { useCallback } from 'react';
+import { useCallback, useState } from 'react';
 import { useReactFlow } from '@xyflow/react';
 import type { Node, NodeMouseHandler } from '@xyflow/react';
 import { useAppDispatch } from '../../../store/hooks';
@@ -22,6 +22,13 @@ import { TIMING } from '../../../constants/timing';
 import { trackEvent } from '../../../utils/telemetry';
 import type { NodeType, DatasetType } from '../../../types/kedro';
 
+// Type for node delete confirmation state
+export interface NodeDeleteConfirmation {
+  count: number;
+  nodeIds: string[];
+  datasetIds: string[];
+}
+
 interface NodeHandlersProps {
   onNodesChange: (changes: any[]) => void;
   setIsDraggingOver: React.Dispatch<React.SetStateAction<boolean>>;
@@ -36,18 +43,13 @@ export const useNodeHandlers = ({ onNodesChange, setIsDraggingOver, isDraggingOv
   const dispatch = useAppDispatch();
   const { screenToFlowPosition } = useReactFlow();
 
+  // State for custom delete confirmation dialog
+  const [nodeDeleteConfirmation, setNodeDeleteConfirmation] = useState<NodeDeleteConfirmation | null>(null);
+
   // Handle ReactFlow node deletion (triggered by Delete key via ReactFlow)
   const handleNodesDelete = useCallback(
     (nodesToDelete: Node[]) => {
       logger.delete('Nodes to delete:', nodesToDelete.map((n) => n.id));
-
-      // Show confirmation dialog for multi-delete
-      if (nodesToDelete.length > 1) {
-        const confirmMessage = `Delete ${nodesToDelete.length} selected items? This cannot be undone.`;
-        if (!window.confirm(confirmMessage)) {
-          return; // User cancelled
-        }
-      }
 
       // Separate nodes and datasets
       const nodeIdsToDelete: string[] = [];
@@ -61,6 +63,17 @@ export const useNodeHandlers = ({ onNodesChange, setIsDraggingOver, isDraggingOv
         }
       });
 
+      // Show custom confirmation dialog for multi-delete
+      if (nodesToDelete.length > 1) {
+        setNodeDeleteConfirmation({
+          count: nodesToDelete.length,
+          nodeIds: nodeIdsToDelete,
+          datasetIds: datasetIdsToDelete,
+        });
+        return; // Wait for confirmation
+      }
+
+      // Single item delete - no confirmation needed
       // Delete nodes (all at once)
       if (nodeIdsToDelete.length > 0) {
         logger.delete('Deleting nodes:', nodeIdsToDelete);
@@ -81,6 +94,35 @@ export const useNodeHandlers = ({ onNodesChange, setIsDraggingOver, isDraggingOv
     },
     [dispatch]
   );
+
+  // Confirm node delete action
+  const confirmNodeDelete = useCallback(() => {
+    if (!nodeDeleteConfirmation) return;
+
+    // Delete nodes (all at once)
+    if (nodeDeleteConfirmation.nodeIds.length > 0) {
+      logger.delete('Deleting nodes:', nodeDeleteConfirmation.nodeIds);
+      dispatch(deleteNodes(nodeDeleteConfirmation.nodeIds));
+    }
+
+    // Delete datasets (one by one - since deleteDataset takes a single ID)
+    if (nodeDeleteConfirmation.datasetIds.length > 0) {
+      logger.delete('Deleting datasets:', nodeDeleteConfirmation.datasetIds);
+      nodeDeleteConfirmation.datasetIds.forEach((id) => {
+        dispatch(deleteDataset(id));
+      });
+    }
+
+    // Clear selection and close config panel after deletion
+    dispatch(clearSelection());
+    dispatch(closeConfigPanel());
+    setNodeDeleteConfirmation(null);
+  }, [nodeDeleteConfirmation, dispatch]);
+
+  // Cancel node delete action
+  const cancelNodeDelete = useCallback(() => {
+    setNodeDeleteConfirmation(null);
+  }, []);
 
   // Sync position changes to Redux (immediate for smooth edges)
   const handleNodesChange = useCallback(
@@ -234,5 +276,8 @@ export const useNodeHandlers = ({ onNodesChange, setIsDraggingOver, isDraggingOv
     handleDragLeave,
     handleDragOver,
     handleNodeClick,
+    nodeDeleteConfirmation,
+    confirmNodeDelete,
+    cancelNodeDelete,
   };
 };

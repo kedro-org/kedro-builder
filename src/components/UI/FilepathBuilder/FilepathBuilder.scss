@@ -43,6 +43,7 @@
     border-radius: 4px;
     background: var(--color-bg-1);
     color: var(--color-text);
+    cursor: text;
     transition: all 0.2s ease;
 
     &:focus {
@@ -94,6 +95,7 @@
 
   &__fullpath-input {
     width: 100%;
+    cursor: text;
     padding: 8px 10px;
     font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
     font-size: 13px;

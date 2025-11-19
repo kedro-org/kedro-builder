@@ -61,7 +61,7 @@ describe('catalogGenerator', () => {
       const result = generateCatalog([dataset]);
 
       expect(result).toContain('model:');
-      expect(result).toContain('type: pandas.PickleDataset');
+      expect(result).toContain('type: pickle.PickleDataset');
       expect(result).toContain('filepath: data/06_models/model.pkl');
     });
 

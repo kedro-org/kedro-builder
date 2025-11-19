@@ -8,6 +8,7 @@ import { clearDatasets } from '../../features/datasets/datasetsSlice';
 import { clearConnections } from '../../features/connections/connectionsSlice';
 import { clearProjectFromLocalStorage } from '../../utils/localStorage';
 import { trackEvent } from '../../utils/telemetry';
+import { ConfirmDialog } from '../UI/ConfirmDialog';
 import './ProjectSetupModal.scss';
 
 export const ProjectSetupModal: React.FC = () => {
@@ -18,6 +19,7 @@ export const ProjectSetupModal: React.FC = () => {
   const [projectName, setProjectName] = useState(currentProject?.name || 'my-first-project');
   const [description, setDescription] = useState(currentProject?.description || '');
   const [nameError, setNameError] = useState('');
+  const [showResetConfirm, setShowResetConfirm] = useState(false);
 
   // Update form when currentProject changes
   useEffect(() => {
@@ -71,24 +73,27 @@ export const ProjectSetupModal: React.FC = () => {
   };
 
   const handleResetProject = () => {
-    if (confirm('Are you sure you want to reset the project? This will clear all current work.')) {
-      // Clear all Redux state
-      dispatch(clearProject());
-      dispatch(clearNodes());
-      dispatch(clearDatasets());
-      dispatch(clearConnections());
+    setShowResetConfirm(true);
+  };
 
-      // Clear localStorage
-      clearProjectFromLocalStorage();
+  const handleConfirmReset = () => {
+    // Clear all Redux state
+    dispatch(clearProject());
+    dispatch(clearNodes());
+    dispatch(clearDatasets());
+    dispatch(clearConnections());
 
-      // Update UI state
-      dispatch(setHasActiveProject(false));
+    // Clear localStorage
+    clearProjectFromLocalStorage();
 
-      // Close modal
-      dispatch(closeProjectSetup());
+    // Update UI state
+    dispatch(setHasActiveProject(false));
 
-      console.log('🗑️ Project reset');
-    }
+    // Close dialogs
+    setShowResetConfirm(false);
+    dispatch(closeProjectSetup());
+
+    console.log('🗑️ Project reset');
   };
 
   const handleProjectNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -184,6 +189,17 @@ export const ProjectSetupModal: React.FC = () => {
           </button>
         </div>
       </div>
+
+      {/* Reset confirmation dialog */}
+      <ConfirmDialog
+        isOpen={showResetConfirm}
+        onClose={() => setShowResetConfirm(false)}
+        onConfirm={handleConfirmReset}
+        title="Reset Project"
+        message="Are you sure you want to reset the project? This will clear all current work and cannot be undone."
+        confirmLabel="Reset"
+        variant="danger"
+      />
     </div>
   );
 };

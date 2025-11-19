@@ -33,7 +33,7 @@ export const tutorialSteps: TutorialStep[] = [
   {
     id: 5,
     title: "4. Kedro project structure",
-    content: "Kedro projects follow a default template that uses specific folders to store datasets, notebooks, configuration and source code.",
+    content: "Kedro projects follow a default template that uses specific folders to store datasets, notebooks, configuration and source code. For more information, visit the official Kedro documentation.",
     buttonText: "Finish",
     icon: FolderTree,
   },

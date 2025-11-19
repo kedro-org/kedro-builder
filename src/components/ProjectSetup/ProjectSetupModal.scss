@@ -75,6 +75,7 @@
     border-radius: 8px;
     outline: none;
     transition: all 0.2s;
+    cursor: text;
 
     &:focus {
       border-color: #3b82f6;
@@ -149,6 +150,7 @@
     outline: none;
     transition: all 0.2s;
     resize: vertical;
+    cursor: text;
 
     &:focus {
       border-color: #3b82f6;

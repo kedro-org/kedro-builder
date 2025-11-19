@@ -14,6 +14,7 @@ import { DatasetNode } from './DatasetNode/DatasetNode';
 import { CustomEdge } from './CustomEdge/CustomEdge';
 import { CanvasOverlay } from './CanvasOverlay/CanvasOverlay';
 import { CanvasControls } from './CanvasControls/CanvasControls';
+import { ConfirmDialog } from '../UI/ConfirmDialog';
 
 import { useCanvasState } from './hooks/useCanvasState';
 import { useConnectionHandlers } from './hooks/useConnectionHandlers';
@@ -83,6 +84,9 @@ const PipelineCanvasInner = ({ exportWizardOpen = false }: PipelineCanvasProps) 
     handleDragLeave,
     handleDragOver,
     handleNodeClick,
+    nodeDeleteConfirmation,
+    confirmNodeDelete,
+    cancelNodeDelete,
   } = useNodeHandlers({
     onNodesChange: onNodesChangeBase,
     setIsDraggingOver,
@@ -98,6 +102,9 @@ const PipelineCanvasInner = ({ exportWizardOpen = false }: PipelineCanvasProps) 
     handleBulkDelete,
     handleBulkClear,
     handleEdgesDelete,
+    deleteConfirmation,
+    confirmDelete,
+    cancelDelete,
   } = useSelectionHandlers({
     reduxNodes,
     reduxDatasets,
@@ -194,6 +201,32 @@ const PipelineCanvasInner = ({ exportWizardOpen = false }: PipelineCanvasProps) 
       >
         <CanvasControls getNodeColor={getNodeColor} />
       </ReactFlow>
+
+      {/* Custom delete confirmation dialog for bulk actions */}
+      <ConfirmDialog
+        isOpen={!!deleteConfirmation}
+        onClose={cancelDelete}
+        onConfirm={confirmDelete}
+        title="Delete Items"
+        message={
+          deleteConfirmation?.type === 'edges'
+            ? `Delete ${deleteConfirmation.count} selected connections? This action cannot be undone.`
+            : `Delete ${deleteConfirmation?.count || 0} selected items? This action cannot be undone.`
+        }
+        confirmLabel="Delete"
+        variant="danger"
+      />
+
+      {/* Custom delete confirmation dialog for keyboard deletion */}
+      <ConfirmDialog
+        isOpen={!!nodeDeleteConfirmation}
+        onClose={cancelNodeDelete}
+        onConfirm={confirmNodeDelete}
+        title="Delete Items"
+        message={`Delete ${nodeDeleteConfirmation?.count || 0} selected items? This action cannot be undone.`}
+        confirmLabel="Delete"
+        variant="danger"
+      />
     </div>
   );
 };

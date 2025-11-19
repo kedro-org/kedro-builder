@@ -1,11 +1,83 @@
 import { memo } from 'react';
 import { Handle, Position, type NodeProps } from '@xyflow/react';
 import { useSelector } from 'react-redux';
-import { Database } from 'lucide-react';
+import {
+  Database,
+  FileSpreadsheet,
+  Sheet,
+  Braces,
+  FileCode,
+  Archive,
+  FileText,
+  Feather,
+  Image,
+  Video,
+  Cpu,
+  Globe,
+  LineChart,
+  BarChart3,
+  Map,
+  type LucideIcon,
+} from 'lucide-react';
 import classNames from 'classnames';
 import type { KedroDataset } from '../../../types/kedro';
 import type { RootState } from '../../../types/redux';
 import './DatasetNode.scss';
+
+// Map dataset types to their icons
+const getDatasetIcon = (datasetType?: string): LucideIcon => {
+  if (!datasetType) return Database;
+
+  const iconMap: Record<string, LucideIcon> = {
+    csv: FileSpreadsheet,
+    excel: Sheet,
+    parquet: Database,
+    json: Braces,
+    yaml: FileCode,
+    pickle: Archive,
+    text: FileText,
+    feather: Feather,
+    xml: FileCode,
+    hdf: Database,
+    sql: Database,
+    memory: Cpu,
+    api: Globe,
+    pillow: Image,
+    image: Image,
+    matplotlib: LineChart,
+    plotly: BarChart3,
+    video: Video,
+    geojson: Map,
+  };
+
+  return iconMap[datasetType.toLowerCase()] || Database;
+};
+
+// Get file extension label for display
+const getExtensionLabel = (datasetType?: string): string => {
+  if (!datasetType) return '';
+
+  const extensionMap: Record<string, string> = {
+    'csv': 'csv',
+    'excel': 'xlsx',
+    'parquet': 'parquet',
+    'json': 'json',
+    'yaml': 'yml',
+    'pickle': 'pkl',
+    'feather': 'feather',
+    'hdf': 'h5',
+    'sql': 'db',
+    'xml': 'xml',
+    'text': 'txt',
+    'pillow': 'png',
+    'matplotlib': 'png',
+    'plotly': 'json',
+    'video': 'mp4',
+    'memory': 'mem',
+  };
+
+  return extensionMap[datasetType.toLowerCase()] || datasetType;
+};
 
 export const DatasetNode = memo<NodeProps>(({ data, selected }) => {
   const datasetData = data as KedroDataset;
@@ -19,6 +91,9 @@ export const DatasetNode = memo<NodeProps>(({ data, selected }) => {
   const hasWarning = validationWarnings.some(
     (warn) => warn.componentId === datasetData.id && warn.componentType === 'dataset'
   );
+
+  // Get the appropriate icon for this dataset type
+  const Icon = getDatasetIcon(datasetData.type);
 
   return (
     <div
@@ -36,12 +111,17 @@ export const DatasetNode = memo<NodeProps>(({ data, selected }) => {
         className="dataset-node__handle dataset-node__handle--top"
       />
 
-      {/* Dataset content - only database icon and name */}
+      {/* Dataset content - icon, name, and type */}
       <div className="dataset-node__content">
         <div className="dataset-node__icon">
-          <Database size={20} />
+          <Icon size={20} />
         </div>
-        <h4 className="dataset-node__name">{datasetData.name || 'Unnamed Dataset'}</h4>
+        <div className="dataset-node__info">
+          <h4 className="dataset-node__name">{datasetData.name || 'Unnamed Dataset'}</h4>
+          {datasetData.type && (
+            <span className="dataset-node__type">{getExtensionLabel(datasetData.type)}</span>
+          )}
+        </div>
       </div>
 
       {/* Bottom Handle for connections to below */}

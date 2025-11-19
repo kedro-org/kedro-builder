@@ -6,6 +6,7 @@ import { clearPendingComponent } from '../../../features/ui/uiSlice';
 import type { KedroNode } from '../../../types/kedro';
 import { Button } from '../../UI/Button/Button';
 import { Input } from '../../UI/Input/Input';
+import { ConfirmDialog } from '../../UI/ConfirmDialog';
 import './NodeConfigForm.scss';
 
 interface NodeFormData {
@@ -33,6 +34,7 @@ const toSnakeCase = (str: string): string => {
 export const NodeConfigForm: React.FC<NodeConfigFormProps> = ({ node, onClose }) => {
   const dispatch = useAppDispatch();
   const [functionNameWarning, setFunctionNameWarning] = useState<string>('');
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
 
   const {
@@ -90,11 +92,13 @@ export const NodeConfigForm: React.FC<NodeConfigFormProps> = ({ node, onClose })
   };
 
   const handleDelete = () => {
-    if (window.confirm(`Are you sure you want to delete "${node.name || 'this node'}"?`)) {
-      dispatch(deleteNode(node.id));
-      dispatch(clearPendingComponent());
-      onClose();
-    }
+    setShowDeleteConfirm(true);
+  };
+
+  const handleConfirmDelete = () => {
+    dispatch(deleteNode(node.id));
+    dispatch(clearPendingComponent());
+    onClose();
   };
 
   // Handle Tab key in code textarea
@@ -206,6 +210,16 @@ export const NodeConfigForm: React.FC<NodeConfigFormProps> = ({ node, onClose })
           </Button>
         </div>
       </div>
+
+      <ConfirmDialog
+        isOpen={showDeleteConfirm}
+        onClose={() => setShowDeleteConfirm(false)}
+        onConfirm={handleConfirmDelete}
+        title="Delete Node"
+        message={`Are you sure you want to delete "${node.name || 'this node'}"? This action cannot be undone.`}
+        confirmLabel="Delete"
+        variant="danger"
+      />
     </form>
   );
 };

@@ -1,21 +1,69 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { parseFilepath, buildFilepath } from '../../../../utils/filepath';
 
 interface UseFilepathBuilderProps {
   initialFilepath: string;
+  datasetName?: string;
+  datasetType?: string;
   setValue: (name: 'filepath', value: string, options?: { shouldDirty: boolean }) => void;
 }
+
+// Map dataset types to file extensions
+const getExtensionForType = (type: string): string => {
+  const extensionMap: Record<string, string> = {
+    csv: 'csv',
+    excel: 'xlsx',
+    parquet: 'parquet',
+    json: 'json',
+    yaml: 'yml',
+    pickle: 'pkl',
+    text: 'txt',
+    feather: 'feather',
+    orc: 'orc',
+    xml: 'xml',
+  };
+  return extensionMap[type.toLowerCase()] || 'csv';
+};
 
 /**
  * Custom hook to manage filepath building from component parts
  * Automatically syncs changes to the form's filepath field
+ * Auto-populates filename in real-time based on dataset name and type
  */
-export const useFilepathBuilder = ({ initialFilepath, setValue }: UseFilepathBuilderProps) => {
+export const useFilepathBuilder = ({ initialFilepath, datasetName, datasetType, setValue }: UseFilepathBuilderProps) => {
   // Parse initial filepath into parts
   const initialParts = parseFilepath(initialFilepath);
+
+  // Track if user has manually edited the filename
+  const userEditedFileName = useRef(!!initialFilepath);
+
+  // Auto-populate filename on first load if no filepath exists
+  const getInitialFileName = () => {
+    // Only auto-populate if there's no existing filepath and we have a dataset name
+    if (!initialFilepath && datasetName) {
+      const extension = getExtensionForType(datasetType || 'csv');
+      return `${datasetName}.${extension}`;
+    }
+    return initialParts.fileName;
+  };
+
   const [baseLocation, setBaseLocation] = useState(initialParts.baseLocation);
   const [dataLayer, setDataLayer] = useState(initialParts.dataLayer);
-  const [fileName, setFileName] = useState(initialParts.fileName);
+  const [fileName, setFileName] = useState(getInitialFileName);
+
+  // Update filename when dataset name or type changes (only if user hasn't manually edited)
+  useEffect(() => {
+    if (!userEditedFileName.current && datasetName) {
+      const extension = getExtensionForType(datasetType || 'csv');
+      setFileName(`${datasetName}.${extension}`);
+    }
+  }, [datasetName, datasetType]);
+
+  // Custom setFileName that marks as user-edited
+  const handleSetFileName = (newFileName: string) => {
+    userEditedFileName.current = true;
+    setFileName(newFileName);
+  };
 
   // Update form filepath when parts change
   useEffect(() => {
@@ -29,6 +77,6 @@ export const useFilepathBuilder = ({ initialFilepath, setValue }: UseFilepathBui
     fileName,
     setBaseLocation,
     setDataLayer,
-    setFileName,
+    setFileName: handleSetFileName,
   };
 };

@@ -56,10 +56,13 @@ export function generateFileTree(state: RootState): FileNode {
   const datasetsList = state.datasets.allIds.map((id) => datasets[id]);
   const connections = state.connections.allIds.map((id) => state.connections.byId[id]);
 
+  // Extract dataset types for dependency generation
+  const datasetTypes = datasetsList.map((d) => d.type).filter(Boolean);
+
   // Generate all file contents
   const files = {
     // Root files
-    'pyproject.toml': generatePyproject(metadata),
+    'pyproject.toml': generatePyproject(metadata, datasetTypes),
     'README.md': generateReadme(metadata),
     '.gitignore': generateGitignore(),
 
