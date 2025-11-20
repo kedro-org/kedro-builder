@@ -33,6 +33,7 @@
     transition: all 0.2s ease;
     resize: vertical;
     min-height: 60px;
+    cursor: text;
 
     &::placeholder {
       color: var(--color-text-disabled);

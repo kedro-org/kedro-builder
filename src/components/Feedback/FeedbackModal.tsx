@@ -60,7 +60,7 @@ export const FeedbackModal: React.FC<FeedbackModalProps> = ({ isOpen, onClose })
       setIsUseful(null);
       setComment('');
       onClose();
-    } catch (error) {
+    } catch {
       toast.error('Failed to submit feedback. Please try again.');
     } finally {
       setIsSubmitting(false);

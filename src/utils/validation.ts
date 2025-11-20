@@ -201,7 +201,7 @@ function checkDuplicateNames(state: RootState): ValidationError[] {
   });
 
   // Check for duplicate node names
-  nodeNames.forEach((nodeIds, _name) => {
+  nodeNames.forEach((nodeIds) => {
     if (nodeIds.length > 1) {
       nodeIds.forEach((nodeId) => {
         errors.push({
@@ -217,7 +217,7 @@ function checkDuplicateNames(state: RootState): ValidationError[] {
   });
 
   // Check for duplicate dataset names
-  datasetNames.forEach((datasetIds, _name) => {
+  datasetNames.forEach((datasetIds) => {
     if (datasetIds.length > 1) {
       datasetIds.forEach((datasetId) => {
         errors.push({
@@ -271,7 +271,7 @@ function checkInvalidNames(state: RootState): ValidationError[] {
           componentId: datasetId,
           componentType: 'dataset',
           message: `Invalid dataset name "${dataset.name}"`,
-          suggestion: 'Use snake_case: lowercase letters, numbers, and underscores only.',
+          suggestion: 'Use snake_case: lowercase letters, numbers, and underscores only (no spaces allowed).',
         });
       }
     }

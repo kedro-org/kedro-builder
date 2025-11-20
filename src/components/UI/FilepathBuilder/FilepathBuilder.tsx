@@ -5,11 +5,38 @@ interface FilepathBuilderProps {
   baseLocation: string;
   dataLayer: string;
   fileName: string;
+  datasetType?: string;
   onBaseLocationChange: (value: string) => void;
   onDataLayerChange: (value: string) => void;
   onFileNameChange: (value: string) => void;
   onFullPathChange?: (value: string) => void;
 }
+
+// Map dataset types to their typical file extensions
+const getFileExtension = (datasetType?: string): string => {
+  if (!datasetType) return 'csv';
+
+  const extensionMap: Record<string, string> = {
+    'csv': 'csv',
+    'excel': 'xlsx',
+    'parquet': 'parquet',
+    'json': 'json',
+    'yaml': 'yml',
+    'pickle': 'pkl',
+    'feather': 'feather',
+    'hdf': 'h5',
+    'sql': 'db',
+    'xml': 'xml',
+    'text': 'txt',
+    'pillow': 'png',
+    'matplotlib': 'png',
+    'plotly': 'json',
+    'video': 'mp4',
+    'memory': '',
+  };
+
+  return extensionMap[datasetType.toLowerCase()] || 'csv';
+};
 
 const DATA_LAYERS = [
   { value: '01_raw', label: '01_raw - Raw data' },
@@ -26,11 +53,15 @@ export const FilepathBuilder: React.FC<FilepathBuilderProps> = ({
   baseLocation,
   dataLayer,
   fileName,
+  datasetType,
   onBaseLocationChange,
   onDataLayerChange,
   onFileNameChange,
   onFullPathChange,
 }) => {
+  const fileExtension = getFileExtension(datasetType);
+  const exampleFileName = fileExtension ? `example.${fileExtension}` : 'example';
+  const exampleFullPath = fileExtension ? `data/01_raw/example.${fileExtension}` : 'data/01_raw/example';
   // Generate full path from segments
   const generateFullPath = (): string => {
     const base = baseLocation.trim() || 'data';
@@ -103,7 +134,7 @@ export const FilepathBuilder: React.FC<FilepathBuilderProps> = ({
             className="filepath-builder__input"
             value={fileName}
             onChange={(e) => onFileNameChange(e.target.value)}
-            placeholder="example.csv"
+            placeholder={exampleFileName}
           />
         </div>
       </div>
@@ -116,7 +147,7 @@ export const FilepathBuilder: React.FC<FilepathBuilderProps> = ({
           className="filepath-builder__fullpath-input"
           value={fullPath}
           onChange={(e) => handleFullPathChange(e.target.value)}
-          placeholder="data/01_raw/example.csv"
+          placeholder={exampleFullPath}
         />
       </div>
     </div>

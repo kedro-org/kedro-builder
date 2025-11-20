@@ -95,7 +95,7 @@ export const setTelemetryConsent = (enabled: boolean): void => {
 export const hasSeenConsentBanner = (): boolean => {
   try {
     return localStorage.getItem(TELEMETRY_CONSENT_SHOWN_KEY) === 'true';
-  } catch (error) {
+  } catch {
     return false;
   }
 };

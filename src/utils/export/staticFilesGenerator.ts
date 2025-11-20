@@ -255,7 +255,7 @@ ${pythonPackage}/
 
 ### Prerequisites
 
-- Python 3.9+
+- Python 3.10+
 - pip
 
 ### Installation
@@ -298,7 +298,8 @@ This will start a local web server and open the visualization in your browser.
 ## Next Steps
 
 1. **Implement the TODO sections** in \`src/${pythonPackage}/pipelines/${pipelineName}/nodes.py\`
-2. **Add your data** to the appropriate \`data/\` folders
+2. **Add your data** to the appropriate \`data/\` folders (e.g., place your CSV files in \`data/01_raw/\`)
+   > **Note:** The pipeline will fail if the expected data files are not present. Make sure to add your data files before running \`kedro run\`.
 3. **Configure datasets** in \`conf/base/catalog.yml\` if needed
 4. **Add parameters** in \`conf/base/parameters.yml\` if needed
 5. **Add credentials** in \`conf/local/credentials.yml\` (don't commit this!)
@@ -333,10 +334,13 @@ For issues or questions, please refer to:
 }
 
 /**
- * Generate empty __init__.py file
+ * Generate __init__.py file with version
  */
 export function generateInitPy(): string {
-  return '"""Project package."""\n';
+  return `"""Project package."""
+
+__version__ = "0.1.0"
+`;
 }
 
 /**

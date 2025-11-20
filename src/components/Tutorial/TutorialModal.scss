@@ -68,6 +68,7 @@
   }
 
   &__right {
+    position: relative;
     width: 280px;
     background: var(--color-bg-2);
     display: flex;
@@ -92,6 +93,9 @@
   }
 
   &__close {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -103,6 +107,7 @@
     color: var(--color-text-muted);
     cursor: pointer;
     transition: all 0.2s;
+    z-index: 1;
 
     &:hover {
       background: var(--color-bg-hover);
@@ -170,6 +175,18 @@
     font-size: 1rem;
     line-height: 1.6;
     color: var(--color-text-alt);
+  }
+
+  &__docs-link {
+    display: inline-block;
+    margin-top: 1rem;
+    font-size: 0.875rem;
+    color: var(--color-primary);
+    text-decoration: none;
+
+    &:hover {
+      text-decoration: underline;
+    }
   }
 
   &__actions {

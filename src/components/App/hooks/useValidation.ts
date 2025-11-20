@@ -70,7 +70,30 @@ export const useValidation = ({ showExportWizard }: UseValidationProps) => {
 
     // Check if there are any errors
     if (!validationResult.isValid) {
-      toast.error('Cannot view code: Please fix validation errors first');
+      // Find specific error types for better user feedback
+      const cycleError = validationResult.errors.find(e => e.message.includes('Circular dependency'));
+      const duplicateError = validationResult.errors.find(e => e.message.includes('Duplicate'));
+      const invalidNameError = validationResult.errors.find(e => e.message.includes('Invalid'));
+      const emptyNameError = validationResult.errors.find(e => e.message.includes('no name'));
+
+      // Show specific error message based on error type
+      let errorMessage = 'Cannot view code: Please fix validation errors first';
+      if (cycleError) {
+        errorMessage = `Cannot view code: ${cycleError.message}`;
+      } else if (duplicateError) {
+        errorMessage = `Cannot view code: ${duplicateError.message}`;
+      } else if (invalidNameError) {
+        errorMessage = `Cannot view code: ${invalidNameError.message}`;
+      } else if (emptyNameError) {
+        errorMessage = `Cannot view code: ${emptyNameError.message}`;
+      }
+
+      toast.error(errorMessage, {
+        duration: 5000,
+        style: {
+          maxWidth: '500px',
+        },
+      });
       // Store validation results so user can see them
       dispatch(setValidationResults(validationResult));
       return;

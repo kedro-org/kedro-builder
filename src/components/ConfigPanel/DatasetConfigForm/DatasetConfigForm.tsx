@@ -1,3 +1,4 @@
+import { useState, useEffect, useMemo } from 'react';
 import { useForm } from 'react-hook-form';
 import { useAppDispatch } from '../../../store/hooks';
 import { updateDataset, deleteDataset } from '../../../features/datasets/datasetsSlice';
@@ -6,9 +7,44 @@ import type { KedroDataset, DatasetType } from '../../../types/kedro';
 import { Button } from '../../UI/Button/Button';
 import { Input } from '../../UI/Input/Input';
 import { FilepathBuilder } from '../../UI/FilepathBuilder/FilepathBuilder';
+import { ConfirmDialog } from '../../UI/ConfirmDialog';
 import { DatasetTypeSelect } from './DatasetTypeSelect';
 import { useFilepathBuilder } from './hooks/useFilepathBuilder';
 import './DatasetConfigForm.scss';
+
+// Map dataset types to their expected file extensions
+const DATASET_TYPE_EXTENSIONS: Record<string, string[]> = {
+  csv: ['csv'],
+  excel: ['xlsx', 'xls'],
+  parquet: ['parquet', 'pq'],
+  json: ['json'],
+  yaml: ['yml', 'yaml'],
+  pickle: ['pkl', 'pickle'],
+  text: ['txt'],
+  feather: ['feather'],
+  orc: ['orc'],
+  xml: ['xml'],
+  gbq: [], // BigQuery doesn't use file extensions
+  sql: [], // SQL doesn't use file extensions
+  api: [], // API doesn't use file extensions
+  memory: [], // Memory doesn't use files
+};
+
+// Get expected extensions for a dataset type
+const getExpectedExtensions = (type: string): string[] => {
+  return DATASET_TYPE_EXTENSIONS[type.toLowerCase()] || [];
+};
+
+// Get file extension from filepath
+const getFileExtension = (filepath: string): string | null => {
+  if (!filepath) return null;
+  const filename = filepath.split('/').pop() || '';
+  const parts = filename.split('.');
+  if (parts.length > 1) {
+    return parts.pop()?.toLowerCase() || null;
+  }
+  return null;
+};
 
 interface DatasetFormData {
   name: string;
@@ -25,6 +61,8 @@ interface DatasetConfigFormProps {
 
 export const DatasetConfigForm: React.FC<DatasetConfigFormProps> = ({ dataset, onClose }) => {
   const dispatch = useAppDispatch();
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [extensionWarning, setExtensionWarning] = useState<string>('');
 
   const {
     register,
@@ -43,10 +81,47 @@ export const DatasetConfigForm: React.FC<DatasetConfigFormProps> = ({ dataset, o
   });
 
   const watchType = watch('type');
+  const watchFilepath = watch('filepath');
+  const watchName = watch('name');
+
+  // Check for file extension mismatch
+  const extensionMismatch = useMemo(() => {
+    if (!watchFilepath || watchType === 'memory') return null;
+
+    const fileExt = getFileExtension(watchFilepath);
+    if (!fileExt) return null;
+
+    const expectedExts = getExpectedExtensions(watchType);
+    if (expectedExts.length === 0) return null; // No extension requirements for this type
+
+    if (!expectedExts.includes(fileExt)) {
+      return {
+        actual: fileExt,
+        expected: expectedExts,
+      };
+    }
+    return null;
+  }, [watchFilepath, watchType]);
+
+  // Update warning message when mismatch changes
+  useEffect(() => {
+    if (extensionMismatch) {
+      const expectedStr = extensionMismatch.expected.length === 1
+        ? `.${extensionMismatch.expected[0]}`
+        : extensionMismatch.expected.map(e => `.${e}`).join(' or ');
+      setExtensionWarning(
+        `File extension ".${extensionMismatch.actual}" doesn't match ${watchType.toUpperCase()} dataset type. Expected: ${expectedStr}`
+      );
+    } else {
+      setExtensionWarning('');
+    }
+  }, [extensionMismatch, watchType]);
 
   // Use custom hook for filepath building
   const { baseLocation, dataLayer, fileName, setBaseLocation, setDataLayer, setFileName } = useFilepathBuilder({
     initialFilepath: dataset.filepath || '',
+    datasetName: watchName,
+    datasetType: watchType,
     setValue,
   });
 
@@ -77,11 +152,13 @@ export const DatasetConfigForm: React.FC<DatasetConfigFormProps> = ({ dataset, o
   };
 
   const handleDelete = () => {
-    if (window.confirm(`Are you sure you want to delete dataset "${dataset.name}"?`)) {
-      dispatch(deleteDataset(dataset.id));
-      dispatch(clearPendingComponent());
-      onClose();
-    }
+    setShowDeleteConfirm(true);
+  };
+
+  const handleConfirmDelete = () => {
+    dispatch(deleteDataset(dataset.id));
+    dispatch(clearPendingComponent());
+    onClose();
   };
 
   return (
@@ -98,7 +175,7 @@ export const DatasetConfigForm: React.FC<DatasetConfigFormProps> = ({ dataset, o
             validate: (value) => {
               const trimmed = value.trim();
               if (!/^[a-z][a-z0-9_]*$/.test(trimmed)) {
-                return 'Must start with lowercase letter and contain only lowercase letters, numbers, and underscores';
+                return 'Must start with lowercase letter and contain only lowercase letters, numbers, and underscores (no spaces)';
               }
               // Check for reserved Python keywords
               const reserved = ['for', 'if', 'else', 'while', 'def', 'class', 'return', 'import'];
@@ -119,11 +196,17 @@ export const DatasetConfigForm: React.FC<DatasetConfigFormProps> = ({ dataset, o
             baseLocation={baseLocation}
             dataLayer={dataLayer}
             fileName={fileName}
+            datasetType={watchType}
             onBaseLocationChange={setBaseLocation}
             onDataLayerChange={setDataLayer}
             onFileNameChange={setFileName}
             onFullPathChange={handleFullPathChange}
           />
+          {extensionWarning && (
+            <span className="dataset-config-form__warning">
+              ⚠️ {extensionWarning}
+            </span>
+          )}
         </div>
       )}
 
@@ -164,6 +247,16 @@ export const DatasetConfigForm: React.FC<DatasetConfigFormProps> = ({ dataset, o
           </Button>
         </div>
       </div>
+
+      <ConfirmDialog
+        isOpen={showDeleteConfirm}
+        onClose={() => setShowDeleteConfirm(false)}
+        onConfirm={handleConfirmDelete}
+        title="Delete Dataset"
+        message={`Are you sure you want to delete "${dataset.name || 'this dataset'}"? This action cannot be undone.`}
+        confirmLabel="Delete"
+        variant="danger"
+      />
     </form>
   );
 };

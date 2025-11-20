@@ -46,7 +46,9 @@ export async function generateKedroProject(
   // ROOT LEVEL FILES
   // ========================================
 
-  zip.file('pyproject.toml', generatePyproject(metadata));
+  // Extract dataset types for dependency generation
+  const datasetTypes = datasetsList.map((d) => d.type).filter(Boolean);
+  zip.file('pyproject.toml', generatePyproject(metadata, datasetTypes));
   zip.file('README.md', generateReadme(metadata));
   zip.file('.gitignore', generateGitignore());
 
