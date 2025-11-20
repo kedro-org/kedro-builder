@@ -1,12 +1,8 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect } from 'react';
 import { useReactFlow } from '@xyflow/react';
 import type { Edge, EdgeMouseHandler, OnSelectionChangeParams } from '@xyflow/react';
 import { useAppDispatch } from '../../../store/hooks';
-import {
-  clearSelection,
-  deleteNodes,
-  selectNodes,
-} from '../../../features/nodes/nodesSlice';
+import { clearSelection, deleteNodes, selectNodes } from '../../../features/nodes/nodesSlice';
 import { deleteDataset } from '../../../features/datasets/datasetsSlice';
 import {
   selectConnection,
@@ -16,14 +12,9 @@ import {
 import { closeConfigPanel } from '../../../features/ui/uiSlice';
 import { logger } from '../../../utils/logger';
 import type { KedroNode, KedroDataset } from '../../../types/kedro';
-
-// Types for delete confirmation state
-export interface DeleteConfirmation {
-  type: 'bulk' | 'edges';
-  count: number;
-  nodeIds?: string[];
-  edgeIds?: string[];
-}
+import { useDeleteConfirmation } from './useDeleteConfirmation';
+import { useCopyPaste } from './useCopyPaste';
+import { useCanvasKeyboardShortcuts } from './useCanvasKeyboardShortcuts';
 
 interface SelectionHandlersProps {
   reduxNodes: KedroNode[];
@@ -36,7 +27,8 @@ interface SelectionHandlersProps {
 }
 
 /**
- * Custom hook for handling selection-related events and keyboard shortcuts
+ * Main hook for handling selection-related events and user interactions
+ * Orchestrates sub-hooks for delete confirmation, copy/paste, and keyboard shortcuts
  */
 export const useSelectionHandlers = ({
   reduxNodes,
@@ -50,8 +42,29 @@ export const useSelectionHandlers = ({
   const dispatch = useAppDispatch();
   const { fitView, getNode } = useReactFlow();
 
-  // State for custom delete confirmation dialog
-  const [deleteConfirmation, setDeleteConfirmation] = useState<DeleteConfirmation | null>(null);
+  // Delete confirmation sub-hook
+  const {
+    deleteConfirmation,
+    showBulkDeleteConfirmation,
+    showEdgesDeleteConfirmation,
+    confirmDelete,
+    cancelDelete,
+  } = useDeleteConfirmation();
+
+  // Copy/paste sub-hook
+  const { handleCopy, handlePaste } = useCopyPaste(selectedNodeIds, reduxNodes, reduxDatasets);
+
+  // Keyboard shortcuts sub-hook
+  useCanvasKeyboardShortcuts({
+    reduxNodes,
+    reduxDatasets,
+    isPanMode,
+    setIsPanMode,
+    onCopy: handleCopy,
+    onPaste: handlePaste,
+  });
+
+  // ===== Selection Handlers =====
 
   // Handle edge click - select edge to show BulkActionsToolbar
   const handleEdgeClick: EdgeMouseHandler = useCallback(
@@ -98,38 +111,32 @@ export const useSelectionHandlers = ({
     [dispatch, exportWizardOpen]
   );
 
-  // Bulk actions handlers
+  // ===== Bulk Action Handlers =====
+
+  // Bulk delete with confirmation for multiple items
   const handleBulkDelete = useCallback(() => {
-    const totalSelected = selectedNodeIds.length + selectedEdgeIds.length;
+    const needsConfirmation = showBulkDeleteConfirmation(selectedNodeIds, selectedEdgeIds);
 
-    // Show custom confirmation dialog for bulk delete
-    if (totalSelected > 1) {
-      setDeleteConfirmation({
-        type: 'bulk',
-        count: totalSelected,
-        nodeIds: selectedNodeIds,
-        edgeIds: selectedEdgeIds,
-      });
-      return; // Wait for confirmation
+    // If no confirmation needed (single item), delete immediately
+    if (!needsConfirmation) {
+      if (selectedNodeIds.length > 0) {
+        selectedNodeIds.forEach((id) => {
+          if (id.startsWith('node-')) {
+            dispatch(deleteNodes([id]));
+          } else if (id.startsWith('dataset-')) {
+            dispatch(deleteDataset(id));
+          }
+        });
+        dispatch(clearSelection());
+      }
+      if (selectedEdgeIds.length > 0) {
+        dispatch(deleteConnections(selectedEdgeIds));
+        dispatch(clearConnectionSelection());
+      }
     }
+  }, [dispatch, selectedNodeIds, selectedEdgeIds, showBulkDeleteConfirmation]);
 
-    // Single item delete - no confirmation needed
-    if (selectedNodeIds.length > 0) {
-      selectedNodeIds.forEach((id) => {
-        if (id.startsWith('node-')) {
-          dispatch(deleteNodes([id]));
-        } else if (id.startsWith('dataset-')) {
-          dispatch(deleteDataset(id));
-        }
-      });
-      dispatch(clearSelection());
-    }
-    if (selectedEdgeIds.length > 0) {
-      dispatch(deleteConnections(selectedEdgeIds));
-      dispatch(clearConnectionSelection());
-    }
-  }, [dispatch, selectedNodeIds, selectedEdgeIds]);
-
+  // Clear selection
   const handleBulkClear = useCallback(() => {
     dispatch(clearSelection());
     dispatch(clearConnectionSelection());
@@ -141,114 +148,24 @@ export const useSelectionHandlers = ({
       logger.delete('Edges to delete:', edgesToDelete.map((e) => e.id));
 
       const edgeIds = edgesToDelete.map((edge) => edge.id);
+      const needsConfirmation = showEdgesDeleteConfirmation(edgeIds);
 
-      // Show custom confirmation dialog for multi-delete
-      if (edgesToDelete.length > 1) {
-        setDeleteConfirmation({
-          type: 'edges',
-          count: edgesToDelete.length,
-          edgeIds: edgeIds,
-        });
-        return; // Wait for confirmation
-      }
-
-      // Single edge delete - no confirmation needed
-      if (edgeIds.length > 0) {
+      // If no confirmation needed (single edge), delete immediately
+      if (!needsConfirmation && edgeIds.length > 0) {
         dispatch(deleteConnections(edgeIds));
         dispatch(clearConnectionSelection());
       }
     },
-    [dispatch]
+    [dispatch, showEdgesDeleteConfirmation]
   );
 
-  // Confirm delete action
-  const confirmDelete = useCallback(() => {
-    if (!deleteConfirmation) return;
-
-    if (deleteConfirmation.type === 'bulk') {
-      // Delete nodes and datasets
-      if (deleteConfirmation.nodeIds && deleteConfirmation.nodeIds.length > 0) {
-        deleteConfirmation.nodeIds.forEach((id) => {
-          if (id.startsWith('node-')) {
-            dispatch(deleteNodes([id]));
-          } else if (id.startsWith('dataset-')) {
-            dispatch(deleteDataset(id));
-          }
-        });
-        dispatch(clearSelection());
-      }
-      // Delete edges
-      if (deleteConfirmation.edgeIds && deleteConfirmation.edgeIds.length > 0) {
-        dispatch(deleteConnections(deleteConfirmation.edgeIds));
-        dispatch(clearConnectionSelection());
-      }
-    } else if (deleteConfirmation.type === 'edges') {
-      // Delete only edges
-      if (deleteConfirmation.edgeIds && deleteConfirmation.edgeIds.length > 0) {
-        dispatch(deleteConnections(deleteConfirmation.edgeIds));
-        dispatch(clearConnectionSelection());
-      }
-    }
-
-    setDeleteConfirmation(null);
-  }, [deleteConfirmation, dispatch]);
-
-  // Cancel delete action
-  const cancelDelete = useCallback(() => {
-    setDeleteConfirmation(null);
-  }, []);
-
-  // Handle keyboard shortcuts (Escape, Cmd+A, and Spacebar for pan mode)
-  useEffect(() => {
-    const handleKeyDown = (event: KeyboardEvent) => {
-      // Check if user is typing in an input, textarea, or contentEditable element
-      const target = event.target as HTMLElement;
-      const isEditableElement =
-        target.tagName === 'INPUT' ||
-        target.tagName === 'TEXTAREA' ||
-        target.contentEditable === 'true';
-
-      // Spacebar - enable pan mode (like Figma)
-      // BUT: Don't intercept if user is typing in an editable field
-      if (event.code === 'Space' && !isPanMode && !isEditableElement) {
-        event.preventDefault();
-        setIsPanMode(true);
-      }
-
-      // Escape key - clear selection and close config panel
-      if (event.key === 'Escape') {
-        dispatch(clearSelection());
-        dispatch(clearConnectionSelection());
-        dispatch(closeConfigPanel());
-      }
-
-      // Cmd/Ctrl + A - select all (only when not in an editable field)
-      if ((event.metaKey || event.ctrlKey) && event.key === 'a' && !isEditableElement) {
-        event.preventDefault();
-        const allNodeIds = [...reduxNodes.map((n) => n.id), ...reduxDatasets.map((d) => d.id)];
-        dispatch(selectNodes(allNodeIds));
-      }
-    };
-
-    const handleKeyUp = (event: KeyboardEvent) => {
-      // Spacebar released - disable pan mode
-      if (event.code === 'Space' && isPanMode) {
-        setIsPanMode(false);
-      }
-    };
-
-    window.addEventListener('keydown', handleKeyDown);
-    window.addEventListener('keyup', handleKeyUp);
-    return () => {
-      window.removeEventListener('keydown', handleKeyDown);
-      window.removeEventListener('keyup', handleKeyUp);
-    };
-  }, [dispatch, reduxNodes, reduxDatasets, isPanMode, setIsPanMode]);
+  // ===== Focus Node Event Listener =====
 
   // Listen for focus node event from validation panel
   useEffect(() => {
-    const handleFocusNode = (event: any) => {
-      const { nodeId } = event.detail;
+    const handleFocusNode = (event: Event) => {
+      const customEvent = event as CustomEvent<{ nodeId: string }>;
+      const { nodeId } = customEvent.detail;
       const node = getNode(nodeId);
       if (node) {
         // Center the node in view with animation
@@ -266,13 +183,20 @@ export const useSelectionHandlers = ({
     };
   }, [fitView, getNode]);
 
+  // ===== Return Public API =====
+
   return {
+    // Selection handlers
     handleEdgeClick,
     handlePaneClick,
     handleSelectionChange,
+
+    // Bulk actions
     handleBulkDelete,
     handleBulkClear,
     handleEdgesDelete,
+
+    // Delete confirmation
     deleteConfirmation,
     confirmDelete,
     cancelDelete,

@@ -15,6 +15,7 @@ import { CustomEdge } from './CustomEdge/CustomEdge';
 import { CanvasOverlay } from './CanvasOverlay/CanvasOverlay';
 import { CanvasControls } from './CanvasControls/CanvasControls';
 import { ConfirmDialog } from '../UI/ConfirmDialog';
+import { GhostPreview } from './GhostPreview/GhostPreview';
 
 import { useCanvasState } from './hooks/useCanvasState';
 import { useConnectionHandlers } from './hooks/useConnectionHandlers';
@@ -70,6 +71,7 @@ const PipelineCanvasInner = ({ exportWizardOpen = false }: PipelineCanvasProps) 
     handleNodeMouseEnter,
     handleNodeMouseLeave,
     handleConnect,
+    ghostPreview,
   } = useConnectionHandlers({
     setEdges: setEdges as any,
     connectionState,
@@ -201,6 +203,9 @@ const PipelineCanvasInner = ({ exportWizardOpen = false }: PipelineCanvasProps) 
       >
         <CanvasControls getNodeColor={getNodeColor} />
       </ReactFlow>
+
+      {/* Ghost preview during connection drag - outside ReactFlow for proper positioning */}
+      {ghostPreview && <GhostPreview ghostPreview={ghostPreview} />}
 
       {/* Custom delete confirmation dialog for bulk actions */}
       <ConfirmDialog

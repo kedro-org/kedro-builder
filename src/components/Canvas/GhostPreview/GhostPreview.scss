@@ -1,0 +1,42 @@
+@use '../../../styles/variables' as *;
+
+.ghost-preview {
+  pointer-events: none;
+  user-select: none;
+
+  &__node,
+  &__dataset {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 16px;
+    min-width: 120px;
+    min-height: 80px;
+    background: var(--color-bg-1);
+    border: 2px dashed var(--color-border-line);
+    border-radius: 8px;
+    opacity: 0.6;
+    transform: translate(-50%, -50%);
+  }
+
+  &__node {
+    border-color: var(--color-node-custom);
+  }
+
+  &__dataset {
+    border-color: var(--color-dataset);
+  }
+
+  &__icon {
+    font-size: 24px;
+  }
+
+  &__label {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--color-text-muted);
+    white-space: nowrap;
+  }
+}
