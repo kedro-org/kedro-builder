@@ -1,4 +1,4 @@
-import { useCallback } from 'react';
+import { useCallback, useRef } from 'react';
 import { addEdge } from '@xyflow/react';
 import type { Connection, Edge, Node, OnConnect } from '@xyflow/react';
 import { useAppDispatch } from '../../../store/hooks';
@@ -38,6 +38,9 @@ export const useConnectionHandlers = ({
   setConnectionState,
 }: ConnectionHandlersProps) => {
   const dispatch = useAppDispatch();
+
+  // Track when a connection is made via onConnect to prevent duplicate component creation
+  const connectionMadeRef = useRef(false);
 
   // Helper: Create edge and connection between two components
   const createConnectionEdge = useCallback(
@@ -81,6 +84,7 @@ export const useConnectionHandlers = ({
   const { handleConnectStart, handleConnectEnd } = useDragToCreate({
     setConnectionState,
     createConnectionEdge,
+    connectionMadeRef,
   });
 
   // Validate connections in real-time
@@ -148,6 +152,9 @@ export const useConnectionHandlers = ({
         });
         return;
       }
+
+      // Mark that a connection was made to prevent duplicate component creation in onConnectEnd
+      connectionMadeRef.current = true;
 
       // Create the connection
       const newEdge: Edge = {

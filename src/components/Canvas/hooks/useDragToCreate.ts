@@ -12,13 +12,14 @@ import type { KedroNode, KedroDataset } from '../../../types/kedro';
 interface UseDragToCreateProps {
   setConnectionState: (state: { source: string | null; target: string | null; isValid: boolean }) => void;
   createConnectionEdge: (sourceId: string, targetId: string) => void;
+  connectionMadeRef: { current: boolean };
 }
 
 /**
  * Custom hook for handling drag-from-handle to create new components
  * Allows users to drag from a connection handle and drop on empty canvas to create and auto-connect a component
  */
-export const useDragToCreate = ({ setConnectionState, createConnectionEdge }: UseDragToCreateProps) => {
+export const useDragToCreate = ({ setConnectionState, createConnectionEdge, connectionMadeRef }: UseDragToCreateProps) => {
   const dispatch = useAppDispatch();
   const { screenToFlowPosition } = useReactFlow();
 
@@ -52,12 +53,19 @@ export const useDragToCreate = ({ setConnectionState, createConnectionEdge }: Us
       // Early exit if no source or event
       if (!source || !event) return;
 
-      // Check if dropped on empty canvas (not on an existing component)
+      // If a connection was just made via onConnect, don't create a new component
+      if (connectionMadeRef.current) {
+        connectionMadeRef.current = false;
+        return;
+      }
+
+      // Check if dropped on empty canvas (not on an existing component or handle)
       const target = event.target as HTMLElement;
       const isDropOnNode = target.closest('.react-flow__node') || target.classList?.contains('react-flow__node');
-      const isCanvasDrop = !isDropOnNode;
+      const isDropOnHandle = target.closest('.react-flow__handle') || target.classList?.contains('react-flow__handle');
+      const isCanvasDrop = !isDropOnNode && !isDropOnHandle;
 
-      // Create new component if dropped on empty canvas
+      // Create new component only if dropped on empty canvas (not on node or handle)
       if (isCanvasDrop && event instanceof MouseEvent) {
         const position = screenToFlowPosition({
           x: event.clientX,
@@ -101,7 +109,7 @@ export const useDragToCreate = ({ setConnectionState, createConnectionEdge }: Us
         }
       }
     },
-    [setConnectionState, screenToFlowPosition, dispatch, createConnectionEdge]
+    [setConnectionState, screenToFlowPosition, dispatch, createConnectionEdge, connectionMadeRef]
   );
 
   return {
