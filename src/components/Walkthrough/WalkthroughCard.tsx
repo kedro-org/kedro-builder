@@ -43,7 +43,7 @@ export const WalkthroughCard: React.FC<WalkthroughCardProps> = ({
 
       <div className={isModal ? 'walkthrough-overlay__modal-content' : 'walkthrough-overlay__tooltip-content'}>
         <h2 className="walkthrough-overlay__title">{step.title}</h2>
-        <p className="walkthrough-overlay__description">{step.description}</p>
+        <p className="walkthrough-overlay__description" dangerouslySetInnerHTML={{ __html: step.description }}></p>
       </div>
 
       <div className={isModal ? 'walkthrough-overlay__modal-footer' : 'walkthrough-overlay__tooltip-footer'}>

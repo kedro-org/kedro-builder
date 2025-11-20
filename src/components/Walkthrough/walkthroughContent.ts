@@ -14,9 +14,9 @@ export interface WalkthroughStep {
 export const walkthroughSteps: WalkthroughStep[] = [
   {
     id: 1,
-    title: 'Kedro Project Structure and Best Practices',
+    title: 'Kedro Project Template and Best Practices',
     description:
-      "This tool follows Kedro's core principles, including the product directory structure. Create a new project to get started.",
+      "This tool follows Kedro's core principles, including the product template. Create a new project to get started.",
     target: 'create-project-button',
     position: 'top',
   },
@@ -25,14 +25,14 @@ export const walkthroughSteps: WalkthroughStep[] = [
     title: 'Add and connect nodes to build pipelines',
     description:
       'Drag and drop nodes and connect them visually to build a pipeline without worrying about syntax.',
-    target: 'dataset-button',
+    target: 'component-palette-list',
     position: 'right',
   },
   {
     id: 3,
     title: 'View generated Kedro code',
     description:
-      'See the equivalent Kedro starter code generated from your visual pipeline.',
+      'See the equivalent <a href="https://docs.kedro.org/en/stable/tutorials/test_a_project/" target="_blank" rel="noopener noreferrer">Kedro starter code</a> generated from your visual pipeline.',
     target: 'view-code-button',
     position: 'bottom',
   },

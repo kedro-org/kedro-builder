@@ -1,4 +1,4 @@
-import { Sparkles, FunctionSquare, GitBranch, Database, FolderTree } from 'lucide-react';
+import { Sparkles, FunctionSquare, Network, FolderOpen, FolderTree } from 'lucide-react';
 import type { TutorialStep } from '../../types/tutorial';
 
 export const tutorialSteps: TutorialStep[] = [
@@ -21,18 +21,18 @@ export const tutorialSteps: TutorialStep[] = [
     title: "2. Pipeline",
     content: "A pipeline organises the dependencies and execution order of a collection of nodes and connects inputs and outputs while keeping your code modular.",
     buttonText: "Next",
-    icon: GitBranch,
+    icon: Network,
   },
   {
     id: 4,
     title: "3. Data Catalog",
     content: "Kedro has a registry of all data sources the project can use called the Data Catalog. There is inbuilt support for various file types and file systems.",
     buttonText: "Next",
-    icon: Database,
+    icon: FolderOpen,
   },
   {
     id: 5,
-    title: "4. Kedro project structure",
+    title: "4. Kedro project template",
     content: "Kedro projects follow a default template that uses specific folders to store datasets, notebooks, configuration and source code. For more information, visit the official Kedro documentation.",
     buttonText: "Finish",
     icon: FolderTree,
