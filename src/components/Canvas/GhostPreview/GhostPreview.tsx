@@ -34,7 +34,7 @@ export const GhostPreview: React.FC<GhostPreviewProps> = ({ ghostPreview }) => {
               </text>
             </svg>
           </div>
-          <div className="ghost-preview__label">New Node</div>
+          <div className="ghost-preview__label">New Function Node</div>
         </div>
       )}
       {showDatasetPreview && (
@@ -42,7 +42,7 @@ export const GhostPreview: React.FC<GhostPreviewProps> = ({ ghostPreview }) => {
           <div className="ghost-preview__icon">
             <Database size={20} />
           </div>
-          <div className="ghost-preview__label">New Dataset</div>
+          <div className="ghost-preview__label">New Dataset Node</div>
         </div>
       )}
     </div>

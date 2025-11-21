@@ -1,5 +1,5 @@
 import React from 'react';
-import { Download, Database, FunctionSquare, GitBranch } from 'lucide-react';
+import { Download, Database, FunctionSquare, Network } from 'lucide-react';
 
 interface ConfigureStepContentProps {
   projectName: string;
@@ -32,7 +32,7 @@ export const ConfigureStepContent: React.FC<ConfigureStepContentProps> = ({
             <Database size={24} />
           </div>
           <div className="export-wizard__summary-card-content">
-            <div className="export-wizard__summary-card-label">Datasets</div>
+            <div className="export-wizard__summary-card-label">Dataset Nodes</div>
             <div className="export-wizard__summary-card-value">{datasetsCount}</div>
           </div>
         </div>
@@ -42,14 +42,14 @@ export const ConfigureStepContent: React.FC<ConfigureStepContentProps> = ({
             <FunctionSquare size={24} />
           </div>
           <div className="export-wizard__summary-card-content">
-            <div className="export-wizard__summary-card-label">Nodes</div>
+            <div className="export-wizard__summary-card-label">Function Nodes</div>
             <div className="export-wizard__summary-card-value">{nodesCount}</div>
           </div>
         </div>
 
         <div className="export-wizard__summary-card">
           <div className="export-wizard__summary-card-icon">
-            <GitBranch size={24} />
+            <Network size={24} />
           </div>
           <div className="export-wizard__summary-card-content">
             <div className="export-wizard__summary-card-label">Pipelines</div>
