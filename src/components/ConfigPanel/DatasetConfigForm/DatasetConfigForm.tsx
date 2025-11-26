@@ -50,7 +50,6 @@ interface DatasetFormData {
   name: string;
   type: DatasetType;
   filepath?: string;
-  description?: string;
   versioned?: boolean;
 }
 
@@ -75,7 +74,6 @@ export const DatasetConfigForm: React.FC<DatasetConfigFormProps> = ({ dataset, o
       name: dataset.name || '',
       type: dataset.type || 'csv',
       filepath: dataset.filepath || '',
-      description: dataset.description || '',
       versioned: dataset.versioned || false,
     },
   });
@@ -138,7 +136,6 @@ export const DatasetConfigForm: React.FC<DatasetConfigFormProps> = ({ dataset, o
           name: data.name.trim(),
           type: data.type,
           filepath: data.type !== 'memory' ? data.filepath?.trim() : undefined,
-          description: data.description?.trim(),
           versioned: data.versioned || false,
         },
       })
@@ -209,16 +206,6 @@ export const DatasetConfigForm: React.FC<DatasetConfigFormProps> = ({ dataset, o
           )}
         </div>
       )}
-
-      <div className="dataset-config-form__section">
-        <label className="dataset-config-form__label">Description</label>
-        <textarea
-          className="dataset-config-form__textarea"
-          rows={3}
-          placeholder="Describe this dataset..."
-          {...register('description')}
-        />
-      </div>
 
       {watchType !== 'memory' && (
         <div className="dataset-config-form__section">

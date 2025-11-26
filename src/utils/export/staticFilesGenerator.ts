@@ -349,3 +349,11 @@ __version__ = "0.1.0"
 export function generateGitkeep(): string {
   return '# This file keeps the directory in Git\n';
 }
+
+/**
+ * Generate .telemetry file for Kedro telemetry settings
+ */
+export function generateTelemetry(): string {
+  return `consent: true
+`;
+}

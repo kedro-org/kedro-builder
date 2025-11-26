@@ -11,7 +11,6 @@ import './NodeConfigForm.scss';
 
 interface NodeFormData {
   name: string;
-  description: string;
   functionCode?: string;
 }
 
@@ -46,7 +45,6 @@ export const NodeConfigForm: React.FC<NodeConfigFormProps> = ({ node, onClose })
   } = useForm<NodeFormData>({
     defaultValues: {
       name: node.name || '',
-      description: node.description || '',
       functionCode: node.functionCode || '',
     },
   });
@@ -78,7 +76,6 @@ export const NodeConfigForm: React.FC<NodeConfigFormProps> = ({ node, onClose })
         id: node.id,
         changes: {
           name: data.name.trim(),
-          description: data.description.trim(),
           functionCode: data.functionCode?.trim() || undefined,
         },
       })
@@ -154,16 +151,6 @@ export const NodeConfigForm: React.FC<NodeConfigFormProps> = ({ node, onClose })
               return true;
             },
           })}
-        />
-      </div>
-
-      <div className="node-config-form__section">
-        <label className="node-config-form__label">Description</label>
-        <textarea
-          className="node-config-form__textarea"
-          rows={3}
-          placeholder="Describe what this node does..."
-          {...register('description')}
         />
       </div>
 

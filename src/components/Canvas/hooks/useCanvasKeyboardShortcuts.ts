@@ -12,11 +12,12 @@ interface KeyboardShortcutsProps {
   setIsPanMode: React.Dispatch<React.SetStateAction<boolean>>;
   onCopy: () => void;
   onPaste: () => void;
+  onDelete: () => void;
 }
 
 /**
  * Hook for managing canvas keyboard shortcuts
- * Handles: Escape, Cmd+A, Spacebar (pan mode), Cmd+C, Cmd+V
+ * Handles: Escape, Cmd+A, Spacebar (pan mode), Cmd+C, Cmd+V, Delete, Backspace
  */
 export const useCanvasKeyboardShortcuts = ({
   reduxNodes,
@@ -25,6 +26,7 @@ export const useCanvasKeyboardShortcuts = ({
   setIsPanMode,
   onCopy,
   onPaste,
+  onDelete,
 }: KeyboardShortcutsProps) => {
   const dispatch = useAppDispatch();
 
@@ -69,6 +71,12 @@ export const useCanvasKeyboardShortcuts = ({
         event.preventDefault();
         onPaste();
       }
+
+      // Delete or Backspace - delete selected items (only when not in an editable field)
+      if ((event.key === 'Delete' || event.key === 'Backspace') && !isEditableElement) {
+        event.preventDefault();
+        onDelete();
+      }
     };
 
     const handleKeyUp = (event: KeyboardEvent) => {
@@ -85,5 +93,5 @@ export const useCanvasKeyboardShortcuts = ({
       window.removeEventListener('keydown', handleKeyDown);
       window.removeEventListener('keyup', handleKeyUp);
     };
-  }, [dispatch, reduxNodes, reduxDatasets, isPanMode, setIsPanMode, onCopy, onPaste]);
+  }, [dispatch, reduxNodes, reduxDatasets, isPanMode, setIsPanMode, onCopy, onPaste, onDelete]);
 };

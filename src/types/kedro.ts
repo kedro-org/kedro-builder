@@ -103,7 +103,6 @@ export interface KedroNode {
   inputs: string[];
   outputs: string[];
   functionCode?: string;
-  description?: string;
   parameters?: Record<string, unknown>;
   position: { x: number; y: number };
   [key: string]: unknown;
@@ -116,7 +115,6 @@ export interface KedroDataset {
   filepath?: string;
   layer?: DataLayer;
   catalogConfig?: Record<string, unknown>;
-  description?: string;
   versioned?: boolean;
   position: { x: number; y: number };
   [key: string]: unknown;

@@ -188,7 +188,7 @@ const PipelineCanvasInner = ({ exportWizardOpen = false }: PipelineCanvasProps) 
         zoomOnPinch={true}
         zoomOnDoubleClick={false}
         multiSelectionKeyCode={exportWizardOpen ? null : ['Meta', 'Control', 'Shift']}
-        deleteKeyCode={['Delete', 'Backspace']}
+        deleteKeyCode={null}
         defaultEdgeOptions={{
           animated: true,
           style: {

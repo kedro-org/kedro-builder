@@ -67,7 +67,7 @@ export const ComponentPalette = () => {
               <Database size={20} />
             </div>
             <div className="component-card__content">
-              <h4 className="component-card__name">Dataset Node</h4>
+              <h4 className="component-card__name">Dataset</h4>
               <p className="component-card__description">Add a data source with name, type and location</p>
             </div>
           </div>

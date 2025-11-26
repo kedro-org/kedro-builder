@@ -54,6 +54,29 @@ export const useSelectionHandlers = ({
   // Copy/paste sub-hook
   const { handleCopy, handlePaste } = useCopyPaste(selectedNodeIds, reduxNodes, reduxDatasets);
 
+  // Bulk delete with confirmation for multiple items
+  const handleBulkDelete = useCallback(() => {
+    const needsConfirmation = showBulkDeleteConfirmation(selectedNodeIds, selectedEdgeIds);
+
+    // If no confirmation needed (single item), delete immediately
+    if (!needsConfirmation) {
+      if (selectedNodeIds.length > 0) {
+        selectedNodeIds.forEach((id) => {
+          if (id.startsWith('node-')) {
+            dispatch(deleteNodes([id]));
+          } else if (id.startsWith('dataset-')) {
+            dispatch(deleteDataset(id));
+          }
+        });
+        dispatch(clearSelection());
+      }
+      if (selectedEdgeIds.length > 0) {
+        dispatch(deleteConnections(selectedEdgeIds));
+        dispatch(clearConnectionSelection());
+      }
+    }
+  }, [dispatch, selectedNodeIds, selectedEdgeIds, showBulkDeleteConfirmation]);
+
   // Keyboard shortcuts sub-hook
   useCanvasKeyboardShortcuts({
     reduxNodes,
@@ -62,6 +85,7 @@ export const useSelectionHandlers = ({
     setIsPanMode,
     onCopy: handleCopy,
     onPaste: handlePaste,
+    onDelete: handleBulkDelete,
   });
 
   // ===== Selection Handlers =====
@@ -112,29 +136,6 @@ export const useSelectionHandlers = ({
   );
 
   // ===== Bulk Action Handlers =====
-
-  // Bulk delete with confirmation for multiple items
-  const handleBulkDelete = useCallback(() => {
-    const needsConfirmation = showBulkDeleteConfirmation(selectedNodeIds, selectedEdgeIds);
-
-    // If no confirmation needed (single item), delete immediately
-    if (!needsConfirmation) {
-      if (selectedNodeIds.length > 0) {
-        selectedNodeIds.forEach((id) => {
-          if (id.startsWith('node-')) {
-            dispatch(deleteNodes([id]));
-          } else if (id.startsWith('dataset-')) {
-            dispatch(deleteDataset(id));
-          }
-        });
-        dispatch(clearSelection());
-      }
-      if (selectedEdgeIds.length > 0) {
-        dispatch(deleteConnections(selectedEdgeIds));
-        dispatch(clearConnectionSelection());
-      }
-    }
-  }, [dispatch, selectedNodeIds, selectedEdgeIds, showBulkDeleteConfirmation]);
 
   // Clear selection
   const handleBulkClear = useCallback(() => {

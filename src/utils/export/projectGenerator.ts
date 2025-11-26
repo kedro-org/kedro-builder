@@ -16,6 +16,7 @@ import {
   generateReadme,
   generateInitPy,
   generateGitkeep,
+  generateTelemetry,
 } from './staticFilesGenerator';
 import { generatePyproject } from './pyprojectGenerator';
 import {
@@ -51,6 +52,7 @@ export async function generateKedroProject(
   zip.file('pyproject.toml', generatePyproject(metadata, datasetTypes));
   zip.file('README.md', generateReadme(metadata));
   zip.file('.gitignore', generateGitignore());
+  zip.file('.telemetry', generateTelemetry());
 
   // ========================================
   // CONFIGURATION FILES (conf/)

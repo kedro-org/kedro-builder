@@ -63,8 +63,8 @@ export const useNodeHandlers = ({ onNodesChange, setIsDraggingOver, isDraggingOv
         }
       });
 
-      // Show custom confirmation dialog for multi-delete
-      if (nodesToDelete.length > 1) {
+      // Show custom confirmation dialog for all deletions
+      if (nodesToDelete.length >= 1) {
         setNodeDeleteConfirmation({
           count: nodesToDelete.length,
           nodeIds: nodeIdsToDelete,
@@ -72,25 +72,6 @@ export const useNodeHandlers = ({ onNodesChange, setIsDraggingOver, isDraggingOv
         });
         return; // Wait for confirmation
       }
-
-      // Single item delete - no confirmation needed
-      // Delete nodes (all at once)
-      if (nodeIdsToDelete.length > 0) {
-        logger.delete('Deleting nodes:', nodeIdsToDelete);
-        dispatch(deleteNodes(nodeIdsToDelete));
-      }
-
-      // Delete datasets (one by one - since deleteDataset takes a single ID)
-      if (datasetIdsToDelete.length > 0) {
-        logger.delete('Deleting datasets:', datasetIdsToDelete);
-        datasetIdsToDelete.forEach((id) => {
-          dispatch(deleteDataset(id));
-        });
-      }
-
-      // Clear selection and close config panel after deletion
-      dispatch(clearSelection());
-      dispatch(closeConfigPanel());
     },
     [dispatch]
   );

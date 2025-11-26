@@ -17,6 +17,7 @@ export const AppHeader: React.FC<AppHeaderProps> = ({ hasPipelineContent, onView
   const dispatch = useAppDispatch();
   const hasActiveProject = useAppSelector((state) => state.ui.hasActiveProject);
   const currentProject = useAppSelector((state) => state.project.current);
+  const showExportWizard = useAppSelector((state) => state.ui.showExportWizard);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
   const handleOpenTutorial = () => {
@@ -48,8 +49,8 @@ export const AppHeader: React.FC<AppHeaderProps> = ({ hasPipelineContent, onView
           </div>
 
           <div className="app__header-project-controls">
-            {/* Project name display - only show if project exists */}
-            {hasActiveProject && currentProject && (
+            {/* Project name display - only show if project exists and export wizard is not open */}
+            {hasActiveProject && currentProject && !showExportWizard && (
               <>
                 <p className="app__project-name">{currentProject.name}</p>
 

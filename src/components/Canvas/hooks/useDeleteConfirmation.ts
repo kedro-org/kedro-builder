@@ -3,6 +3,7 @@ import { useAppDispatch } from '../../../store/hooks';
 import { clearSelection, deleteNodes } from '../../../features/nodes/nodesSlice';
 import { deleteDataset } from '../../../features/datasets/datasetsSlice';
 import { clearConnectionSelection, deleteConnections } from '../../../features/connections/connectionsSlice';
+import { closeConfigPanel } from '../../../features/ui/uiSlice';
 import { logger } from '../../../utils/logger';
 
 // Types for delete confirmation state
@@ -25,7 +26,7 @@ export const useDeleteConfirmation = () => {
   const showBulkDeleteConfirmation = useCallback(
     (nodeIds: string[], edgeIds: string[]) => {
       const totalCount = nodeIds.length + edgeIds.length;
-      if (totalCount > 1) {
+      if (totalCount >= 1) {
         setDeleteConfirmation({
           type: 'bulk',
           count: totalCount,
@@ -41,7 +42,7 @@ export const useDeleteConfirmation = () => {
 
   // Show edges delete confirmation
   const showEdgesDeleteConfirmation = useCallback((edgeIds: string[]) => {
-    if (edgeIds.length > 1) {
+    if (edgeIds.length >= 1) {
       setDeleteConfirmation({
         type: 'edges',
         count: edgeIds.length,
@@ -80,6 +81,9 @@ export const useDeleteConfirmation = () => {
         dispatch(clearConnectionSelection());
       }
     }
+
+    // Close config panel after deletion
+    dispatch(closeConfigPanel());
 
     logger.debug('Delete confirmed and executed');
     setDeleteConfirmation(null);
