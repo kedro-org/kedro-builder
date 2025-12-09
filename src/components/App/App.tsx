@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { useAppSelector } from '../../store/hooks';
+import { BetaWarningModal } from '../BetaWarning';
 import { TutorialModal } from '../Tutorial/TutorialModal';
 import { WalkthroughOverlay } from '../Walkthrough/WalkthroughOverlay';
 import { ProjectSetupModal } from '../ProjectSetup/ProjectSetupModal';
@@ -70,6 +71,7 @@ function App() {
       </div>
 
       {/* Modals and overlays */}
+      <BetaWarningModal />
       <TutorialModal />
       {showWalkthrough && <WalkthroughOverlay />}
       {showProjectSetup && <ProjectSetupModal />}
