@@ -54,6 +54,8 @@ export function createMockState(overrides?: Partial<RootState>): Partial<RootSta
       selected: [],
     },
     ui: {
+      showBetaWarning: false,
+      betaWarningAcknowledged: false,
       showTutorial: false,
       tutorialStep: 0,
       tutorialCompleted: false,
