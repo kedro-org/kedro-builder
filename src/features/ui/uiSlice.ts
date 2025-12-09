@@ -3,10 +3,6 @@ import type { PayloadAction } from '@reduxjs/toolkit';
 import type { UIState } from '../../types/redux';
 
 const initialState: UIState = {
-  // Beta warning state
-  showBetaWarning: false, // Will be set based on localStorage
-  betaWarningAcknowledged: false,
-
   // Tutorial state
   showTutorial: false, // Will be set based on localStorage
   tutorialStep: 1,
@@ -44,19 +40,6 @@ const uiSlice = createSlice({
   name: 'ui',
   initialState,
   reducers: {
-    // Beta warning actions
-    setShowBetaWarning: (state, action: PayloadAction<boolean>) => {
-      state.showBetaWarning = action.payload;
-    },
-    acknowledgeBetaWarning: (state) => {
-      state.showBetaWarning = false;
-      state.betaWarningAcknowledged = true;
-      // Save to localStorage
-      localStorage.setItem('kedro_builder_beta_acknowledged', 'true');
-      // Show tutorial after acknowledging beta warning
-      state.showTutorial = true;
-      state.tutorialStep = 1;
-    },
     // Tutorial actions
     setShowTutorial: (state, action: PayloadAction<boolean>) => {
       state.showTutorial = action.payload;
@@ -65,7 +48,7 @@ const uiSlice = createSlice({
       state.tutorialStep = action.payload;
     },
     nextTutorialStep: (state) => {
-      if (state.tutorialStep < 5) {
+      if (state.tutorialStep < 6) {
         state.tutorialStep += 1;
       }
     },
@@ -193,9 +176,6 @@ const uiSlice = createSlice({
 });
 
 export const {
-  // Beta warning actions
-  setShowBetaWarning,
-  acknowledgeBetaWarning,
   // Tutorial actions
   setShowTutorial,
   setTutorialStep,

@@ -30,8 +30,6 @@ function createState(
       selected: [],
     },
     ui: {
-      showBetaWarning: false,
-      betaWarningAcknowledged: false,
       showTutorial: false,
       tutorialStep: 0,
       tutorialCompleted: false,

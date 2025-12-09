@@ -37,10 +37,6 @@ export interface ConnectionsState {
 }
 
 export interface UIState {
-  // Beta warning state
-  showBetaWarning: boolean;
-  betaWarningAcknowledged: boolean;
-
   // Tutorial state
   showTutorial: boolean;
   tutorialStep: number;

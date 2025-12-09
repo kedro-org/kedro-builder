@@ -1,7 +1,6 @@
 import { useEffect } from 'react';
 import { useAppDispatch } from '../../../store/hooks';
 import {
-  setShowBetaWarning,
   setShowTutorial,
   startWalkthrough,
   setHasActiveProject,
@@ -15,13 +14,12 @@ import { logger } from '../../../utils/logger';
 
 /**
  * Custom hook to initialize app state from localStorage
- * Runs once on mount to set up beta warning, tutorial, walkthrough, or load saved project
+ * Runs once on mount to set up tutorial, walkthrough, or load saved project
  */
 export const useAppInitialization = () => {
   const dispatch = useAppDispatch();
 
   useEffect(() => {
-    const betaAcknowledged = localStorage.getItem('kedro_builder_beta_acknowledged');
     const tutorialCompleted = localStorage.getItem('kedro_builder_tutorial_completed');
     const walkthroughCompleted = localStorage.getItem('kedro_builder_walkthrough_completed');
 
@@ -29,11 +27,8 @@ export const useAppInitialization = () => {
     const savedProject = loadProjectFromLocalStorage();
 
     // Determine initial flow state
-    if (!betaAcknowledged) {
-      // Show beta warning first (for first-time users)
-      dispatch(setShowBetaWarning(true));
-    } else if (!tutorialCompleted) {
-      // Show tutorial after beta warning is acknowledged
+    if (!tutorialCompleted) {
+      // Show tutorial for first-time users
       dispatch(setShowTutorial(true));
     } else if (!walkthroughCompleted) {
       // Show walkthrough after tutorial
