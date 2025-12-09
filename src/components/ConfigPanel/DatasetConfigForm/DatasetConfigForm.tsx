@@ -185,7 +185,10 @@ export const DatasetConfigForm: React.FC<DatasetConfigFormProps> = ({ dataset, o
         />
       </div>
 
-      <DatasetTypeSelect register={register} />
+      <DatasetTypeSelect
+        value={watchType}
+        onChange={(value) => setValue('type', value, { shouldDirty: true })}
+      />
 
       {watchType !== 'memory' && (
         <div className="dataset-config-form__section">
