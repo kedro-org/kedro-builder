@@ -41,6 +41,7 @@ export const NodeConfigForm: React.FC<NodeConfigFormProps> = ({ node, onClose })
     handleSubmit,
     setValue,
     watch,
+    reset,
     formState: { errors, isDirty },
   } = useForm<NodeFormData>({
     defaultValues: {
@@ -48,6 +49,14 @@ export const NodeConfigForm: React.FC<NodeConfigFormProps> = ({ node, onClose })
       functionCode: node.functionCode || '',
     },
   });
+
+  // Reset form when node changes (switching between different nodes)
+  useEffect(() => {
+    reset({
+      name: node.name || '',
+      functionCode: node.functionCode || '',
+    });
+  }, [node.id, reset]);
 
   const watchName = watch('name');
   const watchFunctionCode = watch('functionCode');

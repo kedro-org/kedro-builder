@@ -3,20 +3,24 @@ import { Download, Database, FunctionSquare, Network } from 'lucide-react';
 
 interface ConfigureStepContentProps {
   projectName: string;
+  description: string;
   nodesCount: number;
   datasetsCount: number;
   hasWarnings: boolean;
   warningsCount: number;
   onProjectNameChange: (name: string) => void;
+  onDescriptionChange: (description: string) => void;
   onBack: () => void;
   onExport: () => void;
 }
 
 export const ConfigureStepContent: React.FC<ConfigureStepContentProps> = ({
   projectName,
+  description,
   nodesCount,
   datasetsCount,
   onProjectNameChange,
+  onDescriptionChange,
   onBack,
   onExport,
 }) => {
@@ -32,7 +36,7 @@ export const ConfigureStepContent: React.FC<ConfigureStepContentProps> = ({
             <Database size={24} />
           </div>
           <div className="export-wizard__summary-card-content">
-            <div className="export-wizard__summary-card-label">Dataset Nodes</div>
+            <div className="export-wizard__summary-card-label">Datasets</div>
             <div className="export-wizard__summary-card-value">{datasetsCount}</div>
           </div>
         </div>
@@ -82,7 +86,9 @@ export const ConfigureStepContent: React.FC<ConfigureStepContentProps> = ({
             <label htmlFor="description">Description</label>
             <textarea
               id="description"
-              placeholder="Add text"
+              value={description}
+              onChange={(e) => onDescriptionChange(e.target.value)}
+              placeholder="Add a brief description of your pipeline..."
               rows={4}
             />
           </div>
