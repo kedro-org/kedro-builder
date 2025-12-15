@@ -42,7 +42,7 @@ export const GhostPreview: React.FC<GhostPreviewProps> = ({ ghostPreview }) => {
           <div className="ghost-preview__icon">
             <Database size={20} />
           </div>
-          <div className="ghost-preview__label">New Dataset Node</div>
+          <div className="ghost-preview__label">New Dataset</div>
         </div>
       )}
     </div>

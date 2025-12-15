@@ -68,6 +68,7 @@ export const DatasetConfigForm: React.FC<DatasetConfigFormProps> = ({ dataset, o
     handleSubmit,
     watch,
     setValue,
+    reset,
     formState: { errors, isDirty },
   } = useForm<DatasetFormData>({
     defaultValues: {
@@ -77,6 +78,16 @@ export const DatasetConfigForm: React.FC<DatasetConfigFormProps> = ({ dataset, o
       versioned: dataset.versioned || false,
     },
   });
+
+  // Reset form when dataset changes (switching between different datasets)
+  useEffect(() => {
+    reset({
+      name: dataset.name || '',
+      type: dataset.type || 'csv',
+      filepath: dataset.filepath || '',
+      versioned: dataset.versioned || false,
+    });
+  }, [dataset.id, reset]);
 
   const watchType = watch('type');
   const watchFilepath = watch('filepath');
@@ -120,6 +131,7 @@ export const DatasetConfigForm: React.FC<DatasetConfigFormProps> = ({ dataset, o
     initialFilepath: dataset.filepath || '',
     datasetName: watchName,
     datasetType: watchType,
+    datasetId: dataset.id,
     setValue,
   });
 

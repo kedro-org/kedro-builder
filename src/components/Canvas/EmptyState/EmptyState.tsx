@@ -87,7 +87,7 @@ export const EmptyState: React.FC<EmptyStateProps> = ({ isDragging = false }) =>
               </p>
 
               <p className="empty-state__tip">
-                Tip: Try dragging a "Dataset Node" or "Function Node" first.
+                Tip: Try dragging a "Dataset" or "Function Node" first.
               </p>
 
               <div className="empty-state__actions">
@@ -98,7 +98,7 @@ export const EmptyState: React.FC<EmptyStateProps> = ({ isDragging = false }) =>
                   title={hasPendingComponent ? 'Complete the current component configuration first' : ''}
                 >
                   <Database size={CANVAS.ICON_SIZE.LARGE} />
-                  <span>Dataset Node</span>
+                  <span>Dataset</span>
                 </button>
 
                 <button

@@ -34,6 +34,7 @@ export const ExportWizard: React.FC<ExportWizardProps> = ({
 
   const [currentStep, setCurrentStep] = useState<WizardStep>('validation');
   const [projectName, setProjectName] = useState(currentProject?.name || '');
+  const [description, setDescription] = useState(currentProject?.description || '');
   const [panelHeight, setPanelHeight] = useState<number>(400);
   const [isDragging, setIsDragging] = useState(false);
 
@@ -94,7 +95,7 @@ export const ExportWizard: React.FC<ExportWizardProps> = ({
       projectName,
       pythonPackage,
       pipelineName: currentProject.pipelineName || '__default__',
-      description: '', // No longer collected in UI
+      description: description,
     });
   };
 
@@ -146,11 +147,13 @@ export const ExportWizard: React.FC<ExportWizardProps> = ({
           {currentStep === 'configure' && (
             <ConfigureStepContent
               projectName={projectName}
+              description={description}
               nodesCount={nodesCount}
               datasetsCount={datasetsCount}
               hasWarnings={hasWarnings}
               warningsCount={validationResult.warnings.length}
               onProjectNameChange={setProjectName}
+              onDescriptionChange={setDescription}
               onBack={handleBack}
               onExport={handleConfirmExport}
             />

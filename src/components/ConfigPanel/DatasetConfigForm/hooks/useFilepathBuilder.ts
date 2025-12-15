@@ -5,6 +5,7 @@ interface UseFilepathBuilderProps {
   initialFilepath: string;
   datasetName?: string;
   datasetType?: string;
+  datasetId?: string; // Used to detect when switching between datasets
   setValue: (name: 'filepath', value: string, options?: { shouldDirty: boolean }) => void;
 }
 
@@ -30,7 +31,7 @@ const getExtensionForType = (type: string): string => {
  * Automatically syncs changes to the form's filepath field
  * Auto-populates filename in real-time based on dataset name and type
  */
-export const useFilepathBuilder = ({ initialFilepath, datasetName, datasetType, setValue }: UseFilepathBuilderProps) => {
+export const useFilepathBuilder = ({ initialFilepath, datasetName, datasetType, datasetId, setValue }: UseFilepathBuilderProps) => {
   // Parse initial filepath into parts
   const initialParts = parseFilepath(initialFilepath);
 
@@ -50,6 +51,25 @@ export const useFilepathBuilder = ({ initialFilepath, datasetName, datasetType, 
   const [baseLocation, setBaseLocation] = useState(initialParts.baseLocation);
   const [dataLayer, setDataLayer] = useState(initialParts.dataLayer);
   const [fileName, setFileName] = useState(getInitialFileName);
+
+  // Reset filepath builder state when dataset changes (switching between different datasets)
+  useEffect(() => {
+    const newParts = parseFilepath(initialFilepath);
+    setBaseLocation(newParts.baseLocation);
+    setDataLayer(newParts.dataLayer);
+
+    // Reset filename based on the new dataset
+    if (!initialFilepath && datasetName) {
+      const extension = getExtensionForType(datasetType || 'csv');
+      setFileName(`${datasetName}.${extension}`);
+    } else {
+      setFileName(newParts.fileName);
+    }
+
+    // Reset the user edited flag
+    userEditedFileName.current = !!initialFilepath;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [datasetId]); // Only reset when dataset ID changes
 
   // Update filename when dataset name or type changes (only if user hasn't manually edited)
   useEffect(() => {
