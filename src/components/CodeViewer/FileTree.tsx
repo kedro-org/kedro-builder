@@ -89,15 +89,17 @@ export const FileTree: React.FC = () => {
       );
     } else {
       const isSelected = selectedFile === node.path;
+      const isKeyFile = node.isKeyFile === true;
       return (
         <div
           key={node.path}
-          className={`file-tree__file ${isSelected ? 'file-tree__file--selected' : ''}`}
+          className={`file-tree__file ${isSelected ? 'file-tree__file--selected' : ''} ${isKeyFile ? 'file-tree__file--key' : ''}`}
           style={{ '--tree-indent': calculateTreeIndent(level, true) } as React.CSSProperties}
           onClick={() => handleFileClick(node.path)}
         >
           <File size={16} className="file-tree__icon" />
           <span className="file-tree__name">{node.name}</span>
+          {isKeyFile && <span className="file-tree__badge">M</span>}
         </div>
       );
     }

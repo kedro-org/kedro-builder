@@ -56,6 +56,20 @@
         color: var(--color-primary);
       }
     }
+
+    &--key {
+      font-weight: 600;
+      position: relative;
+
+      .file-tree__name {
+        color: var(--color-text);
+      }
+
+      // When key file is also selected
+      &.file-tree__file--selected {
+        font-weight: 600;
+      }
+    }
   }
 
   &__chevron {
@@ -79,6 +93,15 @@
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+  }
+
+  &__badge {
+    flex-shrink: 0;
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: var(--color-text-alt);
+    margin-left: auto;
+    padding-left: 0.5rem;
   }
 
   &__children {
