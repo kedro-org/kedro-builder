@@ -6,7 +6,6 @@ import type { KedroNode, KedroDataset, KedroConnection } from '../../types/kedro
 import {
   toSnakeCase,
   formatFunctionParams,
-  formatDocstringParams,
   indentCode,
 } from './helpers';
 
@@ -65,7 +64,7 @@ function generateNodeFunction(
   }
 
   // Generate template function
-  return generateTemplateFunction(funcName, inputs, outputs, node);
+  return generateTemplateFunction(funcName, inputs, outputs);
 }
 
 /**
@@ -102,113 +101,30 @@ function generateCustomFunction(
     return userCode;
   }
 
-  // Otherwise, wrap user's code in a function with proper signature
+  // Otherwise, wrap user's code in a function with proper signature (no docstring)
   const params = formatFunctionParams(inputs);
-  const paramDocs = formatDocstringParams(inputs);
   const returnType = getReturnType(outputs);
   const indentedCode = indentCode(userCode, 4);
 
   return `def ${funcName}(${params}) -> ${returnType}:
-    """
-    ${node.name || 'Custom function'}.
-
-    Args:
-${paramDocs}
-
-    Returns:
-        ${getReturnDescription(outputs)}
-    """
 ${indentedCode}`;
 }
 
 /**
- * Generate template function with TODO placeholder
+ * Generate template function with simple placeholder
  */
 function generateTemplateFunction(
   funcName: string,
   inputs: string[],
-  outputs: string[],
-  node: KedroNode
+  outputs: string[]
 ): string {
   const params = formatFunctionParams(inputs);
   const returnType = getReturnType(outputs);
 
-  // If no inputs and no outputs, generate minimal function with just pass
-  if (inputs.length === 0 && outputs.length === 0) {
-    return `def ${funcName}() -> None:
-    """${node.name || funcName}."""
-    pass`;
-  }
-
-  // If only no outputs (but has inputs), still generate simple function with pass
-  if (outputs.length === 0) {
-    const paramDocs = formatDocstringParams(inputs);
-    return `def ${funcName}(${params}) -> None:
-    """
-    ${node.name || funcName}.
-
-    Args:
-${paramDocs}
-
-    Returns:
-        None
-    """
-    pass`;
-  }
-
-  // Has outputs - generate full template with TODO and processing logic
-  const paramDocs = formatDocstringParams(inputs);
-  const functionBody = generatePlaceholderBody(inputs, outputs);
-
+  // Simple placeholder - just function signature with pass
   return `def ${funcName}(${params}) -> ${returnType}:
-    """
-    ${node.name || funcName}.
-
-    Args:
-${paramDocs}
-
-    Returns:
-        ${getReturnDescription(outputs)}
-    """
-    # TODO: Implement your ${node.type || 'processing'} logic here
-    logger.info("Running ${node.name || funcName}...")
-${functionBody}`;
-}
-
-/**
- * Generate placeholder function body based on inputs/outputs
- */
-function generatePlaceholderBody(inputs: string[], outputs: string[]): string {
-  if (outputs.length === 0) {
-    // No outputs - just pass
-    return '    \n    pass';
-  } else if (outputs.length === 1) {
-    // Single output
-    const outputVar = toSnakeCase(outputs[0]);
-    const inputRef =
-      inputs.length > 0 ? `${toSnakeCase(inputs[0])}.copy()` : 'pd.DataFrame()';
-    return `
-    # Replace with your actual processing logic
-    ${outputVar} = ${inputRef}
-
-    return ${outputVar}`;
-  } else {
-    // Multiple outputs - return tuple
-    const outputVars = outputs.map((out) => toSnakeCase(out));
-    const assignments = outputs.map((out, idx) => {
-      const outputVar = toSnakeCase(out);
-      const inputRef =
-        inputs.length > idx
-          ? `${toSnakeCase(inputs[idx])}.copy()`
-          : 'pd.DataFrame()';
-      return `    ${outputVar} = ${inputRef}  # Replace with actual processing`;
-    });
-
-    return `
-${assignments.join('\n')}
-
-    return (${outputVars.join(', ')})`;
-  }
+    # Implement your custom logic here
+    pass`;
 }
 
 /**
@@ -218,15 +134,6 @@ function getReturnType(outputs: string[]): string {
   if (outputs.length === 0) return 'None';
   if (outputs.length === 1) return 'pd.DataFrame';
   return `Tuple[${outputs.map(() => 'pd.DataFrame').join(', ')}]`;
-}
-
-/**
- * Get return description for docstring
- */
-function getReturnDescription(outputs: string[]): string {
-  if (outputs.length === 0) return 'None';
-  if (outputs.length === 1) return `Processed ${outputs[0]}`;
-  return `Tuple of (${outputs.join(', ')})`;
 }
 
 /**
