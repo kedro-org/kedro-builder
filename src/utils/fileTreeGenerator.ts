@@ -29,6 +29,7 @@ export interface FileNode {
   content?: string;
   children?: FileNode[];
   expanded?: boolean;
+  isKeyFile?: boolean; // Highlights important files like catalog.yml, nodes.py, pipeline.py
 }
 
 /**
@@ -114,6 +115,7 @@ export function generateFileTree(state: RootState): FileNode {
                 type: 'file',
                 path: 'conf/base/catalog.yml',
                 content: files['conf/base/catalog.yml'],
+                isKeyFile: true,
               },
               {
                 name: 'parameters.yml',
@@ -263,12 +265,14 @@ export function generateFileTree(state: RootState): FileNode {
                         type: 'file',
                         path: `src/${pythonPackage}/pipelines/${pipelineName}/nodes.py`,
                         content: files[`src/${pythonPackage}/pipelines/${pipelineName}/nodes.py`],
+                        isKeyFile: true,
                       },
                       {
                         name: 'pipeline.py',
                         type: 'file',
                         path: `src/${pythonPackage}/pipelines/${pipelineName}/pipeline.py`,
                         content: files[`src/${pythonPackage}/pipelines/${pipelineName}/pipeline.py`],
+                        isKeyFile: true,
                       },
                     ],
                   },
