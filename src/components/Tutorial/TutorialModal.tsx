@@ -11,7 +11,8 @@ export const TutorialModal = () => {
   const currentStep = useAppSelector((state) => state.ui.tutorialStep);
 
   const step = tutorialSteps[currentStep - 1];
-  const Icon = step.icon;
+  const Icon = typeof step.icon === 'string' ? null : step.icon;
+  const iconPath = typeof step.icon === 'string' ? step.icon : null;
 
   useEffect(() => {
     if (showTutorial) {
@@ -27,7 +28,7 @@ export const TutorialModal = () => {
   }, [showTutorial]);
 
   const handleNext = () => {
-    if (currentStep === 6) {
+    if (currentStep === 7) {
       dispatch(completeTutorial());
     } else {
       dispatch(nextTutorialStep());
@@ -165,8 +166,12 @@ export const TutorialModal = () => {
               </div>
             ) : (
               // Icon for other slides
-              <div className="tutorial-modal__icon-container">
-                <Icon className="tutorial-modal__icon" size={80} strokeWidth={1.5} />
+              <div className={`tutorial-modal__icon-container ${currentStep === 7 ? 'tutorial-modal__icon-container--template' : ''}`}>
+                {iconPath ? (
+                  <img src={iconPath} alt={step.title} className="tutorial-modal__icon" />
+                ) : Icon ? (
+                  <Icon className="tutorial-modal__icon" size={80} strokeWidth={1.5} />
+                ) : null}
               </div>
             )}
           </div>

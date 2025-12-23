@@ -48,7 +48,7 @@ const uiSlice = createSlice({
       state.tutorialStep = action.payload;
     },
     nextTutorialStep: (state) => {
-      if (state.tutorialStep < 6) {
+      if (state.tutorialStep < 7) {
         state.tutorialStep += 1;
       }
     },

@@ -5,5 +5,5 @@ export interface TutorialStep {
   title: string;
   content: string;
   buttonText: string;
-  icon: LucideIcon;
+  icon: LucideIcon | string; // Can be LucideIcon component or SVG path
 }
