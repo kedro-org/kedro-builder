@@ -183,8 +183,8 @@ const PipelineCanvasInner = ({ exportWizardOpen = false }: PipelineCanvasProps) 
         selectNodesOnDrag={false}
         panOnDrag={isPanMode ? true : [2]}
         selectionOnDrag={!isPanMode && !exportWizardOpen}
-        panOnScroll={false}
-        zoomOnScroll={true}
+        panOnScroll={true}
+        zoomOnScroll={false}
         zoomOnPinch={true}
         zoomOnDoubleClick={false}
         multiSelectionKeyCode={exportWizardOpen ? null : ['Meta', 'Control', 'Shift']}
