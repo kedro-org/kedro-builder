@@ -134,13 +134,19 @@ const PipelineCanvasInner = ({ exportWizardOpen = false }: PipelineCanvasProps) 
     }
   }, []);
 
+  const connectionSourceType = connectionState.source?.startsWith('dataset-')
+    ? 'dataset'
+    : connectionState.source?.startsWith('node-')
+      ? 'node'
+      : null;
+
   return (
     <div
       className={`pipeline-canvas ${isPanMode ? 'pipeline-canvas--pan-mode' : ''} ${
         connectionState.source && connectionState.target && !connectionState.isValid
           ? 'pipeline-canvas--invalid-connection'
           : ''
-      }`}
+      } ${connectionSourceType ? `pipeline-canvas--connecting-from-${connectionSourceType}` : ''}`}
       ref={reactFlowWrapper}
       tabIndex={0}
       onDragLeave={handleDragLeave}
