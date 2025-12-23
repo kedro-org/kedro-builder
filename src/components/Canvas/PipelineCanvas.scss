@@ -1,11 +1,24 @@
 @use '../../styles/variables' as *;
 
+@mixin handle-eligible {
+  background: var(--color-primary) !important;
+  animation: handleRipple 1.2s ease-out infinite;
+}
+
 .pipeline-canvas {
   width: 100%;
   height: 100%;
   background: var(--color-bg-1);
   position: relative;
+  --handle-disabled-color: var(--color-border-line);
+  --handle-ripple-color: rgba($ocean-400, 0.6);
+  --handle-ripple-color-fade: rgba($ocean-400, 0);
   outline: none; // Remove focus outline (tabIndex used for keyboard events)
+
+  @supports (color: color-mix(in srgb, #fff 50%, transparent)) {
+    --handle-ripple-color: color-mix(in srgb, var(--color-primary) 60%, transparent);
+    --handle-ripple-color-fade: color-mix(in srgb, var(--color-primary) 0%, transparent);
+  }
 
   // Pan mode cursor (spacebar pressed)
   &--pan-mode {
@@ -163,6 +176,44 @@
       }
     }
   }
+
+  // Connection handle affordances while dragging
+  &--connecting-from-dataset,
+  &--connecting-from-node {
+    .custom-node__handle--bottom,
+    .dataset-node__handle--bottom {
+      background: var(--handle-disabled-color);
+      opacity: 0.45;
+      pointer-events: none;
+      box-shadow: none;
+    }
+  }
+
+  &--connecting-from-dataset {
+    .custom-node__handle--top {
+      @include handle-eligible;
+    }
+
+    .dataset-node__handle--top {
+      background: var(--handle-disabled-color);
+      opacity: 0.45;
+      pointer-events: none;
+      box-shadow: none;
+    }
+  }
+
+  &--connecting-from-node {
+    .dataset-node__handle--top {
+      @include handle-eligible;
+    }
+
+    .custom-node__handle--top {
+      background: var(--handle-disabled-color);
+      opacity: 0.45;
+      pointer-events: none;
+      box-shadow: none;
+    }
+  }
 }
 
 // Animation for invalid connection
@@ -172,6 +223,35 @@
   }
   50% {
     opacity: 0.5;
+  }
+}
+
+// Animation for eligible target handles
+@keyframes handleRipple {
+  0% {
+    box-shadow: 0 0 0 0 var(--handle-ripple-color);
+  }
+  70% {
+    box-shadow: 0 0 0 8px var(--handle-ripple-color-fade);
+  }
+  100% {
+    box-shadow: 0 0 0 0 var(--handle-ripple-color-fade);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pipeline-canvas {
+    &--connecting-from-dataset {
+      .custom-node__handle--top {
+        animation: none;
+      }
+    }
+
+    &--connecting-from-node {
+      .dataset-node__handle--top {
+        animation: none;
+      }
+    }
   }
 }
 

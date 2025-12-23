@@ -91,6 +91,9 @@ export const useConnectionHandlers = ({
   const isValidConnection = useCallback((connection: Connection) => {
     if (!connection.source || !connection.target) return false;
 
+    if (connection.sourceHandle && connection.sourceHandle !== 'output') return false;
+    if (connection.targetHandle && connection.targetHandle !== 'input') return false;
+
     const isSourceNode = connection.source.startsWith('node-');
     const isSourceDataset = connection.source.startsWith('dataset-');
     const isTargetNode = connection.target.startsWith('node-');

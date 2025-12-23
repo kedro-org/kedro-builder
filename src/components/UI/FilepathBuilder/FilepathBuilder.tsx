@@ -149,6 +149,9 @@ export const FilepathBuilder: React.FC<FilepathBuilderProps> = ({
           onChange={(e) => handleFullPathChange(e.target.value)}
           placeholder={exampleFullPath}
         />
+        <p className="filepath-builder__helper-text">
+          Add your data file to this location in the exported Kedro project.
+        </p>
       </div>
     </div>
   );
