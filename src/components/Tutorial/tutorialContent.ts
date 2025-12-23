@@ -1,5 +1,6 @@
-import { Sparkles, FunctionSquare, Network, FolderOpen, FolderTree, Info } from 'lucide-react';
+import { Sparkles, FunctionSquare, Network, FolderOpen, Database, Info } from 'lucide-react';
 import type { TutorialStep } from '../../types/tutorial';
+import KedroTemplateSvg from '../../assets/kedro-template.svg?url';
 
 export const tutorialSteps: TutorialStep[] = [
   {
@@ -19,16 +20,16 @@ export const tutorialSteps: TutorialStep[] = [
   {
     id: 3,
     title: "1. Node",
-    content: "A node is a wrapper for a pure Python function that names the inputs and outputs of that function. Nodes are the building block of a pipeline, and the output of one node can be the input of another.",
+    content: "A node is a wrapper for a pure Python function that names the input and output datasets of that function. Nodes are the building block of a pipeline, and the output dataset of one node can be the input dataset of another.",
     buttonText: "Next",
     icon: FunctionSquare,
   },
   {
     id: 4,
-    title: "2. Pipeline",
-    content: "A pipeline organises the dependencies and execution order of a collection of nodes and connects inputs and outputs while keeping your code modular.",
+    title: "2. Dataset",
+    content: "A dataset represents data in your pipeline. Datasets are the input and output of nodes, and they flow between nodes to form your data pipeline.",
     buttonText: "Next",
-    icon: Network,
+    icon: Database,
   },
   {
     id: 5,
@@ -39,9 +40,16 @@ export const tutorialSteps: TutorialStep[] = [
   },
   {
     id: 6,
-    title: "4. Kedro project template",
+    title: "4. Pipeline",
+    content: "A pipeline organises the dependencies and execution order of a collection of nodes and connects inputs and outputs while keeping your code modular.",
+    buttonText: "Next",
+    icon: Network,
+  },
+  {
+    id: 7,
+    title: "5. Kedro project template",
     content: "Kedro projects follow a default template that uses specific folders to store datasets, notebooks, configuration and source code. For more information, visit the official Kedro documentation.",
     buttonText: "Finish",
-    icon: FolderTree,
+    icon: KedroTemplateSvg,
   },
 ];
