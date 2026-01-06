@@ -5,8 +5,9 @@ import { useAppDispatch } from '../../../store/hooks';
 import { addNode } from '../../../features/nodes/nodesSlice';
 import { addDataset } from '../../../features/datasets/datasetsSlice';
 import { openConfigPanel, setPendingComponent } from '../../../features/ui/uiSlice';
+import { generateId, isDatasetId } from '../../../domain/IdGenerator';
 import { TIMING } from '../../../constants/timing';
-import { trackEvent } from '../../../utils/telemetry';
+import { trackEvent } from '../../../infrastructure/telemetry';
 import type { KedroNode, KedroDataset } from '../../../types/kedro';
 
 interface UseDragToCreateProps {
@@ -72,11 +73,11 @@ export const useDragToCreate = ({ setConnectionState, createConnectionEdge, conn
           y: event.clientY,
         });
 
-        const isSourceDataset = source.startsWith('dataset-');
+        const isSourceDataset = isDatasetId(source);
 
         if (isSourceDataset) {
           // Dataset → Create Node
-          const newId = `node-${Date.now()}`;
+          const newId = generateId('node');
           const newNode: KedroNode = {
             id: newId,
             name: '',
@@ -93,7 +94,7 @@ export const useDragToCreate = ({ setConnectionState, createConnectionEdge, conn
           trackEvent('node_created_from_drag', { nodeType: 'custom' });
         } else {
           // Node → Create Dataset
-          const newId = `dataset-${Date.now()}`;
+          const newId = generateId('dataset');
           const newDataset: KedroDataset = {
             id: newId,
             name: '',

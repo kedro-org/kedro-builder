@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useForm } from 'react-hook-form';
 import { useAppDispatch } from '../../../store/hooks';
 import { updateDataset, deleteDataset } from '../../../features/datasets/datasetsSlice';
@@ -10,6 +10,8 @@ import { FilepathBuilder } from '../../UI/FilepathBuilder/FilepathBuilder';
 import { ConfirmDialog } from '../../UI/ConfirmDialog';
 import { DatasetTypeSelect } from './DatasetTypeSelect';
 import { useFilepathBuilder } from './hooks/useFilepathBuilder';
+import { isPythonKeyword } from '../../../utils/validation';
+import { useConfirmDialog } from '../../../hooks/useConfirmDialog';
 import './DatasetConfigForm.scss';
 
 // Map dataset types to their expected file extensions
@@ -60,8 +62,16 @@ interface DatasetConfigFormProps {
 
 export const DatasetConfigForm: React.FC<DatasetConfigFormProps> = ({ dataset, onClose }) => {
   const dispatch = useAppDispatch();
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [extensionWarning, setExtensionWarning] = useState<string>('');
+
+  // Delete confirmation handler
+  const handleConfirmDelete = useCallback(() => {
+    dispatch(deleteDataset(dataset.id));
+    dispatch(clearPendingComponent());
+    onClose();
+  }, [dispatch, dataset.id, onClose]);
+
+  const deleteDialog = useConfirmDialog(handleConfirmDelete);
 
   const {
     register,
@@ -80,6 +90,8 @@ export const DatasetConfigForm: React.FC<DatasetConfigFormProps> = ({ dataset, o
   });
 
   // Reset form when dataset changes (switching between different datasets)
+  // Intentionally only depends on dataset.id to avoid resetting on field changes
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     reset({
       name: dataset.name || '',
@@ -160,16 +172,6 @@ export const DatasetConfigForm: React.FC<DatasetConfigFormProps> = ({ dataset, o
     window.dispatchEvent(new CustomEvent('configUpdated'));
   };
 
-  const handleDelete = () => {
-    setShowDeleteConfirm(true);
-  };
-
-  const handleConfirmDelete = () => {
-    dispatch(deleteDataset(dataset.id));
-    dispatch(clearPendingComponent());
-    onClose();
-  };
-
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="dataset-config-form">
       <div className="dataset-config-form__section">
@@ -186,9 +188,8 @@ export const DatasetConfigForm: React.FC<DatasetConfigFormProps> = ({ dataset, o
               if (!/^[a-z][a-z0-9_]*$/.test(trimmed)) {
                 return 'Must start with lowercase letter and contain only lowercase letters, numbers, and underscores (no spaces)';
               }
-              // Check for reserved Python keywords
-              const reserved = ['for', 'if', 'else', 'while', 'def', 'class', 'return', 'import'];
-              if (reserved.includes(trimmed)) {
+              // Check for reserved Python keywords (complete list)
+              if (isPythonKeyword(trimmed)) {
                 return `"${trimmed}" is a Python reserved keyword`;
               }
               return true;
@@ -237,7 +238,7 @@ export const DatasetConfigForm: React.FC<DatasetConfigFormProps> = ({ dataset, o
       )}
 
       <div className="dataset-config-form__actions">
-        <Button type="button" variant="danger" onClick={handleDelete}>
+        <Button type="button" variant="danger" onClick={deleteDialog.open}>
           Delete
         </Button>
         <div className="dataset-config-form__actions-right">
@@ -251,9 +252,9 @@ export const DatasetConfigForm: React.FC<DatasetConfigFormProps> = ({ dataset, o
       </div>
 
       <ConfirmDialog
-        isOpen={showDeleteConfirm}
-        onClose={() => setShowDeleteConfirm(false)}
-        onConfirm={handleConfirmDelete}
+        isOpen={deleteDialog.isOpen}
+        onClose={deleteDialog.close}
+        onConfirm={deleteDialog.confirm}
         title="Delete Dataset"
         message={`Are you sure you want to delete "${dataset.name || 'this dataset'}"? This action cannot be undone.`}
         confirmLabel="Delete"

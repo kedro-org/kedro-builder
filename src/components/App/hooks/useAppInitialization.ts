@@ -9,7 +9,7 @@ import { loadProject } from '../../../features/project/projectSlice';
 import { addNode, clearNodes } from '../../../features/nodes/nodesSlice';
 import { addDataset, clearDatasets } from '../../../features/datasets/datasetsSlice';
 import { addConnection, clearConnections } from '../../../features/connections/connectionsSlice';
-import { loadProjectFromLocalStorage } from '../../../utils/localStorage';
+import { loadProjectFromLocalStorage } from '../../../infrastructure/localStorage';
 import { logger } from '../../../utils/logger';
 
 /**

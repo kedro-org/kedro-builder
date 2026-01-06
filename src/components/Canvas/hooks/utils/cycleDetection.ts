@@ -1,3 +1,5 @@
+import { isNodeId, isDatasetId } from '../../../../domain/IdGenerator';
+
 /**
  * Utility for detecting cycles in pipeline connections
  * Uses DFS (Depth-First Search) to detect cycles in the graph
@@ -33,11 +35,11 @@ export function wouldCreateCycle(
 
   // Add existing connections
   existingConnections.forEach((conn) => {
-    if (conn.source.startsWith('node-') && conn.target.startsWith('dataset-')) {
+    if (isNodeId(conn.source) && isDatasetId(conn.target)) {
       // node → dataset
       if (!datasetInputs.has(conn.target)) datasetInputs.set(conn.target, []);
       datasetInputs.get(conn.target)!.push(conn.source);
-    } else if (conn.source.startsWith('dataset-') && conn.target.startsWith('node-')) {
+    } else if (isDatasetId(conn.source) && isNodeId(conn.target)) {
       // dataset → node
       if (!datasetOutputs.has(conn.source)) datasetOutputs.set(conn.source, []);
       datasetOutputs.get(conn.source)!.push(conn.target);
@@ -45,10 +47,10 @@ export function wouldCreateCycle(
   });
 
   // Add the new connection
-  if (newSource.startsWith('node-') && newTarget.startsWith('dataset-')) {
+  if (isNodeId(newSource) && isDatasetId(newTarget)) {
     if (!datasetInputs.has(newTarget)) datasetInputs.set(newTarget, []);
     datasetInputs.get(newTarget)!.push(newSource);
-  } else if (newSource.startsWith('dataset-') && newTarget.startsWith('node-')) {
+  } else if (isDatasetId(newSource) && isNodeId(newTarget)) {
     if (!datasetOutputs.has(newSource)) datasetOutputs.set(newSource, []);
     datasetOutputs.get(newSource)!.push(newTarget);
   }

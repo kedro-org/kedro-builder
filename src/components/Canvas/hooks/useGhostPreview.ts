@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { isNodeId } from '../../../domain/IdGenerator';
 
 export interface GhostPreviewState {
   sourceId: string;
@@ -48,7 +49,7 @@ export const useGhostPreview = (connectionSource: string | null) => {
         }
 
         // Show ghost preview at cursor position
-        const sourceType = connectionSource.startsWith('node-') ? 'node' : 'dataset';
+        const sourceType = isNodeId(connectionSource) ? 'node' : 'dataset';
         setGhostPreview({
           sourceId: connectionSource,
           sourceType,

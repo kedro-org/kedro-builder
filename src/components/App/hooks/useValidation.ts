@@ -9,9 +9,9 @@ import {
 import { setValidationResults } from '../../../features/validation/validationSlice';
 import { validatePipeline } from '../../../utils/validation';
 import type { ValidationResult } from '../../../utils/validation';
-import { generateKedroProject, downloadProject } from '../../../utils/export';
+import { generateKedroProject, downloadProject } from '../../../infrastructure/export';
 import { logger } from '../../../utils/logger';
-import { trackEvent } from '../../../utils/telemetry';
+import { trackEvent } from '../../../infrastructure/telemetry';
 import toast from 'react-hot-toast';
 
 interface UseValidationProps {

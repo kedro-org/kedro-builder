@@ -487,7 +487,7 @@ describe('validation', () => {
 
     it('should warn about datasets missing type', () => {
       const datasets: KedroDataset[] = [
-        { id: 'dataset-1', name: 'my_data', type: undefined as any, position: { x: 0, y: 0 } },
+        { id: 'dataset-1', name: 'my_data', type: undefined as unknown as KedroDataset['type'], position: { x: 0, y: 0 } },
       ];
 
       const state = createState([], datasets);

@@ -448,7 +448,7 @@ describe('catalogGenerator', () => {
       const dataset: KedroDataset = {
         id: 'dataset-1',
         name: 'custom_data',
-        type: 'custom.MyCustomDataset' as any,
+        type: 'custom.MyCustomDataset' as KedroDataset['type'],
         position: { x: 0, y: 0 },
       };
 

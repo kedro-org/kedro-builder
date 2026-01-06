@@ -8,9 +8,21 @@ import toast from 'react-hot-toast';
 import { wouldCreateCycle } from './utils/cycleDetection';
 import { useGhostPreview } from './useGhostPreview';
 import { useDragToCreate } from './useDragToCreate';
+import { isNodeId, isDatasetId } from '../../../domain';
 
 // Re-export GhostPreviewState for backwards compatibility
 export type { GhostPreviewState } from './useGhostPreview';
+
+// Constants for edge configuration (extracted to prevent recreation)
+const EDGE_MARKER_END = {
+  type: 'arrowclosed' as const,
+  width: 12,
+  height: 12,
+};
+
+const EDGE_STYLE = {
+  strokeDasharray: '5, 5',
+};
 
 interface ConnectionHandlersProps {
   setEdges: React.Dispatch<React.SetStateAction<Edge[]>>;
@@ -45,28 +57,23 @@ export const useConnectionHandlers = ({
   // Helper: Create edge and connection between two components
   const createConnectionEdge = useCallback(
     (sourceId: string, targetId: string) => {
+      const edgeId = `${sourceId}-${targetId}`;
       const newEdge: Edge = {
-        id: `${sourceId}-${targetId}`,
+        id: edgeId,
         source: sourceId,
         target: targetId,
         sourceHandle: 'output',
         targetHandle: 'input',
         type: 'kedroEdge',
         animated: true,
-        markerEnd: {
-          type: 'arrowclosed',
-          width: 12,
-          height: 12,
-        },
-        style: {
-          strokeDasharray: '5, 5',
-        },
+        markerEnd: EDGE_MARKER_END,
+        style: EDGE_STYLE,
       };
 
-      setEdges((eds) => addEdge(newEdge, eds) as any);
+      setEdges((eds) => addEdge(newEdge, eds) as Edge[]);
       dispatch(
         addConnection({
-          id: newEdge.id,
+          id: edgeId,
           source: sourceId,
           target: targetId,
           sourceHandle: 'output',
@@ -88,16 +95,17 @@ export const useConnectionHandlers = ({
   });
 
   // Validate connections in real-time
+  // Uses centralized ID type detection from domain layer
   const isValidConnection = useCallback((connection: Connection) => {
     if (!connection.source || !connection.target) return false;
 
     if (connection.sourceHandle && connection.sourceHandle !== 'output') return false;
     if (connection.targetHandle && connection.targetHandle !== 'input') return false;
 
-    const isSourceNode = connection.source.startsWith('node-');
-    const isSourceDataset = connection.source.startsWith('dataset-');
-    const isTargetNode = connection.target.startsWith('node-');
-    const isTargetDataset = connection.target.startsWith('dataset-');
+    const isSourceNode = isNodeId(connection.source);
+    const isSourceDataset = isDatasetId(connection.source);
+    const isTargetNode = isNodeId(connection.target);
+    const isTargetDataset = isDatasetId(connection.target);
 
     // Only allow: node → dataset OR dataset → node
     // Block: node → node OR dataset → dataset
@@ -159,34 +167,32 @@ export const useConnectionHandlers = ({
       // Mark that a connection was made to prevent duplicate component creation in onConnectEnd
       connectionMadeRef.current = true;
 
-      // Create the connection
+      // Create the connection using extracted constants
+      const edgeId = `${connection.source}-${connection.target}`;
+      const sourceHandle = connection.sourceHandle || 'output';
+      const targetHandle = connection.targetHandle || 'input';
+
       const newEdge: Edge = {
-        id: `${connection.source}-${connection.target}`,
+        id: edgeId,
         source: connection.source,
         target: connection.target,
-        sourceHandle: connection.sourceHandle || 'output',
-        targetHandle: connection.targetHandle || 'input',
+        sourceHandle,
+        targetHandle,
         type: 'kedroEdge',
         animated: true,
-        markerEnd: {
-          type: 'arrowclosed',
-          width: 12,
-          height: 12,
-        },
-        style: {
-          strokeDasharray: '5, 5',
-        },
+        markerEnd: EDGE_MARKER_END,
+        style: EDGE_STYLE,
       };
 
-      setEdges((eds) => addEdge(newEdge, eds) as any);
+      setEdges((eds) => addEdge(newEdge, eds) as Edge[]);
 
       dispatch(
         addConnection({
-          id: newEdge.id,
+          id: edgeId,
           source: connection.source,
           target: connection.target,
-          sourceHandle: connection.sourceHandle || 'output',
-          targetHandle: connection.targetHandle || 'input',
+          sourceHandle,
+          targetHandle,
         })
       );
     },

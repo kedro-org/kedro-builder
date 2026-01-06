@@ -1,5 +1,5 @@
 import { useForm } from 'react-hook-form';
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useAppDispatch } from '../../../store/hooks';
 import { updateNode, deleteNode } from '../../../features/nodes/nodesSlice';
 import { clearPendingComponent } from '../../../features/ui/uiSlice';
@@ -7,6 +7,9 @@ import type { KedroNode } from '../../../types/kedro';
 import { Button } from '../../UI/Button/Button';
 import { Input } from '../../UI/Input/Input';
 import { ConfirmDialog } from '../../UI/ConfirmDialog';
+import { isPythonKeyword } from '../../../utils/validation';
+import { toSnakeCase } from '../../../infrastructure/export/helpers';
+import { useConfirmDialog } from '../../../hooks/useConfirmDialog';
 import './NodeConfigForm.scss';
 
 interface NodeFormData {
@@ -25,16 +28,19 @@ const extractFunctionName = (code: string): string | null => {
   return match ? match[1] : null;
 };
 
-// Helper to convert name to snake_case (simplified)
-const toSnakeCase = (str: string): string => {
-  return str.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, '');
-};
-
 export const NodeConfigForm: React.FC<NodeConfigFormProps> = ({ node, onClose }) => {
   const dispatch = useAppDispatch();
   const [functionNameWarning, setFunctionNameWarning] = useState<string>('');
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
+
+  // Delete confirmation handler
+  const handleConfirmDelete = useCallback(() => {
+    dispatch(deleteNode(node.id));
+    dispatch(clearPendingComponent());
+    onClose();
+  }, [dispatch, node.id, onClose]);
+
+  const deleteDialog = useConfirmDialog(handleConfirmDelete);
 
   const {
     register,
@@ -51,6 +57,8 @@ export const NodeConfigForm: React.FC<NodeConfigFormProps> = ({ node, onClose })
   });
 
   // Reset form when node changes (switching between different nodes)
+  // Intentionally only depends on node.id to avoid resetting on field changes
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     reset({
       name: node.name || '',
@@ -95,16 +103,6 @@ export const NodeConfigForm: React.FC<NodeConfigFormProps> = ({ node, onClose })
 
     // Dispatch event to refresh validation if export wizard is open
     window.dispatchEvent(new CustomEvent('configUpdated'));
-  };
-
-  const handleDelete = () => {
-    setShowDeleteConfirm(true);
-  };
-
-  const handleConfirmDelete = () => {
-    dispatch(deleteNode(node.id));
-    dispatch(clearPendingComponent());
-    onClose();
   };
 
   // Handle Tab key in code textarea
@@ -152,9 +150,8 @@ export const NodeConfigForm: React.FC<NodeConfigFormProps> = ({ node, onClose })
               if (!/^[a-z][a-z0-9_]*$/.test(trimmed)) {
                 return 'Must start with lowercase letter and contain only lowercase letters, numbers, and underscores';
               }
-              // Check for reserved Python keywords
-              const reserved = ['for', 'if', 'else', 'while', 'def', 'class', 'return', 'import'];
-              if (reserved.includes(trimmed)) {
+              // Check for reserved Python keywords (complete list)
+              if (isPythonKeyword(trimmed)) {
                 return `"${trimmed}" is a Python reserved keyword`;
               }
               return true;
@@ -194,7 +191,7 @@ export const NodeConfigForm: React.FC<NodeConfigFormProps> = ({ node, onClose })
       </div>
 
       <div className="node-config-form__actions">
-        <Button type="button" variant="danger" onClick={handleDelete}>
+        <Button type="button" variant="danger" onClick={deleteDialog.open}>
           Delete
         </Button>
         <div className="node-config-form__actions-right">
@@ -208,9 +205,9 @@ export const NodeConfigForm: React.FC<NodeConfigFormProps> = ({ node, onClose })
       </div>
 
       <ConfirmDialog
-        isOpen={showDeleteConfirm}
-        onClose={() => setShowDeleteConfirm(false)}
-        onConfirm={handleConfirmDelete}
+        isOpen={deleteDialog.isOpen}
+        onClose={deleteDialog.close}
+        onConfirm={deleteDialog.confirm}
         title="Delete Node"
         message={`Are you sure you want to delete "${node.name || 'this node'}"? This action cannot be undone.`}
         confirmLabel="Delete"

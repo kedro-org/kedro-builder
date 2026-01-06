@@ -3,7 +3,7 @@ import { X } from 'lucide-react';
 import {
   hasSeenConsentBanner,
   markConsentBannerShown,
-} from '../../utils/telemetry';
+} from '../../infrastructure/telemetry';
 import './TelemetryConsent.scss';
 
 /**

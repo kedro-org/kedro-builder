@@ -6,8 +6,8 @@ import { closeProjectSetup, setHasActiveProject } from '../../features/ui/uiSlic
 import { clearNodes } from '../../features/nodes/nodesSlice';
 import { clearDatasets } from '../../features/datasets/datasetsSlice';
 import { clearConnections } from '../../features/connections/connectionsSlice';
-import { clearProjectFromLocalStorage } from '../../utils/localStorage';
-import { trackEvent } from '../../utils/telemetry';
+import { clearProjectFromLocalStorage } from '../../infrastructure/localStorage';
+import { trackEvent } from '../../infrastructure/telemetry';
 import { ConfirmDialog } from '../UI/ConfirmDialog';
 import './ProjectSetupModal.scss';
 

@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { X, Moon, Sun, BarChart3 } from 'lucide-react';
 import { useAppDispatch, useAppSelector } from '../../store/hooks';
 import { toggleTheme } from '../../features/theme/themeSlice';
-import { getTelemetryConsent, setTelemetryConsent } from '../../utils/telemetry';
+import { getTelemetryConsent, setTelemetryConsent } from '../../infrastructure/telemetry';
 import './SettingsModal.scss';
 
 interface SettingsModalProps {

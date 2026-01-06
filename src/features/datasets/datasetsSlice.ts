@@ -2,6 +2,7 @@ import { createSlice } from '@reduxjs/toolkit';
 import type { PayloadAction } from '@reduxjs/toolkit';
 import type { DatasetsState } from '../../types/redux';
 import type { KedroDataset } from '../../types/kedro';
+import { generateId } from '../../domain/IdGenerator';
 
 const initialState: DatasetsState = {
   byId: {},
@@ -26,8 +27,8 @@ const datasetsSlice = createSlice({
         if ('id' in payload && payload.id) {
           return { payload: payload as KedroDataset };
         }
-        // Otherwise, create a new dataset with generated id
-        const id = `dataset-${Date.now()}`;
+        // Otherwise, create a new dataset with generated id using IdGenerator
+        const id = generateId('dataset');
         const newDataset: KedroDataset = {
           ...payload,
           id,

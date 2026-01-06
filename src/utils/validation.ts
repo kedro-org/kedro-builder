@@ -4,6 +4,166 @@
  */
 
 import type { RootState } from '../types/redux';
+import type { KedroConnection } from '../types/kedro';
+import {
+  buildDependencyGraph,
+  detectCycles,
+  findOrphanedNodes,
+  findOrphanedDatasets,
+} from '../domain/PipelineGraph';
+
+// ============================================================
+// Real-time Input Validation
+// ============================================================
+
+export interface InputValidationResult {
+  isValid: boolean;
+  errorMessage: string | null;
+}
+
+// Regex patterns for name validation
+const NODE_NAME_PATTERN = /^[a-zA-Z][a-zA-Z0-9_\s]*$/;
+const DATASET_NAME_PATTERN = /^[a-z][a-z0-9_]*$/;
+
+// Reserved Python keywords that cannot be used as names
+export const PYTHON_KEYWORDS = new Set([
+  'False', 'None', 'True', 'and', 'as', 'assert', 'async', 'await',
+  'break', 'class', 'continue', 'def', 'del', 'elif', 'else', 'except',
+  'finally', 'for', 'from', 'global', 'if', 'import', 'in', 'is',
+  'lambda', 'nonlocal', 'not', 'or', 'pass', 'raise', 'return', 'try',
+  'while', 'with', 'yield',
+]);
+
+/**
+ * Check if a name is a reserved Python keyword
+ * @param name - The name to check (case-insensitive)
+ * @returns true if the name is a reserved Python keyword
+ */
+export function isPythonKeyword(name: string): boolean {
+  const trimmed = name.trim();
+  return PYTHON_KEYWORDS.has(trimmed) || PYTHON_KEYWORDS.has(trimmed.toLowerCase());
+}
+
+/**
+ * Validate a node name in real-time as user types
+ * @param name - The name to validate
+ * @param existingNames - Set of existing node names (excluding current node)
+ * @returns Validation result with error message if invalid
+ */
+export function validateNodeName(name: string, existingNames?: Set<string>): InputValidationResult {
+  const trimmed = name.trim();
+
+  // Check for empty name
+  if (!trimmed) {
+    return { isValid: false, errorMessage: 'Name is required' };
+  }
+
+  // Check minimum length
+  if (trimmed.length < 2) {
+    return { isValid: false, errorMessage: 'Name must be at least 2 characters' };
+  }
+
+  // Check maximum length
+  if (trimmed.length > 100) {
+    return { isValid: false, errorMessage: 'Name must be less than 100 characters' };
+  }
+
+  // Check pattern (starts with letter, allows letters, numbers, underscores, spaces)
+  if (!NODE_NAME_PATTERN.test(trimmed)) {
+    if (!/^[a-zA-Z]/.test(trimmed)) {
+      return { isValid: false, errorMessage: 'Name must start with a letter' };
+    }
+    return { isValid: false, errorMessage: 'Name can only contain letters, numbers, underscores, and spaces' };
+  }
+
+  // Check for reserved Python keywords
+  const lowerName = trimmed.toLowerCase();
+  if (PYTHON_KEYWORDS.has(trimmed) || PYTHON_KEYWORDS.has(lowerName)) {
+    return { isValid: false, errorMessage: `"${trimmed}" is a reserved Python keyword` };
+  }
+
+  // Check for duplicates
+  if (existingNames && existingNames.has(lowerName)) {
+    return { isValid: false, errorMessage: 'A node with this name already exists' };
+  }
+
+  return { isValid: true, errorMessage: null };
+}
+
+/**
+ * Validate a dataset name in real-time as user types
+ * Dataset names must be in snake_case format
+ * @param name - The name to validate
+ * @param existingNames - Set of existing dataset names (excluding current dataset)
+ * @returns Validation result with error message if invalid
+ */
+export function validateDatasetName(name: string, existingNames?: Set<string>): InputValidationResult {
+  const trimmed = name.trim();
+
+  // Check for empty name
+  if (!trimmed) {
+    return { isValid: false, errorMessage: 'Name is required' };
+  }
+
+  // Check minimum length
+  if (trimmed.length < 2) {
+    return { isValid: false, errorMessage: 'Name must be at least 2 characters' };
+  }
+
+  // Check maximum length
+  if (trimmed.length > 100) {
+    return { isValid: false, errorMessage: 'Name must be less than 100 characters' };
+  }
+
+  // Check for spaces (common mistake)
+  if (/\s/.test(trimmed)) {
+    return { isValid: false, errorMessage: 'Dataset names cannot contain spaces. Use underscores instead.' };
+  }
+
+  // Check for uppercase letters
+  if (/[A-Z]/.test(trimmed)) {
+    return { isValid: false, errorMessage: 'Dataset names must be lowercase (snake_case format)' };
+  }
+
+  // Check pattern (snake_case: starts with lowercase letter, only lowercase, numbers, underscores)
+  if (!DATASET_NAME_PATTERN.test(trimmed)) {
+    if (!/^[a-z]/.test(trimmed)) {
+      return { isValid: false, errorMessage: 'Name must start with a lowercase letter' };
+    }
+    return { isValid: false, errorMessage: 'Use snake_case: lowercase letters, numbers, and underscores only' };
+  }
+
+  // Check for reserved Python keywords
+  if (PYTHON_KEYWORDS.has(trimmed)) {
+    return { isValid: false, errorMessage: `"${trimmed}" is a reserved Python keyword` };
+  }
+
+  // Check for duplicates
+  if (existingNames && existingNames.has(trimmed)) {
+    return { isValid: false, errorMessage: 'A dataset with this name already exists' };
+  }
+
+  return { isValid: true, errorMessage: null };
+}
+
+/**
+ * Sanitize a string for use in Python identifiers
+ * Converts to snake_case and removes invalid characters
+ */
+export function sanitizeForPython(name: string): string {
+  return name
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g, '_')           // Replace spaces with underscores
+    .replace(/[^a-z0-9_]/g, '')     // Remove invalid characters
+    .replace(/^[0-9]+/, '')         // Remove leading numbers
+    .replace(/_+/g, '_')            // Replace multiple underscores with single
+    .replace(/^_|_$/g, '');         // Remove leading/trailing underscores
+}
+
+// ============================================================
+// Pipeline Validation (for export)
+// ============================================================
 
 export interface ValidationError {
   id: string;
@@ -49,125 +209,40 @@ export function validatePipeline(state: RootState): ValidationResult {
 }
 
 /**
- * Build dependency graph from connections
- * Traces node → dataset → node paths to detect cycles
+ * Helper to get connections array from state
  */
-function buildDependencyGraph(state: RootState): Map<string, Set<string>> {
-  const graph = new Map<string, Set<string>>();
-
-  // Initialize graph with all nodes
-  state.nodes.allIds.forEach((nodeId) => {
-    graph.set(nodeId, new Set());
-  });
-
-  // Build a map of dataset inputs and outputs
-  const datasetInputs = new Map<string, string[]>(); // dataset -> nodes that produce it
-  const datasetOutputs = new Map<string, string[]>(); // dataset -> nodes that consume it
-
-  state.connections.allIds.forEach((connId) => {
-    const conn = state.connections.byId[connId];
-    if (!conn) return;
-
-    const source = conn.source;
-    const target = conn.target;
-
-    // node → dataset
-    if (source.startsWith('node-') && target.startsWith('dataset-')) {
-      if (!datasetInputs.has(target)) datasetInputs.set(target, []);
-      datasetInputs.get(target)!.push(source);
-    }
-    // dataset → node
-    else if (source.startsWith('dataset-') && target.startsWith('node-')) {
-      if (!datasetOutputs.has(source)) datasetOutputs.set(source, []);
-      datasetOutputs.get(source)!.push(target);
-    }
-  });
-
-  // Build node-to-node edges through datasets
-  // For each dataset, connect all producer nodes to all consumer nodes
-  state.datasets.allIds.forEach((datasetId) => {
-    const producers = datasetInputs.get(datasetId) || [];
-    const consumers = datasetOutputs.get(datasetId) || [];
-
-    producers.forEach((producerNode) => {
-      consumers.forEach((consumerNode) => {
-        if (!graph.has(producerNode)) graph.set(producerNode, new Set());
-        graph.get(producerNode)!.add(consumerNode);
-      });
-    });
-  });
-
-  return graph;
-}
-
-/**
- * Detect cycles using DFS with recursion stack
- */
-function detectCycle(
-  node: string,
-  graph: Map<string, Set<string>>,
-  visited: Set<string>,
-  recStack: Set<string>,
-  path: string[]
-): boolean {
-  visited.add(node);
-  recStack.add(node);
-  path.push(node);
-
-  const neighbors = graph.get(node) || new Set();
-  for (const neighbor of neighbors) {
-    if (!visited.has(neighbor)) {
-      if (detectCycle(neighbor, graph, visited, recStack, path)) {
-        return true;
-      }
-    } else if (recStack.has(neighbor)) {
-      // Found cycle - add neighbor to complete the cycle in path
-      path.push(neighbor);
-      return true;
-    }
-  }
-
-  recStack.delete(node);
-  path.pop();
-  return false;
+function getConnectionsArray(state: RootState): KedroConnection[] {
+  return state.connections.allIds.map((id) => state.connections.byId[id]).filter(Boolean);
 }
 
 /**
  * Check for circular dependencies
+ * Uses PipelineGraph service for graph operations
  */
 function checkCircularDependencies(state: RootState): ValidationError[] {
   const errors: ValidationError[] = [];
-  const graph = buildDependencyGraph(state);
-  const visited = new Set<string>();
-  const processed = new Set<string>();
+  const connections = getConnectionsArray(state);
+  const graph = buildDependencyGraph(state.nodes.allIds, connections);
+  const cycles = detectCycles(graph);
 
-  for (const nodeId of state.nodes.allIds) {
-    if (!visited.has(nodeId)) {
-      const recStack = new Set<string>();
-      const path: string[] = [];
+  cycles.forEach((cycle) => {
+    if (cycle.hasCycle && cycle.cyclePath.length > 0) {
+      const nodeId = cycle.cyclePath[0];
+      // Convert node IDs to names for display
+      const cycleNames = cycle.cyclePath
+        .map((id) => state.nodes.byId[id]?.name || id)
+        .join(' → ');
 
-      if (detectCycle(nodeId, graph, visited, recStack, path)) {
-        // Found a cycle - convert node IDs to names
-        const cycleNames = path
-          .map((id) => state.nodes.byId[id]?.name || id)
-          .join(' → ');
-
-        // Only add error if we haven't processed this cycle
-        const cycleKey = path.slice().sort().join('-');
-        if (!processed.has(cycleKey)) {
-          processed.add(cycleKey);
-          errors.push({
-            id: `error-circular-${nodeId}`,
-            severity: 'error',
-            componentId: nodeId,
-            componentType: 'pipeline',
-            message: `Circular dependency detected: ${cycleNames}`,
-            suggestion: 'Remove one connection to break the cycle',
-          });
-        }
-      }
+      errors.push({
+        id: `error-circular-${nodeId}`,
+        severity: 'error',
+        componentId: nodeId,
+        componentType: 'pipeline',
+        message: `Circular dependency detected: ${cycleNames}`,
+        suggestion: 'Remove one connection to break the cycle',
+      });
     }
-  }
+  });
 
   return errors;
 }
@@ -327,33 +402,23 @@ function checkEmptyNames(state: RootState): ValidationError[] {
 
 /**
  * Check for orphaned nodes (no connections)
+ * Uses PipelineGraph service for orphan detection
  */
 function checkOrphanedNodes(state: RootState): ValidationError[] {
   const warnings: ValidationError[] = [];
-  const connectedNodes = new Set<string>();
+  const connections = getConnectionsArray(state);
+  const orphanedNodeIds = findOrphanedNodes(state.nodes.allIds, connections);
 
-  // Collect all connected node IDs
-  state.connections.allIds.forEach((connId) => {
-    const conn = state.connections.byId[connId];
-    if (conn) {
-      if (conn.source.startsWith('node-')) connectedNodes.add(conn.source);
-      if (conn.target.startsWith('node-')) connectedNodes.add(conn.target);
-    }
-  });
-
-  // Check for orphaned nodes
-  state.nodes.allIds.forEach((nodeId) => {
-    if (!connectedNodes.has(nodeId)) {
-      const node = state.nodes.byId[nodeId];
-      warnings.push({
-        id: `warning-orphan-node-${nodeId}`,
-        severity: 'warning',
-        componentId: nodeId,
-        componentType: 'node',
-        message: `Node "${node.name}" is not connected to any datasets`,
-        suggestion: 'Connect this node or remove it from the pipeline',
-      });
-    }
+  orphanedNodeIds.forEach((nodeId) => {
+    const node = state.nodes.byId[nodeId];
+    warnings.push({
+      id: `warning-orphan-node-${nodeId}`,
+      severity: 'warning',
+      componentId: nodeId,
+      componentType: 'node',
+      message: `Node "${node.name}" is not connected to any datasets`,
+      suggestion: 'Connect this node or remove it from the pipeline',
+    });
   });
 
   return warnings;
@@ -361,33 +426,23 @@ function checkOrphanedNodes(state: RootState): ValidationError[] {
 
 /**
  * Check for orphaned datasets (no connections)
+ * Uses PipelineGraph service for orphan detection
  */
 function checkOrphanedDatasets(state: RootState): ValidationError[] {
   const warnings: ValidationError[] = [];
-  const connectedDatasets = new Set<string>();
+  const connections = getConnectionsArray(state);
+  const orphanedDatasetIds = findOrphanedDatasets(state.datasets.allIds, connections);
 
-  // Collect all connected dataset IDs
-  state.connections.allIds.forEach((connId) => {
-    const conn = state.connections.byId[connId];
-    if (conn) {
-      if (conn.source.startsWith('dataset-')) connectedDatasets.add(conn.source);
-      if (conn.target.startsWith('dataset-')) connectedDatasets.add(conn.target);
-    }
-  });
-
-  // Check for orphaned datasets
-  state.datasets.allIds.forEach((datasetId) => {
-    if (!connectedDatasets.has(datasetId)) {
-      const dataset = state.datasets.byId[datasetId];
-      warnings.push({
-        id: `warning-orphan-dataset-${datasetId}`,
-        severity: 'warning',
-        componentId: datasetId,
-        componentType: 'dataset',
-        message: `Dataset "${dataset.name}" is not connected to any nodes`,
-        suggestion: 'Connect this dataset or remove it from the pipeline',
-      });
-    }
+  orphanedDatasetIds.forEach((datasetId) => {
+    const dataset = state.datasets.byId[datasetId];
+    warnings.push({
+      id: `warning-orphan-dataset-${datasetId}`,
+      severity: 'warning',
+      componentId: datasetId,
+      componentType: 'dataset',
+      message: `Dataset "${dataset.name}" is not connected to any nodes`,
+      suggestion: 'Connect this dataset or remove it from the pipeline',
+    });
   });
 
   return warnings;

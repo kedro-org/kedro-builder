@@ -1,10 +1,11 @@
 import { Database } from 'lucide-react';
 import { useAppDispatch, useAppSelector } from '../../../store/hooks';
-import { addNode, selectNode, clearSelection } from '../../../features/nodes/nodesSlice';
+import { addNode } from '../../../features/nodes/nodesSlice';
 import { addDataset } from '../../../features/datasets/datasetsSlice';
-import { clearConnectionSelection } from '../../../features/connections/connectionsSlice';
-import { openProjectSetup, openConfigPanel, setPendingComponent } from '../../../features/ui/uiSlice';
-import { TIMING } from '../../../constants/timing';
+import { openProjectSetup, setPendingComponent } from '../../../features/ui/uiSlice';
+import { generateId } from '../../../domain/IdGenerator';
+import { useClearSelections } from '../../../hooks/useClearSelections';
+import { useSelectAndOpenConfig } from '../../../hooks/useSelectAndOpenConfig';
 import { CANVAS } from '../../../constants/canvas';
 import './EmptyState.scss';
 
@@ -14,16 +15,17 @@ interface EmptyStateProps {
 
 export const EmptyState: React.FC<EmptyStateProps> = ({ isDragging = false }) => {
   const dispatch = useAppDispatch();
+  const clearAllSelections = useClearSelections();
+  const selectAndOpenConfig = useSelectAndOpenConfig();
   const hasActiveProject = useAppSelector((state) => state.ui.hasActiveProject);
   const showTutorial = useAppSelector((state) => state.ui.showTutorial);
   const showWalkthrough = useAppSelector((state) => state.ui.showWalkthrough);
   const hasPendingComponent = useAppSelector((state) => state.ui.pendingComponentId !== null);
 
   const handleAddDataset = () => {
-    dispatch(clearSelection());
-    dispatch(clearConnectionSelection());
+    clearAllSelections();
 
-    const newDatasetId = `dataset-${Date.now()}`;
+    const newDatasetId = generateId('dataset');
     dispatch(
       addDataset({
         name: '',
@@ -33,18 +35,13 @@ export const EmptyState: React.FC<EmptyStateProps> = ({ isDragging = false }) =>
     );
 
     dispatch(setPendingComponent({ type: 'dataset', id: newDatasetId }));
-
-    setTimeout(() => {
-      dispatch(selectNode(newDatasetId));
-      dispatch(openConfigPanel({ type: 'dataset', id: newDatasetId }));
-    }, TIMING.UI_UPDATE_DELAY);
+    selectAndOpenConfig('dataset', newDatasetId);
   };
 
   const handleAddNode = () => {
-    dispatch(clearSelection());
-    dispatch(clearConnectionSelection());
+    clearAllSelections();
 
-    const newNodeId = `node-${Date.now()}`;
+    const newNodeId = generateId('node');
     dispatch(
       addNode({
         type: 'custom',
@@ -53,11 +50,7 @@ export const EmptyState: React.FC<EmptyStateProps> = ({ isDragging = false }) =>
     );
 
     dispatch(setPendingComponent({ type: 'node', id: newNodeId }));
-
-    setTimeout(() => {
-      dispatch(selectNode(newNodeId));
-      dispatch(openConfigPanel({ type: 'node', id: newNodeId }));
-    }, TIMING.UI_UPDATE_DELAY);
+    selectAndOpenConfig('node', newNodeId);
   };
 
   const handleCreateProject = () => {

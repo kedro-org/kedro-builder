@@ -1,9 +1,10 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useState, useMemo } from 'react';
 import { useAppDispatch } from '../../../store/hooks';
 import { clearSelection, selectNodes, addNode } from '../../../features/nodes/nodesSlice';
 import { addDataset } from '../../../features/datasets/datasetsSlice';
+import { generateCopyId, isNodeId, isDatasetId } from '../../../domain/IdGenerator';
 import { logger } from '../../../utils/logger';
-import { trackEvent } from '../../../utils/telemetry';
+import { trackEvent } from '../../../infrastructure/telemetry';
 import type { KedroNode, KedroDataset } from '../../../types/kedro';
 
 interface CopiedItems {
@@ -24,6 +25,23 @@ export const useCopyPaste = (
 ) => {
   const dispatch = useAppDispatch();
   const [copiedItems, setCopiedItems] = useState<CopiedItems | null>(null);
+
+  // Create Maps for O(1) lookup instead of O(n) array.find()
+  const nodesById = useMemo(
+    () => new Map(reduxNodes.map((node) => [node.id, node])),
+    [reduxNodes]
+  );
+
+  const datasetsById = useMemo(
+    () => new Map(reduxDatasets.map((dataset) => [dataset.id, dataset])),
+    [reduxDatasets]
+  );
+
+  // Memoize existing names set for paste operation
+  const existingNamesSet = useMemo(
+    () => new Set([...reduxNodes.map((n) => n.name), ...reduxDatasets.map((d) => d.name)]),
+    [reduxNodes, reduxDatasets]
+  );
 
   // Generate unique name with smart _copy suffix
   const generateUniqueName = useCallback((baseName: string, existingNames: Set<string>): string => {
@@ -46,7 +64,7 @@ export const useCopyPaste = (
     }
 
     // First copy
-    let newName = `${baseName}_copy`;
+    const newName = `${baseName}_copy`;
     if (!existingNames.has(newName)) {
       return newName;
     }
@@ -59,19 +77,20 @@ export const useCopyPaste = (
     return `${baseName}_copy_${num}`;
   }, []);
 
-  // Copy selected items to state
+  // Copy selected items to state - uses Map for O(1) lookups
   const handleCopy = useCallback(() => {
     if (selectedNodeIds.length === 0) return;
 
     const nodesToCopy: KedroNode[] = [];
     const datasetsToCopy: KedroDataset[] = [];
 
+    // O(1) lookup per ID instead of O(n)
     selectedNodeIds.forEach((id) => {
-      if (id.startsWith('node-')) {
-        const node = reduxNodes.find((n) => n.id === id);
+      if (isNodeId(id)) {
+        const node = nodesById.get(id);
         if (node) nodesToCopy.push(node);
-      } else if (id.startsWith('dataset-')) {
-        const dataset = reduxDatasets.find((d) => d.id === id);
+      } else if (isDatasetId(id)) {
+        const dataset = datasetsById.get(id);
         if (dataset) datasetsToCopy.push(dataset);
       }
     });
@@ -87,7 +106,7 @@ export const useCopyPaste = (
       nodeCount: nodesToCopy.length,
       datasetCount: datasetsToCopy.length,
     });
-  }, [selectedNodeIds, reduxNodes, reduxDatasets]);
+  }, [selectedNodeIds, nodesById, datasetsById]);
 
   // Paste copied items with offset and smart naming
   const handlePaste = useCallback(() => {
@@ -95,17 +114,14 @@ export const useCopyPaste = (
       return;
     }
 
-    // Collect all existing names for uniqueness check
-    const existingNames = new Set<string>([
-      ...reduxNodes.map((n) => n.name),
-      ...reduxDatasets.map((d) => d.name),
-    ]);
+    // Clone the memoized set for mutation during paste
+    const existingNames = new Set(existingNamesSet);
 
     const newlyCreatedIds: string[] = [];
 
     // Paste nodes
     copiedItems.nodes.forEach((node) => {
-      const newId = `node-${Date.now()}-${Math.random().toString(36).slice(2, 11)}`;
+      const newId = generateCopyId('node');
       const newName = generateUniqueName(node.name, existingNames);
       existingNames.add(newName); // Add to set to avoid duplicates within the paste operation
 
@@ -125,7 +141,7 @@ export const useCopyPaste = (
 
     // Paste datasets
     copiedItems.datasets.forEach((dataset) => {
-      const newId = `dataset-${Date.now()}-${Math.random().toString(36).slice(2, 11)}`;
+      const newId = generateCopyId('dataset');
       const newName = generateUniqueName(dataset.name, existingNames);
       existingNames.add(newName);
 
@@ -153,7 +169,7 @@ export const useCopyPaste = (
       nodeCount: copiedItems.nodes.length,
       datasetCount: copiedItems.datasets.length,
     });
-  }, [copiedItems, reduxNodes, reduxDatasets, dispatch, generateUniqueName]);
+  }, [copiedItems, existingNamesSet, dispatch, generateUniqueName]);
 
   return {
     handleCopy,

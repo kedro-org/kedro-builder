@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { X } from 'lucide-react';
-import { trackEvent } from '../../utils/telemetry';
+import { trackEvent } from '../../infrastructure/telemetry';
 import { store } from '../../store';
 import toast from 'react-hot-toast';
 import './FeedbackModal.scss';

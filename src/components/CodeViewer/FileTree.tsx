@@ -1,28 +1,43 @@
 import { useEffect, useState, useMemo } from 'react';
 import { useAppSelector, useAppDispatch } from '../../store/hooks';
+import { useStore } from 'react-redux';
 import { selectCodeFile } from '../../features/ui/uiSlice';
+import { selectFileTreeDependencies, selectSelectedCodeFile } from '../../features/ui/uiSelectors';
 import { generateFileTree } from '../../utils/fileTreeGenerator';
 import type { FileNode } from '../../utils/fileTreeGenerator';
 import { ChevronRight, ChevronDown, Folder, File } from 'lucide-react';
 import { calculateTreeIndent } from '../../constants/fileTree';
+import type { RootState } from '../../types/redux';
 import './FileTree.scss';
 
 export const FileTree: React.FC = () => {
   const dispatch = useAppDispatch();
-  const state = useAppSelector((rootState) => rootState);
-  const selectedFile = useAppSelector((rootState) => rootState.ui.selectedCodeFile);
+  const store = useStore<RootState>();
+
+  // Use specific selectors instead of selecting entire state
+  // This prevents re-renders on unrelated state changes
+  const { projectCurrent, nodeIds, datasetIds, connectionIds } = useAppSelector(selectFileTreeDependencies);
+  const selectedFile = useAppSelector(selectSelectedCodeFile);
 
   const [expandedFolders, setExpandedFolders] = useState<Set<string>>(new Set());
 
   // Generate file tree from Redux state
+  // Only recompute when the specific dependencies change
+  // nodeIds, datasetIds, connectionIds are intentionally included as dependencies
+  // to trigger re-computation when the data changes, even though we get full state
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   const fileTree = useMemo(() => {
+    // Only generate if project exists
+    if (!projectCurrent) return null;
+
     try {
-      return generateFileTree(state);
+      // Get the full state only when we need to generate the tree
+      return generateFileTree(store.getState());
     } catch (error) {
       console.error('Failed to generate file tree:', error);
       return null;
     }
-  }, [state.project.current, state.nodes.allIds, state.datasets.allIds, state.connections.allIds]);
+  }, [projectCurrent, nodeIds, datasetIds, connectionIds, store]);
 
   // Initialize expanded folders
   useEffect(() => {

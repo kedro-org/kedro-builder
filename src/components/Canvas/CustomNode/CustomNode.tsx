@@ -1,22 +1,17 @@
 import { memo } from 'react';
 import { Handle, Position, type NodeProps } from '@xyflow/react';
-import { useSelector } from 'react-redux';
 import classNames from 'classnames';
 import type { KedroNode } from '../../../types/kedro';
-import type { RootState } from '../../../types/redux';
+import { useAppSelector } from '../../../store/hooks';
+import { selectNodeValidationStatus } from '../../../features/validation/validationSelectors';
 import './CustomNode.scss';
 
 export const CustomNode = memo<NodeProps>(({ data, selected }) => {
   const nodeData = data as KedroNode;
-  const validationErrors = useSelector((state: RootState) => state.validation.errors);
-  const validationWarnings = useSelector((state: RootState) => state.validation.warnings);
 
-  // Check if this node has any validation issues
-  const hasError = validationErrors.some(
-    (err) => err.componentId === nodeData.id && err.componentType === 'node'
-  );
-  const hasWarning = validationWarnings.some(
-    (warn) => warn.componentId === nodeData.id && warn.componentType === 'node'
+  // Use memoized selector for O(1) validation lookup instead of O(n) array.some()
+  const { hasError, hasWarning } = useAppSelector((state) =>
+    selectNodeValidationStatus(state, nodeData.id)
   );
 
   const nodeClasses = classNames(

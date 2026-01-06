@@ -31,7 +31,7 @@ class Logger {
   /**
    * Debug messages (verbose, development only)
    */
-  debug(message: string, ...args: any[]) {
+  debug(message: string, ...args: unknown[]) {
     if (this.level <= LogLevel.DEBUG) {
       console.log(`[DEBUG] ${message}`, ...args);
     }
@@ -40,7 +40,7 @@ class Logger {
   /**
    * Info messages (general information)
    */
-  info(message: string, ...args: any[]) {
+  info(message: string, ...args: unknown[]) {
     if (this.level <= LogLevel.INFO) {
       console.log(`ℹ️ ${message}`, ...args);
     }
@@ -49,7 +49,7 @@ class Logger {
   /**
    * Success messages (operations completed successfully)
    */
-  success(message: string, ...args: any[]) {
+  success(message: string, ...args: unknown[]) {
     if (this.level <= LogLevel.INFO) {
       console.log(`✅ ${message}`, ...args);
     }
@@ -58,7 +58,7 @@ class Logger {
   /**
    * Warning messages (potential issues)
    */
-  warn(message: string, ...args: any[]) {
+  warn(message: string, ...args: unknown[]) {
     if (this.level <= LogLevel.WARN) {
       console.warn(`⚠️ ${message}`, ...args);
     }
@@ -67,7 +67,7 @@ class Logger {
   /**
    * Error messages (failures)
    */
-  error(message: string, ...args: any[]) {
+  error(message: string, ...args: unknown[]) {
     if (this.level <= LogLevel.ERROR) {
       console.error(`❌ ${message}`, ...args);
     }
@@ -76,7 +76,7 @@ class Logger {
   /**
    * Log a feature start (with emoji for visibility)
    */
-  feature(message: string, ...args: any[]) {
+  feature(message: string, ...args: unknown[]) {
     if (this.level <= LogLevel.INFO) {
       console.log(`🚀 ${message}`, ...args);
     }
@@ -85,7 +85,7 @@ class Logger {
   /**
    * Log data loading (with emoji for visibility)
    */
-  load(message: string, ...args: any[]) {
+  load(message: string, ...args: unknown[]) {
     if (this.level <= LogLevel.INFO) {
       console.log(`📂 ${message}`, ...args);
     }
@@ -94,7 +94,7 @@ class Logger {
   /**
    * Log delete operations
    */
-  delete(message: string, ...args: any[]) {
+  delete(message: string, ...args: unknown[]) {
     if (this.level <= LogLevel.DEBUG) {
       console.log(`🗑️ [Delete] ${message}`, ...args);
     }
@@ -103,7 +103,7 @@ class Logger {
   /**
    * Log user interactions
    */
-  click(message: string, ...args: any[]) {
+  click(message: string, ...args: unknown[]) {
     if (this.level <= LogLevel.DEBUG) {
       console.log(`👆 [Click] ${message}`, ...args);
     }
@@ -112,7 +112,7 @@ class Logger {
   /**
    * Log save operations
    */
-  save(message: string, ...args: any[]) {
+  save(message: string, ...args: unknown[]) {
     if (this.level <= LogLevel.DEBUG) {
       console.log(`💾 [Save] ${message}`, ...args);
     }

@@ -45,6 +45,7 @@ export const CodeDisplay: React.FC = () => {
     };
   }, [theme]);
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   const fileTree = useMemo(() => {
     try {
       return generateFileTree(state);

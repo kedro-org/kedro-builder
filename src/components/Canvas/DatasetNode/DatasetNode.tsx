@@ -1,6 +1,5 @@
 import { memo } from 'react';
 import { Handle, Position, type NodeProps } from '@xyflow/react';
-import { useSelector } from 'react-redux';
 import {
   Database,
   FileSpreadsheet,
@@ -21,7 +20,8 @@ import {
 } from 'lucide-react';
 import classNames from 'classnames';
 import type { KedroDataset } from '../../../types/kedro';
-import type { RootState } from '../../../types/redux';
+import { useAppSelector } from '../../../store/hooks';
+import { selectDatasetValidationStatus } from '../../../features/validation/validationSelectors';
 import './DatasetNode.scss';
 
 // Map dataset types to their icons
@@ -81,15 +81,10 @@ const getExtensionLabel = (datasetType?: string): string => {
 
 export const DatasetNode = memo<NodeProps>(({ data, selected }) => {
   const datasetData = data as KedroDataset;
-  const validationErrors = useSelector((state: RootState) => state.validation.errors);
-  const validationWarnings = useSelector((state: RootState) => state.validation.warnings);
 
-  // Check if this dataset has any validation issues
-  const hasError = validationErrors.some(
-    (err) => err.componentId === datasetData.id && err.componentType === 'dataset'
-  );
-  const hasWarning = validationWarnings.some(
-    (warn) => warn.componentId === datasetData.id && warn.componentType === 'dataset'
+  // Use memoized selector for O(1) validation lookup instead of O(n) array.some()
+  const { hasError, hasWarning } = useAppSelector((state) =>
+    selectDatasetValidationStatus(state, datasetData.id)
   );
 
   // Get the appropriate icon for this dataset type
