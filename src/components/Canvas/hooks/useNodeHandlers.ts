@@ -161,10 +161,15 @@ export const useNodeHandlers = ({ onNodesChange, setIsDraggingOver, isDraggingOv
       });
 
       if (nodeType) {
+        // Generate ID first and pass it to addNode to ensure consistency
         const newNodeId = generateId('node');
         dispatch(
           addNode({
+            id: newNodeId,
+            name: '',
             type: nodeType as NodeType,
+            inputs: [],
+            outputs: [],
             position,
           })
         );
@@ -177,9 +182,11 @@ export const useNodeHandlers = ({ onNodesChange, setIsDraggingOver, isDraggingOv
         dispatch(setPendingComponent({ type: 'node', id: newNodeId }));
         selectAndOpenConfig('node', newNodeId);
       } else if (datasetType) {
+        // Generate ID first and pass it to addDataset to ensure consistency
         const newDatasetId = generateId('dataset');
         dispatch(
           addDataset({
+            id: newDatasetId,
             name: '',
             type: datasetType as DatasetType,
             position,

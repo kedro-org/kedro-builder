@@ -10,3 +10,4 @@ export * from './staticFilesGenerator';
 export * from './pyprojectGenerator';
 export * from './registryGenerator';
 export * from './projectGenerator';
+export * from './KedroProjectBuilder';

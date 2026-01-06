@@ -48,7 +48,7 @@ export function createMockState(overrides?: Partial<RootState>): Partial<RootSta
     datasets: {
       byId: {},
       allIds: [],
-      selected: null,
+      selected: [],
     },
     connections: {
       byId: {},

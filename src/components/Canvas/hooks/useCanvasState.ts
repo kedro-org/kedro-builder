@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect, useCallback } from 'react';
+import { useState, useMemo, useCallback, useLayoutEffect } from 'react';
 import { useNodesState, useEdgesState } from '@xyflow/react';
 import type { Node } from '@xyflow/react';
 import { useAppSelector } from '../../../store/hooks';
@@ -135,12 +135,13 @@ export const useCanvasState = () => {
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
 
   // Sync Redux nodes to ReactFlow when Redux changes
-  useEffect(() => {
+  // Use useLayoutEffect to ensure sync happens before paint
+  useLayoutEffect(() => {
     setNodes(initialNodes);
   }, [initialNodes, setNodes]);
 
   // Sync Redux edges to ReactFlow when Redux changes
-  useEffect(() => {
+  useLayoutEffect(() => {
     setEdges(initialEdges);
   }, [initialEdges, setEdges]);
 

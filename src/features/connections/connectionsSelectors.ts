@@ -8,7 +8,7 @@ const selectConnectionsAllIds = (state: RootState) => state.connections.allIds;
 // Memoized selectors
 export const selectAllConnections = createSelector(
   [selectConnectionsById, selectConnectionsAllIds],
-  (byId, allIds) => allIds.map((id) => byId[id])
+  (byId, allIds) => allIds.map((id) => byId[id]).filter(Boolean)
 );
 
 export const selectConnectionById = createSelector(

@@ -1,12 +1,13 @@
 /**
  * localStorage utility functions for persisting project state
- * Includes graceful degradation and quota handling
+ * Includes graceful degradation, quota handling, and Zod validation
  */
 
 import type { RootState } from '../../types/redux';
 import type { KedroProject, KedroNode, KedroDataset, KedroConnection } from '../../types/kedro';
 import { logger } from '../../utils/logger';
 import toast from 'react-hot-toast';
+import { parseStoredProjectState, getValidationErrors } from './schemas';
 
 const STORAGE_KEY = 'kedro_builder_current_project';
 
@@ -123,7 +124,8 @@ export const saveProjectToLocalStorage = (state: RootState): boolean => {
 
 /**
  * Load project state from localStorage
- * Returns null if no project exists or if loading fails
+ * Uses Zod schema validation for runtime type safety
+ * Returns null if no project exists, validation fails, or loading fails
  */
 export const loadProjectFromLocalStorage = (): StoredProjectState | null => {
   // Check if localStorage is available
@@ -138,15 +140,25 @@ export const loadProjectFromLocalStorage = (): StoredProjectState | null => {
       return null;
     }
 
-    const projectData = JSON.parse(stored) as StoredProjectState;
+    const rawData = JSON.parse(stored);
 
-    // Basic validation of loaded data
-    if (!projectData.project || !Array.isArray(projectData.nodes)) {
-      logger.error('Invalid project data in localStorage');
+    // Validate data structure using Zod schema
+    const validatedData = parseStoredProjectState(rawData);
+
+    if (!validatedData) {
+      // Get detailed validation errors for debugging
+      const errors = getValidationErrors(rawData);
+      logger.error('Invalid project data in localStorage:', errors);
+      toast.error('Project data format is invalid. Starting fresh.', {
+        duration: 4000,
+        position: 'bottom-right',
+      });
+      // Clear invalid data
+      clearProjectFromLocalStorage();
       return null;
     }
 
-    return projectData;
+    return validatedData;
   } catch (error) {
     if (error instanceof SyntaxError) {
       logger.error('Corrupted project data in localStorage:', error);

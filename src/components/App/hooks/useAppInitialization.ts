@@ -13,6 +13,19 @@ import { loadProjectFromLocalStorage } from '../../../infrastructure/localStorag
 import { logger } from '../../../utils/logger';
 
 /**
+ * Safely get item from localStorage with error handling
+ * Returns null if localStorage is unavailable or throws an error
+ */
+function safeGetLocalStorageItem(key: string): string | null {
+  try {
+    return localStorage.getItem(key);
+  } catch (error) {
+    logger.error(`Failed to read localStorage key "${key}":`, error);
+    return null;
+  }
+}
+
+/**
  * Custom hook to initialize app state from localStorage
  * Runs once on mount to set up tutorial, walkthrough, or load saved project
  */
@@ -20,8 +33,8 @@ export const useAppInitialization = () => {
   const dispatch = useAppDispatch();
 
   useEffect(() => {
-    const tutorialCompleted = localStorage.getItem('kedro_builder_tutorial_completed');
-    const walkthroughCompleted = localStorage.getItem('kedro_builder_walkthrough_completed');
+    const tutorialCompleted = safeGetLocalStorageItem('kedro_builder_tutorial_completed');
+    const walkthroughCompleted = safeGetLocalStorageItem('kedro_builder_walkthrough_completed');
 
     // Try to load saved project
     const savedProject = loadProjectFromLocalStorage();

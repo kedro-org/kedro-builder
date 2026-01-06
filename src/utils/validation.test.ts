@@ -22,7 +22,7 @@ function createState(
     datasets: {
       byId: Object.fromEntries(datasets.map((d) => [d.id, d])),
       allIds: datasets.map((d) => d.id),
-      selected: null,
+      selected: [],
     },
     connections: {
       byId: Object.fromEntries(connections.map((c) => [c.id, c])),

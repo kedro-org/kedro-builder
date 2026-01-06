@@ -2,7 +2,15 @@
  * @vitest-environment node
  */
 import { describe, it, expect } from 'vitest';
-import datasetsReducer, { addDataset, updateDataset, deleteDataset, selectDataset, clearDatasets } from './datasetsSlice';
+import datasetsReducer, {
+  addDataset,
+  updateDataset,
+  deleteDataset,
+  selectDataset,
+  toggleDatasetSelection,
+  clearDatasetSelection,
+  clearDatasets,
+} from './datasetsSlice';
 import type { DatasetsState } from '../../types/redux';
 import type { KedroDataset } from '../../types/kedro';
 
@@ -10,7 +18,7 @@ describe('datasetsSlice', () => {
   const initialState: DatasetsState = {
     byId: {},
     allIds: [],
-    selected: null,
+    selected: [],
   };
 
   const mockDataset: KedroDataset = {
@@ -89,55 +97,94 @@ describe('datasetsSlice', () => {
       expect(state.byId['dataset-1']).toBeUndefined();
     });
 
-    it('should clear selected if deleted dataset was selected', () => {
-      const stateWithDataset = {
+    it('should remove from selected if deleted dataset was selected', () => {
+      const stateWithDataset: DatasetsState = {
         ...initialState,
         byId: { 'dataset-1': mockDataset },
         allIds: ['dataset-1'],
-        selected: 'dataset-1',
+        selected: ['dataset-1'],
       };
 
       const state = datasetsReducer(stateWithDataset, deleteDataset('dataset-1'));
 
-      expect(state.selected).toBeNull();
+      expect(state.selected).toEqual([]);
     });
   });
 
   describe('selectDataset', () => {
-    it('should select dataset', () => {
+    it('should select dataset (single selection replaces all)', () => {
       const state = datasetsReducer(initialState, selectDataset('dataset-1'));
 
-      expect(state.selected).toBe('dataset-1');
+      expect(state.selected).toEqual(['dataset-1']);
     });
 
-    it('should clear selection with null', () => {
-      const stateWithSelection = {
+    it('should replace previous selection', () => {
+      const stateWithSelection: DatasetsState = {
         ...initialState,
-        selected: 'dataset-1',
+        selected: ['dataset-1'],
       };
 
-      const state = datasetsReducer(stateWithSelection, selectDataset(null));
+      const state = datasetsReducer(stateWithSelection, selectDataset('dataset-2'));
 
-      expect(state.selected).toBeNull();
+      expect(state.selected).toEqual(['dataset-2']);
+    });
+  });
+
+  describe('toggleDatasetSelection', () => {
+    it('should add dataset to selection', () => {
+      const state = datasetsReducer(initialState, toggleDatasetSelection('dataset-1'));
+
+      expect(state.selected).toEqual(['dataset-1']);
+    });
+
+    it('should remove dataset from selection if already selected', () => {
+      const stateWithSelection: DatasetsState = {
+        ...initialState,
+        selected: ['dataset-1'],
+      };
+
+      const state = datasetsReducer(stateWithSelection, toggleDatasetSelection('dataset-1'));
+
+      expect(state.selected).toEqual([]);
+    });
+
+    it('should support multi-select', () => {
+      let state = datasetsReducer(initialState, toggleDatasetSelection('dataset-1'));
+      state = datasetsReducer(state, toggleDatasetSelection('dataset-2'));
+
+      expect(state.selected).toEqual(['dataset-1', 'dataset-2']);
+    });
+  });
+
+  describe('clearDatasetSelection', () => {
+    it('should clear selection', () => {
+      const stateWithSelection: DatasetsState = {
+        ...initialState,
+        selected: ['dataset-1', 'dataset-2'],
+      };
+
+      const state = datasetsReducer(stateWithSelection, clearDatasetSelection());
+
+      expect(state.selected).toEqual([]);
     });
   });
 
   describe('clearDatasets', () => {
     it('should clear all datasets and selection', () => {
-      const stateWithData = {
+      const stateWithData: DatasetsState = {
         byId: {
           'dataset-1': mockDataset,
           'dataset-2': { ...mockDataset, id: 'dataset-2' },
         },
         allIds: ['dataset-1', 'dataset-2'],
-        selected: 'dataset-1',
+        selected: ['dataset-1'],
       };
 
       const state = datasetsReducer(stateWithData, clearDatasets());
 
       expect(state.allIds).toHaveLength(0);
       expect(Object.keys(state.byId)).toHaveLength(0);
-      expect(state.selected).toBeNull();
+      expect(state.selected).toEqual([]);
     });
   });
 });

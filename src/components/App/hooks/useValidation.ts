@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useAppDispatch } from '../../../store/hooks';
 import { store } from '../../../store';
 import {
@@ -12,7 +12,11 @@ import type { ValidationResult } from '../../../utils/validation';
 import { generateKedroProject, downloadProject } from '../../../infrastructure/export';
 import { logger } from '../../../utils/logger';
 import { trackEvent } from '../../../infrastructure/telemetry';
+import { TIMING } from '../../../constants/timing';
 import toast from 'react-hot-toast';
+
+// Debounce delay for validation to avoid excessive computation on rapid changes
+const VALIDATION_DEBOUNCE_MS = TIMING.VALIDATION_DEBOUNCE;
 
 interface UseValidationProps {
   showExportWizard: boolean;
@@ -32,23 +36,48 @@ export const useValidation = ({ showExportWizard }: UseValidationProps) => {
   const dispatch = useAppDispatch();
   const [exportValidationResult, setExportValidationResult] = useState<ValidationResult | null>(null);
 
+  // Ref to track debounce timeout for cleanup
+  const validationTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Debounced validation runner
+  const runDebouncedValidation = useCallback(() => {
+    // Clear any pending validation
+    if (validationTimeoutRef.current) {
+      clearTimeout(validationTimeoutRef.current);
+    }
+
+    validationTimeoutRef.current = setTimeout(() => {
+      const state = store.getState();
+      const validationResult = validatePipeline(state);
+
+      // Update validation results
+      dispatch(setValidationResults(validationResult));
+      setExportValidationResult(validationResult);
+      validationTimeoutRef.current = null;
+    }, VALIDATION_DEBOUNCE_MS);
+  }, [dispatch]);
+
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (validationTimeoutRef.current) {
+        clearTimeout(validationTimeoutRef.current);
+      }
+    };
+  }, []);
+
   // Listen for config updates to refresh validation if export wizard is open
   useEffect(() => {
     const handleConfigUpdate = () => {
       if (showExportWizard) {
-        // Re-run validation
-        const state = store.getState();
-        const validationResult = validatePipeline(state);
-
-        // Update validation results
-        dispatch(setValidationResults(validationResult));
-        setExportValidationResult(validationResult);
+        // Re-run validation with debouncing
+        runDebouncedValidation();
       }
     };
 
     window.addEventListener('configUpdated', handleConfigUpdate);
     return () => window.removeEventListener('configUpdated', handleConfigUpdate);
-  }, [showExportWizard, dispatch]);
+  }, [showExportWizard, runDebouncedValidation]);
 
   // Sync export validation result when showExportWizard changes
   useEffect(() => {

@@ -28,6 +28,7 @@ export const EmptyState: React.FC<EmptyStateProps> = ({ isDragging = false }) =>
     const newDatasetId = generateId('dataset');
     dispatch(
       addDataset({
+        id: newDatasetId,
         name: '',
         type: 'csv',
         position: CANVAS.DEFAULT_DATASET_POSITION,
@@ -44,7 +45,11 @@ export const EmptyState: React.FC<EmptyStateProps> = ({ isDragging = false }) =>
     const newNodeId = generateId('node');
     dispatch(
       addNode({
+        id: newNodeId,
+        name: '',
         type: 'custom',
+        inputs: [],
+        outputs: [],
         position: CANVAS.DEFAULT_NODE_POSITION,
       })
     );

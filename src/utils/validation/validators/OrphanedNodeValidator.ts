@@ -1,0 +1,40 @@
+/**
+ * Orphaned Node Validator
+ * Checks for nodes with no connections
+ */
+
+import type { RootState } from '../../../types/redux';
+import type { KedroConnection } from '../../../types/kedro';
+import type { ValidationError } from '../types';
+import type { Validator } from './Validator';
+import { findOrphanedNodes } from '../../../domain/PipelineGraph';
+
+export class OrphanedNodeValidator implements Validator {
+  readonly id = 'orphaned-node';
+  readonly name = 'Orphaned Node Check';
+  readonly severity = 'warning' as const;
+
+  validate(state: RootState): ValidationError[] {
+    const warnings: ValidationError[] = [];
+    const connections = this.getConnectionsArray(state);
+    const orphanedNodeIds = findOrphanedNodes(state.nodes.allIds, connections);
+
+    orphanedNodeIds.forEach((nodeId) => {
+      const node = state.nodes.byId[nodeId];
+      warnings.push({
+        id: `warning-orphan-node-${nodeId}`,
+        severity: 'warning',
+        componentId: nodeId,
+        componentType: 'node',
+        message: `Node "${node.name}" is not connected to any datasets`,
+        suggestion: 'Connect this node or remove it from the pipeline',
+      });
+    });
+
+    return warnings;
+  }
+
+  private getConnectionsArray(state: RootState): KedroConnection[] {
+    return state.connections.allIds.map((id) => state.connections.byId[id]).filter(Boolean);
+  }
+}
