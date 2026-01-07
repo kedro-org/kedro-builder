@@ -7,9 +7,10 @@ Kedro Builder lets data teams design Kedro pipelines without touching YAML or Py
 - 🎨 **Drag-and-drop canvas** powered by ReactFlow with custom Kedro node and dataset components, bulk selection, and connection validation.
 - 🧩 **Rich configuration forms** for nodes and datasets (react-hook-form) with snake_case enforcement, optional node function code, dataset type presets, and a filepath builder that understands Kedro data layers.
 - 🧭 **Guided onboarding** including a five-step tutorial, contextual walkthrough overlays, and empty-state guidance to help first-time users create their first project.
-- 🛟 **Auto-save & preferences** persist the active project, tutorial progress, and theme (light/dark) in localStorage so users can close the tab and resume later.
+- 🛟 **Auto-save & preferences** persist the active project, tutorial progress, and theme (light/dark) in localStorage with graceful degradation and quota handling.
 - 🛠 **Validation-first export** checks for circular dependencies, duplicate/invalid names, orphaned components, and missing configuration before allowing code preview or export.
 - 📦 **One-click code generation** builds a complete Kedro project (pyproject, `conf/`, pipeline package, data directories) and downloads it as a ZIP. A built-in code viewer previews every file before export.
+- 🛡️ **Error resilience** with React Error Boundaries around critical sections and comprehensive input validation for Python identifiers.
 
 ## Quick Start
 ### Prerequisites
@@ -61,11 +62,23 @@ Issues are surfaced in the validation panel with actionable messages and severit
 - Vitest + Testing Library for unit coverage of slices, validation, and generators
 
 ## Project Layout
-- `src/components/` – UI primitives, canvas, configuration forms, export wizard, code viewer, onboarding surfaces
-- `src/features/` – Redux slices for project, nodes, datasets, connections, validation, theme, and UI flow
-- `src/utils/export/` – Kedro project generators and tests
-- `src/utils/validation.ts` – Pipeline validation rules
-- `PROJECT_ARCHITECTURE.md` – In-depth architecture notes and diagrams
+```
+src/
+├── domain/           # Framework-agnostic business logic (ID generation, graph operations)
+├── infrastructure/   # External service integrations
+│   ├── export/       # Kedro project generators and tests
+│   ├── localStorage/ # Persistence layer with validation
+│   └── telemetry/    # Analytics tracking (Heap)
+├── features/         # Redux slices (project, nodes, datasets, connections, validation, theme, ui, canvas)
+├── components/       # React components (Canvas, ConfigPanel, ExportWizard, CodeViewer, UI primitives)
+├── hooks/            # Custom React hooks (useConfirmDialog, useClearSelections, etc.)
+├── store/            # Redux store configuration and middleware
+├── types/            # TypeScript definitions including branded ID types
+├── utils/            # Validation rules and utility functions
+├── styles/           # Global SCSS styles and theme variables
+└── constants/        # Application constants
+```
+See `PROJECT_ARCHITECTURE.md` for in-depth architecture notes and diagrams.
 
 ## Development Scripts
 ```bash
