@@ -9,7 +9,7 @@ const selectNodesSelected = (state: RootState) => state.nodes.selected;
 // Memoized selectors
 export const selectAllNodes = createSelector(
   [selectNodesById, selectNodesAllIds],
-  (byId, allIds) => allIds.map((id) => byId[id])
+  (byId, allIds) => allIds.map((id) => byId[id]).filter(Boolean)
 );
 
 export const selectNodeById = createSelector(

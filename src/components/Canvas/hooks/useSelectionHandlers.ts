@@ -10,11 +10,13 @@ import {
   deleteConnections,
 } from '../../../features/connections/connectionsSlice';
 import { closeConfigPanel } from '../../../features/ui/uiSlice';
+import { isNodeId, isDatasetId } from '../../../domain/IdGenerator';
 import { logger } from '../../../utils/logger';
 import type { KedroNode, KedroDataset } from '../../../types/kedro';
 import { useDeleteConfirmation } from './useDeleteConfirmation';
 import { useCopyPaste } from './useCopyPaste';
 import { useCanvasKeyboardShortcuts } from './useCanvasKeyboardShortcuts';
+import { useClearSelections } from '../../../hooks/useClearSelections';
 
 interface SelectionHandlersProps {
   reduxNodes: KedroNode[];
@@ -41,6 +43,7 @@ export const useSelectionHandlers = ({
 }: SelectionHandlersProps) => {
   const dispatch = useAppDispatch();
   const { fitView, getNode } = useReactFlow();
+  const clearAllSelections = useClearSelections();
 
   // Delete confirmation sub-hook
   const {
@@ -62,9 +65,9 @@ export const useSelectionHandlers = ({
     if (!needsConfirmation) {
       if (selectedNodeIds.length > 0) {
         selectedNodeIds.forEach((id) => {
-          if (id.startsWith('node-')) {
+          if (isNodeId(id)) {
             dispatch(deleteNodes([id]));
-          } else if (id.startsWith('dataset-')) {
+          } else if (isDatasetId(id)) {
             dispatch(deleteDataset(id));
           }
         });
@@ -112,10 +115,9 @@ export const useSelectionHandlers = ({
   // Handle canvas click (clear selection and close config panel)
   const handlePaneClick = useCallback(() => {
     logger.click('Clearing selection and closing config panel');
-    dispatch(clearSelection());
-    dispatch(clearConnectionSelection());
+    clearAllSelections();
     dispatch(closeConfigPanel());
-  }, [dispatch]);
+  }, [clearAllSelections, dispatch]);
 
   // Handle selection change from ReactFlow (box selection)
   const handleSelectionChange = useCallback(
@@ -139,9 +141,8 @@ export const useSelectionHandlers = ({
 
   // Clear selection
   const handleBulkClear = useCallback(() => {
-    dispatch(clearSelection());
-    dispatch(clearConnectionSelection());
-  }, [dispatch]);
+    clearAllSelections();
+  }, [clearAllSelections]);
 
   // Handle ReactFlow edge deletion (triggered by Delete key via ReactFlow)
   const handleEdgesDelete = useCallback(

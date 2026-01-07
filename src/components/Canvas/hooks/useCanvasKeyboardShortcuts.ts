@@ -1,8 +1,8 @@
 import { useEffect } from 'react';
 import { useAppDispatch } from '../../../store/hooks';
-import { clearSelection, selectNodes } from '../../../features/nodes/nodesSlice';
-import { clearConnectionSelection } from '../../../features/connections/connectionsSlice';
+import { selectNodes } from '../../../features/nodes/nodesSlice';
 import { closeConfigPanel } from '../../../features/ui/uiSlice';
+import { useClearSelections } from '../../../hooks/useClearSelections';
 import type { KedroNode, KedroDataset } from '../../../types/kedro';
 
 interface KeyboardShortcutsProps {
@@ -29,6 +29,7 @@ export const useCanvasKeyboardShortcuts = ({
   onDelete,
 }: KeyboardShortcutsProps) => {
   const dispatch = useAppDispatch();
+  const clearAllSelections = useClearSelections();
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -48,8 +49,7 @@ export const useCanvasKeyboardShortcuts = ({
 
       // Escape key - clear selection and close config panel
       if (event.key === 'Escape') {
-        dispatch(clearSelection());
-        dispatch(clearConnectionSelection());
+        clearAllSelections();
         dispatch(closeConfigPanel());
       }
 
@@ -93,5 +93,5 @@ export const useCanvasKeyboardShortcuts = ({
       window.removeEventListener('keydown', handleKeyDown);
       window.removeEventListener('keyup', handleKeyUp);
     };
-  }, [dispatch, reduxNodes, reduxDatasets, isPanMode, setIsPanMode, onCopy, onPaste, onDelete]);
+  }, [dispatch, clearAllSelections, reduxNodes, reduxDatasets, isPanMode, setIsPanMode, onCopy, onPaste, onDelete]);
 };

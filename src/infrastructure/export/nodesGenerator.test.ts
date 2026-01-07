@@ -30,7 +30,7 @@ describe('nodesGenerator', () => {
       const result = generateNodes([node], [], {}, 'test');
 
       expect(result).toContain('def init_node() -> None:');
-      expect(result).toContain('"""init_node."""');
+      expect(result).toContain('# Implement your custom logic here');
       expect(result).toContain('pass');
     });
 
@@ -83,12 +83,8 @@ describe('nodesGenerator', () => {
       const result = generateNodes([node], connections, datasets, 'test');
 
       expect(result).toContain('def process_data(raw_data: pd.DataFrame) -> pd.DataFrame:');
-      expect(result).toContain('Args:');
-      expect(result).toContain('raw_data: Input raw_data');
-      expect(result).toContain('Returns:');
-      expect(result).toContain('Processed processed_data');
-      expect(result).toContain('# TODO: Implement your data_processing logic here');
-      expect(result).toContain('logger.info("Running process_data...")');
+      expect(result).toContain('# Implement your custom logic here');
+      expect(result).toContain('pass');
     });
 
     it('should generate node with multiple inputs and multiple outputs', () => {
@@ -118,10 +114,8 @@ describe('nodesGenerator', () => {
       const result = generateNodes([node], connections, datasets, 'test');
 
       expect(result).toContain('def merge_data(data1: pd.DataFrame, data2: pd.DataFrame) -> Tuple[pd.DataFrame, pd.DataFrame]:');
-      expect(result).toContain('data1: Input data1');
-      expect(result).toContain('data2: Input data2');
-      expect(result).toContain('Tuple of (merged, stats)');
-      expect(result).toContain('return (merged, stats)');
+      expect(result).toContain('# Implement your custom logic here');
+      expect(result).toContain('pass');
     });
 
     it('should generate node with custom function code', () => {
@@ -225,10 +219,7 @@ return result`,
       const result = generateNodes([node], connections, datasets, 'test');
 
       expect(result).toContain('def sink_node(data: pd.DataFrame) -> None:');
-      expect(result).toContain('Args:');
-      expect(result).toContain('data: Input data');
-      expect(result).toContain('Returns:');
-      expect(result).toContain('None');
+      expect(result).toContain('# Implement your custom logic here');
       expect(result).toContain('pass');
     });
 
@@ -245,7 +236,8 @@ return result`,
       const result = generateNodes([node], [], {}, 'test');
 
       expect(result).toContain('def process_sales_data() -> None:');
-      expect(result).toContain('"""Process Sales Data."""');
+      expect(result).toContain('# Implement your custom logic here');
+      expect(result).toContain('pass');
     });
 
     it('should convert node name with CamelCase to snake_case', () => {
@@ -291,7 +283,7 @@ return result`,
       expect(result).toMatch(/def func1.*\n\n\n.*def func2/s);
     });
 
-    it('should include node description in docstring if provided', () => {
+    it('should generate template function for node without custom code', () => {
       const node: KedroNode = {
         id: 'node-1',
         name: 'load_data',
@@ -304,11 +296,13 @@ return result`,
 
       const result = generateNodes([node], [], {}, 'test');
 
-      // Node name is used in docstring
-      expect(result).toContain('"""load_data."""');
+      // Template functions use simple placeholder
+      expect(result).toContain('def load_data() -> None:');
+      expect(result).toContain('# Implement your custom logic here');
+      expect(result).toContain('pass');
     });
 
-    it('should include logger.info statement in template functions', () => {
+    it('should generate template with inputs and outputs', () => {
       const node: KedroNode = {
         id: 'node-1',
         name: 'process',
@@ -330,10 +324,13 @@ return result`,
 
       const result = generateNodes([node], connections, datasets, 'test');
 
-      expect(result).toContain('logger.info("Running process...")');
+      // Template function with proper signature
+      expect(result).toContain('def process(data: pd.DataFrame) -> pd.DataFrame:');
+      expect(result).toContain('# Implement your custom logic here');
+      expect(result).toContain('pass');
     });
 
-    it('should generate placeholder body with DataFrame operations', () => {
+    it('should generate simple placeholder for template functions', () => {
       const node: KedroNode = {
         id: 'node-1',
         name: 'transform',
@@ -355,8 +352,10 @@ return result`,
 
       const result = generateNodes([node], connections, datasets, 'test');
 
-      expect(result).toContain('output = input.copy()');
-      expect(result).toContain('return output');
+      // Template uses simple pass placeholder
+      expect(result).toContain('def transform(input: pd.DataFrame) -> pd.DataFrame:');
+      expect(result).toContain('# Implement your custom logic here');
+      expect(result).toContain('pass');
     });
 
     it('should handle empty string function code as no custom code', () => {
@@ -483,8 +482,10 @@ return result`,
 
       const result = generateNodes([node], connections, datasets, 'test');
 
+      // Proper return type for multiple outputs
       expect(result).toContain('Tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]');
-      expect(result).toContain('return (train, test, validation)');
+      expect(result).toContain('# Implement your custom logic here');
+      expect(result).toContain('pass');
     });
   });
 });

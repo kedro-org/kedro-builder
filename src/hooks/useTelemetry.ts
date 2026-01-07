@@ -1,5 +1,5 @@
 import { useCallback } from 'react';
-import { trackEvent } from '../utils/telemetry';
+import { trackEvent } from '../infrastructure/telemetry';
 
 /**
  * React hook for tracking telemetry events

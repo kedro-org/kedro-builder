@@ -2,11 +2,12 @@ import { createSlice } from '@reduxjs/toolkit';
 import type { PayloadAction } from '@reduxjs/toolkit';
 import type { DatasetsState } from '../../types/redux';
 import type { KedroDataset } from '../../types/kedro';
+import { generateId } from '../../domain/IdGenerator';
 
 const initialState: DatasetsState = {
   byId: {},
   allIds: [],
-  selected: null,
+  selected: [],  // Array for multi-select consistency with nodes/connections
 };
 
 const datasetsSlice = createSlice({
@@ -26,8 +27,8 @@ const datasetsSlice = createSlice({
         if ('id' in payload && payload.id) {
           return { payload: payload as KedroDataset };
         }
-        // Otherwise, create a new dataset with generated id
-        const id = `dataset-${Date.now()}`;
+        // Otherwise, create a new dataset with generated id using IdGenerator
+        const id = generateId('dataset');
         const newDataset: KedroDataset = {
           ...payload,
           id,
@@ -60,17 +61,41 @@ const datasetsSlice = createSlice({
       const id = action.payload;
       delete state.byId[id];
       state.allIds = state.allIds.filter((datasetId) => datasetId !== id);
-      if (state.selected === id) {
-        state.selected = null;
+      // Remove from selected array
+      state.selected = state.selected.filter((datasetId) => datasetId !== id);
+    },
+    deleteDatasets: (state, action: PayloadAction<string[]>) => {
+      const ids = action.payload;
+      ids.forEach((id) => {
+        delete state.byId[id];
+        state.allIds = state.allIds.filter((datasetId) => datasetId !== id);
+        state.selected = state.selected.filter((datasetId) => datasetId !== id);
+      });
+    },
+    selectDataset: (state, action: PayloadAction<string>) => {
+      // Single selection - replace all
+      state.selected = [action.payload];
+    },
+    toggleDatasetSelection: (state, action: PayloadAction<string>) => {
+      // Multi-select toggle
+      const id = action.payload;
+      if (state.selected.includes(id)) {
+        state.selected = state.selected.filter((datasetId) => datasetId !== id);
+      } else {
+        state.selected.push(id);
       }
     },
-    selectDataset: (state, action: PayloadAction<string | null>) => {
+    selectDatasets: (state, action: PayloadAction<string[]>) => {
+      // Set multiple selected
       state.selected = action.payload;
+    },
+    clearDatasetSelection: (state) => {
+      state.selected = [];
     },
     clearDatasets: (state) => {
       state.byId = {};
       state.allIds = [];
-      state.selected = null;
+      state.selected = [];
     },
   },
 });
@@ -80,7 +105,11 @@ export const {
   updateDataset,
   updateDatasetPosition,
   deleteDataset,
+  deleteDatasets,
   selectDataset,
+  toggleDatasetSelection,
+  selectDatasets,
+  clearDatasetSelection,
   clearDatasets,
 } = datasetsSlice.actions;
 

@@ -2,6 +2,7 @@ import { createSlice } from '@reduxjs/toolkit';
 import type { PayloadAction } from '@reduxjs/toolkit';
 import type { NodesState } from '../../types/redux';
 import type { KedroNode, NodeType } from '../../types/kedro';
+import { generateId } from '../../domain/IdGenerator';
 
 const initialState: NodesState = {
   byId: {},
@@ -27,8 +28,8 @@ const nodesSlice = createSlice({
         if ('id' in payload) {
           return { payload };
         }
-        // Otherwise, create a new node
-        const id = `node-${Date.now()}`;
+        // Otherwise, create a new node using IdGenerator
+        const id = generateId('node');
         const newNode: KedroNode = {
           id,
           name: '',

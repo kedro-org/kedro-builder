@@ -4,6 +4,7 @@ import { clearSelection, deleteNodes } from '../../../features/nodes/nodesSlice'
 import { deleteDataset } from '../../../features/datasets/datasetsSlice';
 import { clearConnectionSelection, deleteConnections } from '../../../features/connections/connectionsSlice';
 import { closeConfigPanel } from '../../../features/ui/uiSlice';
+import { isNodeId, isDatasetId } from '../../../domain/IdGenerator';
 import { logger } from '../../../utils/logger';
 
 // Types for delete confirmation state
@@ -61,9 +62,9 @@ export const useDeleteConfirmation = () => {
       // Delete nodes and datasets
       if (deleteConfirmation.nodeIds && deleteConfirmation.nodeIds.length > 0) {
         deleteConfirmation.nodeIds.forEach((id) => {
-          if (id.startsWith('node-')) {
+          if (isNodeId(id)) {
             dispatch(deleteNodes([id]));
-          } else if (id.startsWith('dataset-')) {
+          } else if (isDatasetId(id)) {
             dispatch(deleteDataset(id));
           }
         });

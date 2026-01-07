@@ -13,13 +13,17 @@
  * - localStorage-based consent (no backend required)
  */
 
+// Type for telemetry property values (primitives only for safety)
+type TelemetryPropertyValue = string | number | boolean;
+type TelemetryProperties = Record<string, TelemetryPropertyValue>;
+
 // Extend Window interface for Heap
 declare global {
   interface Window {
     heap?: {
-      track: (eventName: string, properties?: Record<string, any>) => void;
-      addEventProperties: (properties: Record<string, any>) => void;
-      addUserProperties: (properties: Record<string, any>) => void;
+      track: (eventName: string, properties?: TelemetryProperties) => void;
+      addEventProperties: (properties: TelemetryProperties) => void;
+      addUserProperties: (properties: TelemetryProperties) => void;
       identify: (identity: string) => void;
       resetIdentity: () => void;
     };
@@ -116,10 +120,10 @@ export const markConsentBannerShown = (): void => {
  * @param props - Properties object to sanitize
  * @returns Sanitized properties object or undefined if props is empty
  */
-const sanitizeProperties = (props?: Record<string, any>): Record<string, any> | undefined => {
+const sanitizeProperties = (props?: Record<string, unknown>): TelemetryProperties | undefined => {
   if (!props) return undefined;
 
-  const sanitized: Record<string, any> = {};
+  const sanitized: TelemetryProperties = {};
 
   for (const [key, value] of Object.entries(props)) {
     // Block any keys that might contain PII
@@ -130,7 +134,7 @@ const sanitizeProperties = (props?: Record<string, any>): Record<string, any> | 
 
     // Only allow primitive types (no objects that might contain PII)
     if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') {
-      sanitized[key] = value;
+      sanitized[key] = value as TelemetryPropertyValue;
     } else {
       console.warn(`Telemetry: Blocked non-primitive value for key "${key}"`);
     }
@@ -150,7 +154,7 @@ const sanitizeProperties = (props?: Record<string, any>): Record<string, any> | 
  * trackEvent('node_added', { type: 'data_ingestion', count: 1 });
  * trackEvent('app_opened', { version: '0.1.0', theme: 'dark' });
  */
-export const trackEvent = (eventName: string, properties?: Record<string, any>): void => {
+export const trackEvent = (eventName: string, properties?: Record<string, unknown>): void => {
   // Check consent
   if (!getTelemetryConsent()) {
     return;
@@ -181,7 +185,7 @@ export const trackEvent = (eventName: string, properties?: Record<string, any>):
  * @example
  * setGlobalEventProperties({ version: '0.1.0', theme: 'dark' });
  */
-export const setGlobalEventProperties = (properties: Record<string, any>): void => {
+export const setGlobalEventProperties = (properties: Record<string, unknown>): void => {
   if (!getTelemetryConsent()) {
     return;
   }

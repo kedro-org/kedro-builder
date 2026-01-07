@@ -4,7 +4,7 @@
 
 import type { Middleware } from '@reduxjs/toolkit';
 import type { RootState } from '../../types/redux';
-import { saveProjectToLocalStorage } from '../../utils/localStorage';
+import { saveProjectToLocalStorage } from '../../infrastructure/localStorage';
 import { logger } from '../../utils/logger';
 import { TIMING } from '../../constants/timing';
 
@@ -41,7 +41,7 @@ const SAVE_TRIGGER_ACTIONS = [
  * Auto-save middleware
  * Debounces saves to avoid excessive localStorage writes
  */
-export const autoSaveMiddleware: Middleware<{}, RootState> = (store) => (next) => (action) => {
+export const autoSaveMiddleware: Middleware<object, RootState> = (store) => (next) => (action) => {
   const result = next(action);
 
   // Check if this action should trigger a save

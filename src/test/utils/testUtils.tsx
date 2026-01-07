@@ -35,7 +35,9 @@ export function renderWithProviders(
         project: projectReducer,
         validation: validationReducer,
         theme: themeReducer,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } as any,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       preloadedState: preloadedState as any,
     }),
     ...renderOptions
@@ -48,6 +50,7 @@ export function renderWithProviders(
   return { store, ...render(ui, { wrapper: Wrapper, ...renderOptions }) };
 }
 
-// Re-export everything
+// Re-export everything from testing-library
+// eslint-disable-next-line react-refresh/only-export-components
 export * from '@testing-library/react';
 export { renderWithProviders as render };

@@ -1,6 +1,6 @@
 import { useCallback, useState } from 'react';
 import { useReactFlow } from '@xyflow/react';
-import type { Node, NodeMouseHandler } from '@xyflow/react';
+import type { Node, NodeMouseHandler, OnNodesChange, NodeChange } from '@xyflow/react';
 import { useAppDispatch } from '../../../store/hooks';
 import {
   addNode,
@@ -15,11 +15,12 @@ import {
   updateDatasetPosition,
   deleteDataset,
 } from '../../../features/datasets/datasetsSlice';
-import { openConfigPanel, closeConfigPanel, setPendingComponent } from '../../../features/ui/uiSlice';
+import { closeConfigPanel, openConfigPanel, setPendingComponent } from '../../../features/ui/uiSlice';
 import { clearConnectionSelection } from '../../../features/connections/connectionsSlice';
+import { generateId, isNodeId, isDatasetId } from '../../../domain/IdGenerator';
+import { useSelectAndOpenConfig } from '../../../hooks/useSelectAndOpenConfig';
 import { logger } from '../../../utils/logger';
-import { TIMING } from '../../../constants/timing';
-import { trackEvent } from '../../../utils/telemetry';
+import { trackEvent } from '../../../infrastructure/telemetry';
 import type { NodeType, DatasetType } from '../../../types/kedro';
 
 // Type for node delete confirmation state
@@ -30,7 +31,7 @@ export interface NodeDeleteConfirmation {
 }
 
 interface NodeHandlersProps {
-  onNodesChange: (changes: any[]) => void;
+  onNodesChange: OnNodesChange;
   setIsDraggingOver: React.Dispatch<React.SetStateAction<boolean>>;
   isDraggingOver: boolean;
   isEmpty: boolean;
@@ -42,6 +43,7 @@ interface NodeHandlersProps {
 export const useNodeHandlers = ({ onNodesChange, setIsDraggingOver, isDraggingOver, isEmpty }: NodeHandlersProps) => {
   const dispatch = useAppDispatch();
   const { screenToFlowPosition } = useReactFlow();
+  const selectAndOpenConfig = useSelectAndOpenConfig();
 
   // State for custom delete confirmation dialog
   const [nodeDeleteConfirmation, setNodeDeleteConfirmation] = useState<NodeDeleteConfirmation | null>(null);
@@ -56,9 +58,9 @@ export const useNodeHandlers = ({ onNodesChange, setIsDraggingOver, isDraggingOv
       const datasetIdsToDelete: string[] = [];
 
       nodesToDelete.forEach((node) => {
-        if (node.id.startsWith('node-')) {
+        if (isNodeId(node.id)) {
           nodeIdsToDelete.push(node.id);
-        } else if (node.id.startsWith('dataset-')) {
+        } else if (isDatasetId(node.id)) {
           datasetIdsToDelete.push(node.id);
         }
       });
@@ -73,7 +75,7 @@ export const useNodeHandlers = ({ onNodesChange, setIsDraggingOver, isDraggingOv
         return; // Wait for confirmation
       }
     },
-    [dispatch]
+    []
   );
 
   // Confirm node delete action
@@ -107,21 +109,21 @@ export const useNodeHandlers = ({ onNodesChange, setIsDraggingOver, isDraggingOv
 
   // Sync position changes to Redux (immediate for smooth edges)
   const handleNodesChange = useCallback(
-    (changes: any[]) => {
+    (changes: NodeChange[]) => {
       onNodesChange(changes);
 
       // Update Redux immediately during and after dragging for smooth edge rendering
-      changes.forEach((change: any) => {
+      changes.forEach((change: NodeChange) => {
         if (change.type === 'position' && change.position) {
-          // Determine if it's a node or dataset based on ID prefix
-          if (change.id.startsWith('node-')) {
+          // Determine if it's a node or dataset using type guards
+          if (isNodeId(change.id)) {
             dispatch(
               updateNodePosition({
                 id: change.id,
                 position: change.position,
               })
             );
-          } else if (change.id.startsWith('dataset-')) {
+          } else if (isDatasetId(change.id)) {
             dispatch(
               updateDatasetPosition({
                 id: change.id,
@@ -159,10 +161,15 @@ export const useNodeHandlers = ({ onNodesChange, setIsDraggingOver, isDraggingOv
       });
 
       if (nodeType) {
-        const newNodeId = `node-${Date.now()}`;
+        // Generate ID first and pass it to addNode to ensure consistency
+        const newNodeId = generateId('node');
         dispatch(
           addNode({
+            id: newNodeId,
+            name: '',
             type: nodeType as NodeType,
+            inputs: [],
+            outputs: [],
             position,
           })
         );
@@ -173,15 +180,13 @@ export const useNodeHandlers = ({ onNodesChange, setIsDraggingOver, isDraggingOv
         });
 
         dispatch(setPendingComponent({ type: 'node', id: newNodeId }));
-
-        setTimeout(() => {
-          dispatch(selectNode(newNodeId));
-          dispatch(openConfigPanel({ type: 'node', id: newNodeId }));
-        }, TIMING.UI_UPDATE_DELAY);
+        selectAndOpenConfig('node', newNodeId);
       } else if (datasetType) {
-        const newDatasetId = `dataset-${Date.now()}`;
+        // Generate ID first and pass it to addDataset to ensure consistency
+        const newDatasetId = generateId('dataset');
         dispatch(
           addDataset({
+            id: newDatasetId,
             name: '',
             type: datasetType as DatasetType,
             position,
@@ -194,14 +199,10 @@ export const useNodeHandlers = ({ onNodesChange, setIsDraggingOver, isDraggingOv
         });
 
         dispatch(setPendingComponent({ type: 'dataset', id: newDatasetId }));
-
-        setTimeout(() => {
-          dispatch(selectNode(newDatasetId));
-          dispatch(openConfigPanel({ type: 'dataset', id: newDatasetId }));
-        }, TIMING.UI_UPDATE_DELAY);
+        selectAndOpenConfig('dataset', newDatasetId);
       }
     },
-    [screenToFlowPosition, dispatch, setIsDraggingOver]
+    [screenToFlowPosition, dispatch, setIsDraggingOver, selectAndOpenConfig]
   );
 
   const handleDragLeave = useCallback(

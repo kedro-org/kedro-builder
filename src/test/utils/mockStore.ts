@@ -23,7 +23,9 @@ export function createMockStore(preloadedState?: Partial<RootState>) {
       project: projectReducer,
       validation: validationReducer,
       theme: themeReducer,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } as any,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     preloadedState: preloadedState as any,
     middleware: (getDefaultMiddleware) =>
       getDefaultMiddleware({
@@ -46,7 +48,7 @@ export function createMockState(overrides?: Partial<RootState>): Partial<RootSta
     datasets: {
       byId: {},
       allIds: [],
-      selected: null,
+      selected: [],
     },
     connections: {
       byId: {},

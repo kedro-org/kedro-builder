@@ -8,11 +8,12 @@ import { ExportWizard } from '../ExportWizard/ExportWizard';
 import { CodeViewerModal } from '../CodeViewer';
 import { TelemetryConsent } from '../TelemetryConsent';
 import { FeedbackButton } from '../Feedback';
+import { ErrorBoundary } from '../UI/ErrorBoundary';
 import { AppHeader } from './AppHeader';
 import { AppLayout } from './AppLayout';
 import { useAppInitialization } from './hooks/useAppInitialization';
 import { useValidation } from './hooks/useValidation';
-import { trackEvent, setGlobalEventProperties } from '../../utils/telemetry';
+import { trackEvent, setGlobalEventProperties } from '../../infrastructure/telemetry';
 import { Toaster } from 'react-hot-toast';
 import './App.scss';
 
@@ -42,7 +43,8 @@ function App() {
     document.documentElement.className = `kedro-builder kui-theme--${theme}`;
   }, [theme]);
 
-  // Initialize telemetry on app load
+  // Initialize telemetry on app load - intentionally runs once with initial values
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     // Set global event properties
     setGlobalEventProperties({
@@ -55,7 +57,7 @@ function App() {
       hasProject: nodes.length > 0 || datasets.length > 0,
       theme: theme,
     });
-  }, []); // Only run once on mount
+  }, []);
 
   // Update theme property when theme changes
   useEffect(() => {
@@ -73,15 +75,19 @@ function App() {
       <TutorialModal />
       {showWalkthrough && <WalkthroughOverlay />}
       {showProjectSetup && <ProjectSetupModal />}
-      <CodeViewerModal />
+      <ErrorBoundary componentName="Code Viewer" showRetry>
+        <CodeViewerModal />
+      </ErrorBoundary>
       <ValidationPanel />
       {exportValidationResult && (
-        <ExportWizard
-          isOpen={showExportWizard}
-          onClose={handleCloseExportWizard}
-          validationResult={exportValidationResult}
-          onExport={handleConfirmExport}
-        />
+        <ErrorBoundary componentName="Export Wizard" showRetry>
+          <ExportWizard
+            isOpen={showExportWizard}
+            onClose={handleCloseExportWizard}
+            validationResult={exportValidationResult}
+            onExport={handleConfirmExport}
+          />
+        </ErrorBoundary>
       )}
 
       {/* Telemetry Consent Banner */}

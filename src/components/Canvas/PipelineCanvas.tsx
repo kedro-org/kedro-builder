@@ -1,8 +1,10 @@
-import { useCallback, useEffect } from 'react';
+import { useCallback, useEffect, useMemo } from 'react';
 import {
   ReactFlow,
   ReactFlowProvider,
   ConnectionMode,
+  type Edge,
+  type OnNodesChange,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 
@@ -24,6 +26,7 @@ import { useSelectionHandlers } from './hooks/useSelectionHandlers';
 
 import './PipelineCanvas.scss';
 
+// Constants extracted outside component to prevent recreation
 const nodeTypes = {
   kedroNode: CustomNode,
   datasetNode: DatasetNode,
@@ -32,6 +35,22 @@ const nodeTypes = {
 const edgeTypes = {
   kedroEdge: CustomEdge,
 };
+
+const DEFAULT_VIEWPORT = { x: 0, y: 0, zoom: 1 };
+
+const MULTI_SELECTION_KEY_CODE: string[] = ['Meta', 'Control', 'Shift'];
+
+const DEFAULT_EDGE_OPTIONS = {
+  animated: true,
+  style: {
+    strokeWidth: 3,
+    stroke: 'var(--color-connection)',
+    strokeDasharray: '5, 5',
+  },
+  interactionWidth: 20,
+};
+
+const PRO_OPTIONS = { hideAttribution: true };
 
 interface PipelineCanvasProps {
   exportWizardOpen?: boolean;
@@ -73,7 +92,7 @@ const PipelineCanvasInner = ({ exportWizardOpen = false }: PipelineCanvasProps) 
     handleConnect,
     ghostPreview,
   } = useConnectionHandlers({
-    setEdges: setEdges as any,
+    setEdges: setEdges as React.Dispatch<React.SetStateAction<Edge[]>>,
     connectionState,
     setConnectionState,
   });
@@ -90,7 +109,7 @@ const PipelineCanvasInner = ({ exportWizardOpen = false }: PipelineCanvasProps) 
     confirmNodeDelete,
     cancelNodeDelete,
   } = useNodeHandlers({
-    onNodesChange: onNodesChangeBase,
+    onNodesChange: onNodesChangeBase as OnNodesChange,
     setIsDraggingOver,
     isDraggingOver,
     isEmpty,
@@ -134,19 +153,29 @@ const PipelineCanvasInner = ({ exportWizardOpen = false }: PipelineCanvasProps) 
     }
   }, []);
 
-  const connectionSourceType = connectionState.source?.startsWith('dataset-')
-    ? 'dataset'
-    : connectionState.source?.startsWith('node-')
-      ? 'node'
-      : null;
+  // Memoize className computation to avoid recalculating on every render
+  const canvasClassName = useMemo(() => {
+    const classes = ['pipeline-canvas'];
+
+    if (isPanMode) {
+      classes.push('pipeline-canvas--pan-mode');
+    }
+
+    if (connectionState.source && connectionState.target && !connectionState.isValid) {
+      classes.push('pipeline-canvas--invalid-connection');
+    }
+
+    if (connectionState.source) {
+      const sourceType = connectionState.source.startsWith('dataset-') ? 'dataset' : 'node';
+      classes.push(`pipeline-canvas--connecting-from-${sourceType}`);
+    }
+
+    return classes.join(' ');
+  }, [isPanMode, connectionState.source, connectionState.target, connectionState.isValid]);
 
   return (
     <div
-      className={`pipeline-canvas ${isPanMode ? 'pipeline-canvas--pan-mode' : ''} ${
-        connectionState.source && connectionState.target && !connectionState.isValid
-          ? 'pipeline-canvas--invalid-connection'
-          : ''
-      } ${connectionSourceType ? `pipeline-canvas--connecting-from-${connectionSourceType}` : ''}`}
+      className={canvasClassName}
       ref={reactFlowWrapper}
       tabIndex={0}
       onDragLeave={handleDragLeave}
@@ -183,7 +212,7 @@ const PipelineCanvasInner = ({ exportWizardOpen = false }: PipelineCanvasProps) 
         nodeTypes={nodeTypes}
         edgeTypes={edgeTypes}
         connectionMode={ConnectionMode.Loose}
-        defaultViewport={{ x: 0, y: 0, zoom: 1 }}
+        defaultViewport={DEFAULT_VIEWPORT}
         minZoom={0.1}
         maxZoom={4}
         selectNodesOnDrag={false}
@@ -193,19 +222,11 @@ const PipelineCanvasInner = ({ exportWizardOpen = false }: PipelineCanvasProps) 
         zoomOnScroll={false}
         zoomOnPinch={true}
         zoomOnDoubleClick={false}
-        multiSelectionKeyCode={exportWizardOpen ? null : ['Meta', 'Control', 'Shift']}
+        multiSelectionKeyCode={exportWizardOpen ? null : MULTI_SELECTION_KEY_CODE}
         deleteKeyCode={null}
-        defaultEdgeOptions={{
-          animated: true,
-          style: {
-            strokeWidth: 3,
-            stroke: 'var(--color-connection)',
-            strokeDasharray: '5, 5',
-          },
-          interactionWidth: 20,
-        }}
+        defaultEdgeOptions={DEFAULT_EDGE_OPTIONS}
         edgesReconnectable={false}
-        proOptions={{ hideAttribution: true }}
+        proOptions={PRO_OPTIONS}
       >
         <CanvasControls getNodeColor={getNodeColor} />
       </ReactFlow>

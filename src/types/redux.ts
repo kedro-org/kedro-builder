@@ -27,7 +27,7 @@ export interface NodesState {
 export interface DatasetsState {
   byId: Record<string, KedroDataset>;
   allIds: string[];
-  selected: string | null;
+  selected: string[];  // Array-based selection for consistency with nodes/connections
 }
 
 export interface ConnectionsState {

@@ -2,6 +2,8 @@
  * Helper utilities for Kedro project export
  */
 
+import { PYTHON_KEYWORDS } from '../../utils/validation';
+
 /**
  * Convert string to snake_case for Python naming conventions
  */
@@ -14,17 +16,6 @@ export function toSnakeCase(str: string): string {
     .replace(/__+/g, '_')
     .toLowerCase();
 }
-
-/**
- * Python reserved keywords - cannot be used as identifiers
- */
-const PYTHON_KEYWORDS = [
-  'False', 'None', 'True', 'and', 'as', 'assert', 'async', 'await',
-  'break', 'class', 'continue', 'def', 'del', 'elif', 'else', 'except',
-  'finally', 'for', 'from', 'global', 'if', 'import', 'in', 'is',
-  'lambda', 'nonlocal', 'not', 'or', 'pass', 'raise', 'return', 'try',
-  'while', 'with', 'yield',
-];
 
 /**
  * Validate if a name is a valid Python identifier
@@ -42,8 +33,8 @@ export function isValidPythonIdentifier(name: string): boolean {
     return false;
   }
 
-  // Cannot be a Python keyword
-  if (PYTHON_KEYWORDS.includes(identifier)) {
+  // Cannot be a Python keyword (using Set.has() for O(1) lookup)
+  if (PYTHON_KEYWORDS.has(identifier)) {
     return false;
   }
 
@@ -152,7 +143,7 @@ export function indentCode(code: string, spaces: number = 4): string {
  * Escape special characters in YAML strings
  */
 export function escapeYamlString(str: string): string {
-  if (/[:#\[\]{}|>@`]/.test(str) || str.includes('\n')) {
+  if (/[:#[\]{}|>@`]/.test(str) || str.includes('\n')) {
     return `"${str.replace(/"/g, '\\"')}"`;
   }
   return str;

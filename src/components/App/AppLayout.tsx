@@ -3,6 +3,7 @@ import { useAppSelector } from '../../store/hooks';
 import { ComponentPalette } from '../Palette/ComponentPalette';
 import { PipelineCanvas } from '../Canvas/PipelineCanvas';
 import { ConfigPanel } from '../ConfigPanel/ConfigPanel';
+import { ErrorBoundary } from '../UI/ErrorBoundary';
 
 interface AppLayoutProps {
   showExportWizard: boolean;
@@ -20,11 +21,15 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ showExportWizard }) => {
         <ComponentPalette />
       </aside>
       <div className="app__canvas">
-        <PipelineCanvas exportWizardOpen={showExportWizard} />
+        <ErrorBoundary componentName="Pipeline Canvas" showRetry>
+          <PipelineCanvas exportWizardOpen={showExportWizard} />
+        </ErrorBoundary>
       </div>
       {showConfigPanel && (
         <aside className="app__config-panel">
-          <ConfigPanel />
+          <ErrorBoundary componentName="Configuration Panel" showRetry>
+            <ConfigPanel />
+          </ErrorBoundary>
         </aside>
       )}
     </main>

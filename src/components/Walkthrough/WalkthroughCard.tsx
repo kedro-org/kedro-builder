@@ -1,5 +1,51 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import type { WalkthroughStep } from './walkthroughContent';
+
+/**
+ * Safely parse description text and render links as React elements
+ * Only allows <a> tags with href, target, and rel attributes - all other HTML is escaped
+ */
+function SafeDescription({ text }: { text: string }) {
+  const elements = useMemo(() => {
+    // Regex to match anchor tags with attributes
+    const linkRegex = /<a\s+href="([^"]+)"(?:\s+target="([^"]*)")?(?:\s+rel="([^"]*)")?\s*>([^<]+)<\/a>/g;
+    const parts: React.ReactNode[] = [];
+    let lastIndex = 0;
+    let match;
+    let key = 0;
+
+    while ((match = linkRegex.exec(text)) !== null) {
+      // Add text before the link
+      if (match.index > lastIndex) {
+        parts.push(text.slice(lastIndex, match.index));
+      }
+
+      // Add the link as a React element (safe - no innerHTML)
+      const [, href, target, rel, linkText] = match;
+      parts.push(
+        <a
+          key={key++}
+          href={href}
+          target={target || '_blank'}
+          rel={rel || 'noopener noreferrer'}
+        >
+          {linkText}
+        </a>
+      );
+
+      lastIndex = match.index + match[0].length;
+    }
+
+    // Add remaining text after last link
+    if (lastIndex < text.length) {
+      parts.push(text.slice(lastIndex));
+    }
+
+    return parts.length > 0 ? parts : [text];
+  }, [text]);
+
+  return <>{elements}</>;
+}
 
 interface WalkthroughCardProps {
   step: WalkthroughStep;
@@ -43,7 +89,9 @@ export const WalkthroughCard: React.FC<WalkthroughCardProps> = ({
 
       <div className={isModal ? 'walkthrough-overlay__modal-content' : 'walkthrough-overlay__tooltip-content'}>
         <h2 className="walkthrough-overlay__title">{step.title}</h2>
-        <p className="walkthrough-overlay__description" dangerouslySetInnerHTML={{ __html: step.description }}></p>
+        <p className="walkthrough-overlay__description">
+          <SafeDescription text={step.description} />
+        </p>
       </div>
 
       <div className={isModal ? 'walkthrough-overlay__modal-footer' : 'walkthrough-overlay__tooltip-footer'}>

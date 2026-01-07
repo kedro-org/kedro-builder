@@ -3,24 +3,24 @@
  */
 
 import type { RootState } from '../types/redux';
-import type { ProjectMetadata } from './export/staticFilesGenerator';
+import type { ProjectMetadata } from '../infrastructure/export/staticFilesGenerator';
 
-import { generateCatalog } from './export/catalogGenerator';
-import { generateNodes } from './export/nodesGenerator';
-import { generatePipeline } from './export/pipelineGenerator';
+import { generateCatalog } from '../infrastructure/export/catalogGenerator';
+import { generateNodes } from '../infrastructure/export/nodesGenerator';
+import { generatePipeline } from '../infrastructure/export/pipelineGenerator';
 import {
   generateParametersConfig,
   generateCredentialsTemplate,
   generateGitignore,
   generateReadme,
   generateInitPy,
-} from './export/staticFilesGenerator';
-import { generatePyproject } from './export/pyprojectGenerator';
+} from '../infrastructure/export/staticFilesGenerator';
+import { generatePyproject } from '../infrastructure/export/pyprojectGenerator';
 import {
   generatePipelineRegistry,
   generateSettings,
   generatePipelineInit,
-} from './export/registryGenerator';
+} from '../infrastructure/export/registryGenerator';
 
 export interface FileNode {
   name: string;

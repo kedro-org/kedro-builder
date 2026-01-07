@@ -9,8 +9,21 @@ import { loadProject } from '../../../features/project/projectSlice';
 import { addNode, clearNodes } from '../../../features/nodes/nodesSlice';
 import { addDataset, clearDatasets } from '../../../features/datasets/datasetsSlice';
 import { addConnection, clearConnections } from '../../../features/connections/connectionsSlice';
-import { loadProjectFromLocalStorage } from '../../../utils/localStorage';
+import { loadProjectFromLocalStorage } from '../../../infrastructure/localStorage';
 import { logger } from '../../../utils/logger';
+
+/**
+ * Safely get item from localStorage with error handling
+ * Returns null if localStorage is unavailable or throws an error
+ */
+function safeGetLocalStorageItem(key: string): string | null {
+  try {
+    return localStorage.getItem(key);
+  } catch (error) {
+    logger.error(`Failed to read localStorage key "${key}":`, error);
+    return null;
+  }
+}
 
 /**
  * Custom hook to initialize app state from localStorage
@@ -20,8 +33,8 @@ export const useAppInitialization = () => {
   const dispatch = useAppDispatch();
 
   useEffect(() => {
-    const tutorialCompleted = localStorage.getItem('kedro_builder_tutorial_completed');
-    const walkthroughCompleted = localStorage.getItem('kedro_builder_walkthrough_completed');
+    const tutorialCompleted = safeGetLocalStorageItem('kedro_builder_tutorial_completed');
+    const walkthroughCompleted = safeGetLocalStorageItem('kedro_builder_walkthrough_completed');
 
     // Try to load saved project
     const savedProject = loadProjectFromLocalStorage();

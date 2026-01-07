@@ -1,13 +1,17 @@
-import { useCallback, useRef } from 'react';
+import { useCallback, useRef, useEffect } from 'react';
 import { useReactFlow } from '@xyflow/react';
 import type { OnConnectStart, OnConnectEnd } from '@xyflow/react';
 import { useAppDispatch } from '../../../store/hooks';
 import { addNode } from '../../../features/nodes/nodesSlice';
 import { addDataset } from '../../../features/datasets/datasetsSlice';
 import { openConfigPanel, setPendingComponent } from '../../../features/ui/uiSlice';
+import { generateId, isDatasetId } from '../../../domain/IdGenerator';
 import { TIMING } from '../../../constants/timing';
-import { trackEvent } from '../../../utils/telemetry';
+import { trackEvent } from '../../../infrastructure/telemetry';
 import type { KedroNode, KedroDataset } from '../../../types/kedro';
+
+// Connection edge creation delay (ms) - allows ReactFlow to process the new node first
+const CONNECTION_CREATION_DELAY = 100;
 
 interface UseDragToCreateProps {
   setConnectionState: (state: { source: string | null; target: string | null; isValid: boolean }) => void;
@@ -25,6 +29,32 @@ export const useDragToCreate = ({ setConnectionState, createConnectionEdge, conn
 
   // Use ref to persist source across state resets
   const connectionSourceRef = useRef<string | null>(null);
+
+  // Track pending timeouts for cleanup to prevent memory leaks
+  const pendingTimeoutsRef = useRef<Set<NodeJS.Timeout>>(new Set());
+
+  // Cleanup function to clear all pending timeouts
+  const clearPendingTimeouts = useCallback(() => {
+    pendingTimeoutsRef.current.forEach((timeoutId) => clearTimeout(timeoutId));
+    pendingTimeoutsRef.current.clear();
+  }, []);
+
+  // Helper to create a tracked timeout that auto-removes itself when complete
+  const createTrackedTimeout = useCallback((callback: () => void, delay: number) => {
+    const timeoutId = setTimeout(() => {
+      callback();
+      pendingTimeoutsRef.current.delete(timeoutId);
+    }, delay);
+    pendingTimeoutsRef.current.add(timeoutId);
+    return timeoutId;
+  }, []);
+
+  // Cleanup timeouts on unmount
+  useEffect(() => {
+    return () => {
+      clearPendingTimeouts();
+    };
+  }, [clearPendingTimeouts]);
 
   // Handle connection start - track source
   const handleConnectStart: OnConnectStart = useCallback(
@@ -72,11 +102,11 @@ export const useDragToCreate = ({ setConnectionState, createConnectionEdge, conn
           y: event.clientY,
         });
 
-        const isSourceDataset = source.startsWith('dataset-');
+        const isSourceDataset = isDatasetId(source);
 
         if (isSourceDataset) {
           // Dataset → Create Node
-          const newId = `node-${Date.now()}`;
+          const newId = generateId('node');
           const newNode: KedroNode = {
             id: newId,
             name: '',
@@ -87,13 +117,13 @@ export const useDragToCreate = ({ setConnectionState, createConnectionEdge, conn
           };
 
           dispatch(addNode(newNode));
-          setTimeout(() => createConnectionEdge(source, newId), 100);
+          createTrackedTimeout(() => createConnectionEdge(source, newId), CONNECTION_CREATION_DELAY);
           dispatch(setPendingComponent({ type: 'node', id: newId }));
-          setTimeout(() => dispatch(openConfigPanel({ type: 'node', id: newId })), TIMING.UI_UPDATE_DELAY);
+          createTrackedTimeout(() => dispatch(openConfigPanel({ type: 'node', id: newId })), TIMING.UI_UPDATE_DELAY);
           trackEvent('node_created_from_drag', { nodeType: 'custom' });
         } else {
           // Node → Create Dataset
-          const newId = `dataset-${Date.now()}`;
+          const newId = generateId('dataset');
           const newDataset: KedroDataset = {
             id: newId,
             name: '',
@@ -102,14 +132,14 @@ export const useDragToCreate = ({ setConnectionState, createConnectionEdge, conn
           };
 
           dispatch(addDataset(newDataset));
-          setTimeout(() => createConnectionEdge(source, newId), 100);
+          createTrackedTimeout(() => createConnectionEdge(source, newId), CONNECTION_CREATION_DELAY);
           dispatch(setPendingComponent({ type: 'dataset', id: newId }));
-          setTimeout(() => dispatch(openConfigPanel({ type: 'dataset', id: newId })), TIMING.UI_UPDATE_DELAY);
+          createTrackedTimeout(() => dispatch(openConfigPanel({ type: 'dataset', id: newId })), TIMING.UI_UPDATE_DELAY);
           trackEvent('dataset_created_from_drag', { datasetType: 'csv' });
         }
       }
     },
-    [setConnectionState, screenToFlowPosition, dispatch, createConnectionEdge, connectionMadeRef]
+    [setConnectionState, screenToFlowPosition, dispatch, createConnectionEdge, connectionMadeRef, createTrackedTimeout]
   );
 
   return {

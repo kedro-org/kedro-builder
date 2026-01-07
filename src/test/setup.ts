@@ -15,7 +15,7 @@ const localStorageMock = {
   clear: vi.fn(),
 };
 
-global.localStorage = localStorageMock as any;
+global.localStorage = localStorageMock as unknown as Storage;
 
 // Mock browser APIs only in jsdom environment
 if (typeof window !== 'undefined') {
