@@ -45,7 +45,7 @@ export const CodeDisplay: React.FC = () => {
     };
   }, [theme]);
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+  // Generate file tree only when relevant state parts change (not on every state update)
   const fileTree = useMemo(() => {
     try {
       return generateFileTree(state);
@@ -53,6 +53,8 @@ export const CodeDisplay: React.FC = () => {
       console.error('Failed to generate file tree:', error);
       return null;
     }
+    // Using specific nested properties for performance; state object is stable reference
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state.project.current, state.nodes.allIds, state.datasets.allIds, state.connections.allIds]);
 
   const selectedFile = useMemo(() => {
