@@ -7,7 +7,10 @@
  * ID Format Contracts (preserved from original):
  * - Nodes: `node-{timestamp}` or `node-{timestamp}-{random}` for copy/paste
  * - Datasets: `dataset-{timestamp}` or `dataset-{timestamp}-{random}` for copy/paste
- * - Connections: `conn-{source}-{target}` (deterministic for deduplication)
+ * - Connections: `{source}-{target}` (deterministic for deduplication)
+ *
+ * Note: Connection IDs do NOT have a `conn-` prefix to maintain compatibility
+ * with existing persisted data in localStorage.
  */
 
 import type { NodeId, DatasetId, ConnectionId } from '../types/ids';
@@ -58,8 +61,9 @@ export function generateId(type: ComponentType): string {
     case 'dataset':
       return `dataset-${timestamp}`;
     case 'connection':
-      // Connections use a different pattern - see generateConnectionId
-      return `conn-${timestamp}`;
+      // Connections require source/target - use generateConnectionId instead
+      // This case exists for type completeness but shouldn't be used
+      throw new Error('Use generateConnectionId(source, target) for connection IDs');
     default:
       return `${type}-${timestamp}`;
   }
@@ -80,17 +84,21 @@ export function generateCopyId(type: 'node' | 'dataset'): string {
 /**
  * Generate a deterministic connection ID from source and target
  * This allows deduplication of connections
+ *
+ * Format: `{source}-{target}` (e.g., `node-123-dataset-456`)
+ * Note: No `conn-` prefix for compatibility with existing persisted data.
  */
 export function generateConnectionId(source: string, target: string): ConnectionId {
-  return `conn-${source}-${target}` as ConnectionId;
+  return `${source}-${target}` as ConnectionId;
 }
 
 /**
  * Parse a component ID to extract its type
  */
 export function parseIdType(id: string): ComponentType | null {
+  // Check for connection first since it contains both node- and dataset-
+  if (id.includes('node-') && id.includes('dataset-')) return 'connection';
   if (id.startsWith('node-')) return 'node';
   if (id.startsWith('dataset-')) return 'dataset';
-  if (id.startsWith('conn-')) return 'connection';
   return null;
 }

@@ -21,6 +21,7 @@ import { generateId, isNodeId, isDatasetId } from '../../../domain/IdGenerator';
 import { useSelectAndOpenConfig } from '../../../hooks/useSelectAndOpenConfig';
 import { logger } from '../../../utils/logger';
 import { trackEvent } from '../../../infrastructure/telemetry';
+import { DND_TYPES } from '../../../constants';
 import type { NodeType, DatasetType } from '../../../types/kedro';
 
 // Type for node delete confirmation state
@@ -145,9 +146,9 @@ export const useNodeHandlers = ({ onNodesChange, setIsDraggingOver, isDraggingOv
       // Reset dragging state
       setIsDraggingOver(false);
 
-      // Check for node drop
-      const nodeType = event.dataTransfer.getData('application/kedro-builder');
-      const datasetType = event.dataTransfer.getData('application/kedro-builder-dataset');
+      // Check for node drop using centralized DnD constants
+      const nodeType = event.dataTransfer.getData(DND_TYPES.NODE);
+      const datasetType = event.dataTransfer.getData(DND_TYPES.DATASET);
 
       if (!nodeType && !datasetType) return;
 

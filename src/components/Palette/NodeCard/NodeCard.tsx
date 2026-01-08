@@ -1,5 +1,6 @@
 import { Database, Cpu, BarChart3, Download, Settings } from 'lucide-react';
 import type { NodeType } from '../../../types/kedro';
+import { DND_TYPES } from '../../../constants';
 import './NodeCard.scss';
 
 const NODE_ICONS = {
@@ -20,7 +21,7 @@ export const NodeCard: React.FC<NodeCardProps> = ({ type, name, description }) =
   const Icon = NODE_ICONS[type];
 
   const handleDragStart = (event: React.DragEvent) => {
-    event.dataTransfer.setData('application/kedro-builder', type);
+    event.dataTransfer.setData(DND_TYPES.NODE, type);
     event.dataTransfer.effectAllowed = 'move';
   };
 

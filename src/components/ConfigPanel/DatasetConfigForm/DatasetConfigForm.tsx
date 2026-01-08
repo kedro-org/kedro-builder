@@ -12,6 +12,7 @@ import { DatasetTypeSelect } from './DatasetTypeSelect';
 import { useFilepathBuilder } from './hooks/useFilepathBuilder';
 import { isPythonKeyword } from '../../../utils/validation';
 import { useConfirmDialog } from '../../../hooks/useConfirmDialog';
+import { dispatchConfigUpdated } from '../../../constants';
 import './DatasetConfigForm.scss';
 
 // Map dataset types to their expected file extensions
@@ -170,7 +171,7 @@ export const DatasetConfigForm: React.FC<DatasetConfigFormProps> = ({ dataset, o
     onClose();
 
     // Dispatch event to refresh validation if export wizard is open
-    window.dispatchEvent(new CustomEvent('configUpdated'));
+    dispatchConfigUpdated();
   };
 
   return (

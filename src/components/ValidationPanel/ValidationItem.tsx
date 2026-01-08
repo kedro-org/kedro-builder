@@ -8,6 +8,7 @@ import { openConfigPanel } from '../../features/ui/uiSlice';
 import { AlertCircle, AlertTriangle, Info } from 'lucide-react';
 import { TIMING } from '../../constants/timing';
 import { CANVAS } from '../../constants/canvas';
+import { dispatchFocusNode } from '../../constants';
 import './ValidationItem.scss';
 
 interface ValidationItemProps {
@@ -25,22 +26,14 @@ export const ValidationItem: React.FC<ValidationItemProps> = ({ issue }) => {
       dispatch(openConfigPanel({ type: 'node', id: issue.componentId }));
 
       setTimeout(() => {
-        window.dispatchEvent(
-          new CustomEvent('focusNode', {
-            detail: { nodeId: issue.componentId },
-          })
-        );
+        dispatchFocusNode(issue.componentId);
       }, TIMING.FOCUS_DELAY);
     } else if (issue.componentType === 'dataset' && datasets[issue.componentId]) {
       dispatch(selectDataset(issue.componentId));
       dispatch(openConfigPanel({ type: 'dataset', id: issue.componentId }));
 
       setTimeout(() => {
-        window.dispatchEvent(
-          new CustomEvent('focusNode', {
-            detail: { nodeId: issue.componentId },
-          })
-        );
+        dispatchFocusNode(issue.componentId);
       }, TIMING.FOCUS_DELAY);
     }
   };

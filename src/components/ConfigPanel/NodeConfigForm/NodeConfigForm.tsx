@@ -10,6 +10,7 @@ import { ConfirmDialog } from '../../UI/ConfirmDialog';
 import { isPythonKeyword } from '../../../utils/validation';
 import { toSnakeCase } from '../../../infrastructure/export/helpers';
 import { useConfirmDialog } from '../../../hooks/useConfirmDialog';
+import { dispatchConfigUpdated } from '../../../constants';
 import './NodeConfigForm.scss';
 
 interface NodeFormData {
@@ -103,7 +104,7 @@ export const NodeConfigForm: React.FC<NodeConfigFormProps> = ({ node, onClose })
     onClose();
 
     // Dispatch event to refresh validation if export wizard is open
-    window.dispatchEvent(new CustomEvent('configUpdated'));
+    dispatchConfigUpdated();
   };
 
   // Handle Tab key in code textarea

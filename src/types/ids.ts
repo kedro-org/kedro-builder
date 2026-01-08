@@ -36,7 +36,11 @@ export type NodeId = Brand<string, 'NodeId'>;
 export type DatasetId = Brand<string, 'DatasetId'>;
 
 /**
- * Connection ID - format: `conn-{source}-{target}`
+ * Connection ID - format: `{source}-{target}`
+ * Example: `node-123-dataset-456` or `dataset-456-node-789`
+ *
+ * Note: Connection IDs do NOT have a `conn-` prefix. They are formed by
+ * concatenating the source and target IDs with a dash.
  */
 export type ConnectionId = Brand<string, 'ConnectionId'>;
 
@@ -61,9 +65,15 @@ export function isDatasetId(id: string): id is DatasetId {
 
 /**
  * Type guard to check if a string is a ConnectionId
+ *
+ * Connection IDs are formed by joining source and target IDs with a dash.
+ * They contain both a node ID part and a dataset ID part.
+ * Examples: `node-123-dataset-456`, `dataset-456-node-789`
  */
 export function isConnectionId(id: string): id is ConnectionId {
-  return id.startsWith('conn-');
+  // Connection IDs contain both node and dataset parts
+  // Format: {source}-{target} where source/target are node/dataset IDs
+  return id.includes('node-') && id.includes('dataset-');
 }
 
 /**

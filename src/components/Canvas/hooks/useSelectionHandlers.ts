@@ -17,6 +17,7 @@ import { useDeleteConfirmation } from './useDeleteConfirmation';
 import { useCopyPaste } from './useCopyPaste';
 import { useCanvasKeyboardShortcuts } from './useCanvasKeyboardShortcuts';
 import { useClearSelections } from '../../../hooks/useClearSelections';
+import { onFocusNode } from '../../../constants';
 
 interface SelectionHandlersProps {
   reduxNodes: KedroNode[];
@@ -165,9 +166,7 @@ export const useSelectionHandlers = ({
 
   // Listen for focus node event from validation panel
   useEffect(() => {
-    const handleFocusNode = (event: Event) => {
-      const customEvent = event as CustomEvent<{ nodeId: string }>;
-      const { nodeId } = customEvent.detail;
+    const handleFocusNode = (nodeId: string) => {
       const node = getNode(nodeId);
       if (node) {
         // Center the node in view with animation
@@ -179,10 +178,8 @@ export const useSelectionHandlers = ({
       }
     };
 
-    window.addEventListener('focusNode', handleFocusNode);
-    return () => {
-      window.removeEventListener('focusNode', handleFocusNode);
-    };
+    // Subscribe using centralized event helper
+    return onFocusNode(handleFocusNode);
   }, [fitView, getNode]);
 
   // ===== Return Public API =====

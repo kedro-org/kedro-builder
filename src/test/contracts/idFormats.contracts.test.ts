@@ -89,14 +89,18 @@ describe('ID Format Contracts', () => {
       expect(id1).toBe(id2);
     });
 
-    it('generates IDs with conn- prefix', () => {
+    it('format is {source}-{target} without conn- prefix', () => {
       const id = generateConnectionId('node-123', 'dataset-456');
-      expect(id).toMatch(/^conn-/);
+      // Connection IDs do NOT have conn- prefix (for localStorage compatibility)
+      expect(id).toBe('node-123-dataset-456');
+      expect(id).not.toMatch(/^conn-/);
     });
 
     it('includes source and target in ID', () => {
       const id = generateConnectionId('node-123', 'dataset-456');
-      expect(id).toBe('conn-node-123-dataset-456');
+      expect(id).toBe('node-123-dataset-456');
+      expect(id).toContain('node-123');
+      expect(id).toContain('dataset-456');
     });
 
     it('different source/target pairs produce different IDs', () => {
@@ -110,8 +114,10 @@ describe('ID Format Contracts', () => {
     });
 
     it('isConnectionId correctly identifies connection IDs', () => {
-      expect(isConnectionId('conn-node-123-dataset-456')).toBe(true);
-      expect(isConnectionId('conn-a-b')).toBe(true);
+      // Valid connection IDs contain both node- and dataset-
+      expect(isConnectionId('node-123-dataset-456')).toBe(true);
+      expect(isConnectionId('dataset-456-node-123')).toBe(true);
+      // Invalid - only has one type
       expect(isConnectionId('node-123')).toBe(false);
       expect(isConnectionId('dataset-123')).toBe(false);
       expect(isConnectionId('invalid')).toBe(false);
@@ -161,8 +167,9 @@ describe('ID Format Contracts', () => {
     });
 
     it('correctly parses connection IDs', () => {
-      expect(parseIdType('conn-node-1-dataset-2')).toBe('connection');
-      expect(parseIdType('conn-a-b')).toBe('connection');
+      // Connection IDs contain both node- and dataset- (no conn- prefix)
+      expect(parseIdType('node-1-dataset-2')).toBe('connection');
+      expect(parseIdType('dataset-1-node-2')).toBe('connection');
     });
 
     it('returns null for invalid IDs', () => {
@@ -197,7 +204,8 @@ describe('ID Format Contracts', () => {
 
     it('connection ID format is stable', () => {
       const id = generateConnectionId('node-1704067200000', 'dataset-1704067200001');
-      expect(id).toBe('conn-node-1704067200000-dataset-1704067200001');
+      // No conn- prefix for localStorage compatibility
+      expect(id).toBe('node-1704067200000-dataset-1704067200001');
     });
   });
 });
