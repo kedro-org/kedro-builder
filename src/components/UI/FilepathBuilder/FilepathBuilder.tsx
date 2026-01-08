@@ -79,10 +79,10 @@ export const FilepathBuilder: React.FC<FilepathBuilderProps> = ({
   const [fullPath, setFullPath] = useState(generateFullPath());
 
   // Sync full path when segments change
-  // generateFullPath uses baseLocation, dataLayer, fileName which are already in deps
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     setFullPath(generateFullPath());
+    // generateFullPath uses baseLocation, dataLayer, fileName which are already in deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [baseLocation, dataLayer, fileName]);
 
   // Handle full path edit

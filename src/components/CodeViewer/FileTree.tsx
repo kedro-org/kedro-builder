@@ -22,10 +22,7 @@ export const FileTree: React.FC = () => {
   const [expandedFolders, setExpandedFolders] = useState<Set<string>>(new Set());
 
   // Generate file tree from Redux state
-  // Only recompute when the specific dependencies change
-  // nodeIds, datasetIds, connectionIds are intentionally included as dependencies
-  // to trigger re-computation when the data changes, even though we get full state
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+  // nodeIds, datasetIds, connectionIds trigger re-computation when data changes
   const fileTree = useMemo(() => {
     // Only generate if project exists
     if (!projectCurrent) return null;
@@ -37,6 +34,8 @@ export const FileTree: React.FC = () => {
       console.error('Failed to generate file tree:', error);
       return null;
     }
+    // nodeIds, datasetIds, connectionIds are intentional deps for triggering recomputation
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [projectCurrent, nodeIds, datasetIds, connectionIds, store]);
 
   // Initialize expanded folders

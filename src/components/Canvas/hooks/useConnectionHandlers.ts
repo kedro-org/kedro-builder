@@ -8,7 +8,7 @@ import toast from 'react-hot-toast';
 import { wouldCreateCycle } from './utils/cycleDetection';
 import { useGhostPreview } from './useGhostPreview';
 import { useDragToCreate } from './useDragToCreate';
-import { isNodeId, isDatasetId } from '../../../domain';
+import { isNodeId, isDatasetId, generateConnectionId } from '../../../domain';
 
 // Re-export GhostPreviewState for backwards compatibility
 export type { GhostPreviewState } from './useGhostPreview';
@@ -57,7 +57,7 @@ export const useConnectionHandlers = ({
   // Helper: Create edge and connection between two components
   const createConnectionEdge = useCallback(
     (sourceId: string, targetId: string) => {
-      const edgeId = `${sourceId}-${targetId}`;
+      const edgeId = generateConnectionId(sourceId, targetId);
       const newEdge: Edge = {
         id: edgeId,
         source: sourceId,
@@ -167,8 +167,8 @@ export const useConnectionHandlers = ({
       // Mark that a connection was made to prevent duplicate component creation in onConnectEnd
       connectionMadeRef.current = true;
 
-      // Create the connection using extracted constants
-      const edgeId = `${connection.source}-${connection.target}`;
+      // Create the connection using centralized ID generator
+      const edgeId = generateConnectionId(connection.source, connection.target);
       const sourceHandle = connection.sourceHandle || 'output';
       const targetHandle = connection.targetHandle || 'input';
 

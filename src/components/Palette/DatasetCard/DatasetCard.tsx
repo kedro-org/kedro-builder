@@ -1,6 +1,7 @@
 import React from 'react';
 import { FileText, FileJson, Table, Archive, HardDrive, Server } from 'lucide-react';
 import type { DatasetType } from '../../../types/kedro';
+import { DND_TYPES } from '../../../constants';
 import './DatasetCard.scss';
 
 interface DatasetCardProps {
@@ -24,7 +25,7 @@ export const DatasetCard: React.FC<DatasetCardProps> = ({ type, name, descriptio
   const Icon = DATASET_ICONS[type] ?? FileText;
 
   const handleDragStart = (event: React.DragEvent) => {
-    event.dataTransfer.setData('application/kedro-builder-dataset', type);
+    event.dataTransfer.setData(DND_TYPES.DATASET, type);
     event.dataTransfer.effectAllowed = 'move';
   };
 

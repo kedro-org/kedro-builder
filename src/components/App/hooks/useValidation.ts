@@ -13,6 +13,7 @@ import { generateKedroProject, downloadProject } from '../../../infrastructure/e
 import { logger } from '../../../utils/logger';
 import { trackEvent } from '../../../infrastructure/telemetry';
 import { TIMING } from '../../../constants/timing';
+import { onConfigUpdated } from '../../../constants';
 import toast from 'react-hot-toast';
 
 // Debounce delay for validation to avoid excessive computation on rapid changes
@@ -75,8 +76,8 @@ export const useValidation = ({ showExportWizard }: UseValidationProps) => {
       }
     };
 
-    window.addEventListener('configUpdated', handleConfigUpdate);
-    return () => window.removeEventListener('configUpdated', handleConfigUpdate);
+    // Subscribe using centralized event helper
+    return onConfigUpdated(handleConfigUpdate);
   }, [showExportWizard, runDebouncedValidation]);
 
   // Sync export validation result when showExportWizard changes

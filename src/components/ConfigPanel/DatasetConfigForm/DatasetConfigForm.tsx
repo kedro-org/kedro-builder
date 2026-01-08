@@ -12,6 +12,7 @@ import { DatasetTypeSelect } from './DatasetTypeSelect';
 import { useFilepathBuilder } from './hooks/useFilepathBuilder';
 import { isPythonKeyword } from '../../../utils/validation';
 import { useConfirmDialog } from '../../../hooks/useConfirmDialog';
+import { dispatchConfigUpdated } from '../../../constants';
 import './DatasetConfigForm.scss';
 
 // Map dataset types to their expected file extensions
@@ -89,9 +90,8 @@ export const DatasetConfigForm: React.FC<DatasetConfigFormProps> = ({ dataset, o
     },
   });
 
-  // Reset form when dataset changes (switching between different datasets)
-  // Intentionally only depends on dataset.id to avoid resetting on field changes
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+  // Reset form when switching between different datasets
+  // Only depends on dataset.id to avoid resetting during field edits
   useEffect(() => {
     reset({
       name: dataset.name || '',
@@ -99,6 +99,8 @@ export const DatasetConfigForm: React.FC<DatasetConfigFormProps> = ({ dataset, o
       filepath: dataset.filepath || '',
       versioned: dataset.versioned || false,
     });
+    // Intentionally omit dataset.* fields - reset should only trigger on dataset switch
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dataset.id, reset]);
 
   const watchType = watch('type');
@@ -169,7 +171,7 @@ export const DatasetConfigForm: React.FC<DatasetConfigFormProps> = ({ dataset, o
     onClose();
 
     // Dispatch event to refresh validation if export wizard is open
-    window.dispatchEvent(new CustomEvent('configUpdated'));
+    dispatchConfigUpdated();
   };
 
   return (

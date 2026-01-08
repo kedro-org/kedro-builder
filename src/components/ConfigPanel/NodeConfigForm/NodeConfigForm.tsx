@@ -10,6 +10,7 @@ import { ConfirmDialog } from '../../UI/ConfirmDialog';
 import { isPythonKeyword } from '../../../utils/validation';
 import { toSnakeCase } from '../../../infrastructure/export/helpers';
 import { useConfirmDialog } from '../../../hooks/useConfirmDialog';
+import { dispatchConfigUpdated } from '../../../constants';
 import './NodeConfigForm.scss';
 
 interface NodeFormData {
@@ -56,14 +57,15 @@ export const NodeConfigForm: React.FC<NodeConfigFormProps> = ({ node, onClose })
     },
   });
 
-  // Reset form when node changes (switching between different nodes)
-  // Intentionally only depends on node.id to avoid resetting on field changes
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+  // Reset form when switching between different nodes
+  // Only depends on node.id to avoid resetting during field edits
   useEffect(() => {
     reset({
       name: node.name || '',
       functionCode: node.functionCode || '',
     });
+    // Intentionally omit node.* fields - reset should only trigger on node switch
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [node.id, reset]);
 
   const watchName = watch('name');
@@ -102,7 +104,7 @@ export const NodeConfigForm: React.FC<NodeConfigFormProps> = ({ node, onClose })
     onClose();
 
     // Dispatch event to refresh validation if export wizard is open
-    window.dispatchEvent(new CustomEvent('configUpdated'));
+    dispatchConfigUpdated();
   };
 
   // Handle Tab key in code textarea

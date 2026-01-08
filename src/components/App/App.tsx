@@ -43,8 +43,8 @@ function App() {
     document.documentElement.className = `kedro-builder kui-theme--${theme}`;
   }, [theme]);
 
-  // Initialize telemetry on app load - intentionally runs once with initial values
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+  // Initialize telemetry on app load - intentionally runs once on mount
+  // We capture initial values only; subsequent changes are tracked separately
   useEffect(() => {
     // Set global event properties
     setGlobalEventProperties({
@@ -57,6 +57,7 @@ function App() {
       hasProject: nodes.length > 0 || datasets.length > 0,
       theme: theme,
     });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Update theme property when theme changes

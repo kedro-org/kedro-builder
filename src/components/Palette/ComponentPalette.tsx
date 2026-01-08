@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useAppSelector } from '../../store/hooks';
 import { Database } from 'lucide-react';
+import { DND_TYPES } from '../../constants';
 import './ComponentPalette.scss';
 
 type TabType = 'components' | 'templates';
@@ -17,7 +18,7 @@ export const ComponentPalette = () => {
       event.preventDefault();
       return;
     }
-    event.dataTransfer.setData('application/kedro-builder', 'custom');
+    event.dataTransfer.setData(DND_TYPES.NODE, 'custom');
     event.dataTransfer.effectAllowed = 'move';
   };
 
@@ -26,7 +27,7 @@ export const ComponentPalette = () => {
       event.preventDefault();
       return;
     }
-    event.dataTransfer.setData('application/kedro-builder-dataset', 'csv');
+    event.dataTransfer.setData(DND_TYPES.DATASET, 'csv');
     event.dataTransfer.effectAllowed = 'move';
   };
 
