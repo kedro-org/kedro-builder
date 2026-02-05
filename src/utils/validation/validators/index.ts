@@ -3,8 +3,7 @@
  * Strategy pattern implementation for pipeline validation
  */
 
-// Import for local use
-import { ValidatorRegistry } from './Validator';
+import { type Validator, ValidatorRegistry } from './Validator';
 import { CircularDependencyValidator } from './CircularDependencyValidator';
 import { DuplicateNameValidator } from './DuplicateNameValidator';
 import { InvalidNameValidator } from './InvalidNameValidator';
@@ -14,16 +13,19 @@ import { OrphanedDatasetValidator } from './OrphanedDatasetValidator';
 import { MissingCodeValidator } from './MissingCodeValidator';
 import { MissingConfigValidator } from './MissingConfigValidator';
 
-// Re-exports
-export { type Validator, ValidatorRegistry } from './Validator';
-export { CircularDependencyValidator } from './CircularDependencyValidator';
-export { DuplicateNameValidator } from './DuplicateNameValidator';
-export { InvalidNameValidator } from './InvalidNameValidator';
-export { EmptyNameValidator } from './EmptyNameValidator';
-export { OrphanedNodeValidator } from './OrphanedNodeValidator';
-export { OrphanedDatasetValidator } from './OrphanedDatasetValidator';
-export { MissingCodeValidator } from './MissingCodeValidator';
-export { MissingConfigValidator } from './MissingConfigValidator';
+// Re-export all validators
+export {
+  type Validator,
+  ValidatorRegistry,
+  CircularDependencyValidator,
+  DuplicateNameValidator,
+  InvalidNameValidator,
+  EmptyNameValidator,
+  OrphanedNodeValidator,
+  OrphanedDatasetValidator,
+  MissingCodeValidator,
+  MissingConfigValidator,
+};
 
 /**
  * Create a pre-configured validator registry with all default validators
