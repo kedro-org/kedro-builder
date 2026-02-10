@@ -5,11 +5,12 @@
 
 import type { RootState } from '../../types/redux';
 import type { KedroProject, KedroNode, KedroDataset, KedroConnection } from '../../types/kedro';
+import { STORAGE_KEYS } from '../../constants';
 import { logger } from '../../utils/logger';
 import toast from 'react-hot-toast';
 import { parseStoredProjectState, getValidationErrors } from './schemas';
 
-const STORAGE_KEY = 'kedro_builder_current_project';
+const STORAGE_KEY = STORAGE_KEYS.CURRENT_PROJECT;
 
 // Approximate max size for localStorage (5MB in most browsers, we use 4MB to be safe)
 const MAX_STORAGE_SIZE_BYTES = 4 * 1024 * 1024;
