@@ -54,13 +54,12 @@ export const CodeDisplay: React.FC = () => {
   // Generate file tree only when relevant domain data changes
   const fileTree = useMemo(() => {
     try {
-      const state = {
+      return generateFileTree({
         project: { current: projectCurrent },
         nodes: { byId: nodesById, allIds: nodesAllIds },
         datasets: { byId: datasetsById, allIds: datasetsAllIds },
         connections: { byId: connectionsById, allIds: connectionsAllIds },
-      } as import('../../types/redux').RootState;
-      return generateFileTree(state);
+      });
     } catch (error) {
       console.error('Failed to generate file tree:', error);
       return null;
