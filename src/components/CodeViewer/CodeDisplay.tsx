@@ -6,6 +6,7 @@ import yaml from 'highlight.js/lib/languages/yaml';
 import ini from 'highlight.js/lib/languages/ini';
 import markdown from 'highlight.js/lib/languages/markdown';
 import { generateFileTree, findFileByPath, getFileLanguage } from '../../utils/fileTreeGenerator';
+import { logger } from '../../utils/logger';
 import { Copy } from 'lucide-react';
 import toast from 'react-hot-toast';
 import './CodeDisplay.scss';
@@ -61,7 +62,7 @@ export const CodeDisplay: React.FC = () => {
         connections: { byId: connectionsById, allIds: connectionsAllIds },
       });
     } catch (error) {
-      console.error('Failed to generate file tree:', error);
+      logger.error('Failed to generate file tree:', error);
       return null;
     }
   }, [projectCurrent, nodesById, nodesAllIds, datasetsById, datasetsAllIds, connectionsById, connectionsAllIds]);

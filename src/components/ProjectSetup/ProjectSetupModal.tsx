@@ -8,6 +8,7 @@ import { clearDatasets } from '../../features/datasets/datasetsSlice';
 import { clearConnections } from '../../features/connections/connectionsSlice';
 import { clearProjectFromLocalStorage } from '../../infrastructure/localStorage';
 import { trackEvent } from '../../infrastructure/telemetry';
+import { logger } from '../../utils/logger';
 import { ConfirmDialog } from '../UI/ConfirmDialog';
 import './ProjectSetupModal.scss';
 
@@ -93,7 +94,7 @@ export const ProjectSetupModal: React.FC = () => {
     setShowResetConfirm(false);
     dispatch(closeProjectSetup());
 
-    console.log('🗑️ Project reset');
+    logger.delete('Project reset');
   };
 
   const handleProjectNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
