@@ -4,10 +4,10 @@
  */
 
 import type { RootState } from '@/types/redux';
-import type { KedroConnection } from '@/types/kedro';
 import type { ValidationError } from '../types';
 import type { Validator } from './Validator';
 import { findOrphanedDatasets } from '@/domain/PipelineGraph';
+import { getConnectionsArray } from './helpers';
 
 export class OrphanedDatasetValidator implements Validator {
   readonly id = 'orphaned-dataset';
@@ -16,7 +16,7 @@ export class OrphanedDatasetValidator implements Validator {
 
   validate(state: RootState): ValidationError[] {
     const warnings: ValidationError[] = [];
-    const connections = this.getConnectionsArray(state);
+    const connections = getConnectionsArray(state);
     const orphanedDatasetIds = findOrphanedDatasets(state.datasets.allIds, connections);
 
     orphanedDatasetIds.forEach((datasetId) => {
@@ -32,9 +32,5 @@ export class OrphanedDatasetValidator implements Validator {
     });
 
     return warnings;
-  }
-
-  private getConnectionsArray(state: RootState): KedroConnection[] {
-    return state.connections.allIds.map((id) => state.connections.byId[id]).filter(Boolean);
   }
 }
