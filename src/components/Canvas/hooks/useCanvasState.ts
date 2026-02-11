@@ -3,7 +3,7 @@ import { useNodesState, useEdgesState } from '@xyflow/react';
 import type { Node } from '@xyflow/react';
 import { useAppSelector } from '@/store/hooks';
 import {
-  selectCanvasDataWithSets,
+  selectCanvasData,
   selectSelectionType,
   selectTotalSelected,
 } from '@/features/canvas/canvasSelectors';
@@ -48,7 +48,7 @@ const NODE_COLOR_MAP = {
  * Custom hook to manage canvas state including nodes, edges, and UI states
  */
 export const useCanvasState = () => {
-  // Get data from Redux using combined selector for better performance
+  // Get pipeline data from Redux (theme excluded to avoid unnecessary invalidation)
   const {
     nodes: reduxNodes,
     datasets: reduxDatasets,
@@ -57,8 +57,8 @@ export const useCanvasState = () => {
     selectedEdgeIds,
     selectedNodeIdsSet,
     selectedEdgeIdsSet,
-    theme,
-  } = useAppSelector(selectCanvasDataWithSets);
+  } = useAppSelector(selectCanvasData);
+  const theme = useAppSelector((s) => s.theme.theme);
 
   // Use memoized selectors for computed values
   const selectionType = useAppSelector(selectSelectionType);
