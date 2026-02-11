@@ -271,10 +271,9 @@ export class KedroProjectBuilder {
 }
 
 /**
- * Factory function for quick project generation with default settings
- * Maintains backward compatibility with the original generateKedroProject function
+ * Generate complete Kedro project as ZIP file
  */
-export async function buildKedroProject(
+export async function generateKedroProject(
   state: RootState,
   metadata: ProjectMetadata,
   options?: Partial<ProjectBuildOptions>
@@ -282,4 +281,18 @@ export async function buildKedroProject(
   return new KedroProjectBuilder(state, metadata, options)
     .withAllFiles()
     .build();
+}
+
+/**
+ * Trigger browser download of the ZIP file
+ */
+export function downloadProject(blob: Blob, projectName: string): void {
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = `${projectName}.zip`;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
 }
