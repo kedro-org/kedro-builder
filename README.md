@@ -60,7 +60,7 @@ Issues are surfaced in the validation panel with actionable messages and severit
 - Radix UI primitives + SCSS with BEM conventions for accessible, themeable UI
 - JSZip for Kedro project ZIP generation (string templates, no YAML library)
 - 8 pluggable validators (Strategy pattern) for pipeline validation
-- Vitest + React Testing Library (498 tests, 70%+ coverage)
+- Vitest + React Testing Library (482 tests, 70%+ coverage)
 - react-hot-toast for feedback, react-hook-form for config panels
 
 ## Project Layout

@@ -74,20 +74,30 @@ import { validateConnection } from './utils';
 
 ```
 src/
-├── components/          # Reusable UI components
-│   ├── ui/             # Base components (Button, Input, etc.)
-│   └── Canvas/         # ReactFlow canvas components
-├── features/           # Feature modules (Redux slices + selectors)
+├── components/          # React components
+│   ├── UI/             # Primitives (Button, Input, ErrorBoundary, ThemeToggle)
+│   ├── Canvas/         # ReactFlow canvas, custom nodes/edges, canvas hooks
+│   ├── App/            # App shell, layout, validation hooks
+│   ├── ConfigPanel/    # Node & dataset configuration forms
+│   ├── CodeViewer/     # File tree + syntax-highlighted code preview
+│   ├── ExportWizard/   # Validation step + metadata confirmation
+│   └── Palette/        # Drag sources for nodes/datasets
+├── features/           # Redux slices + selectors
 │   ├── nodes/
+│   ├── datasets/
 │   ├── connections/
-│   ├── layers/
-│   └── ...
+│   ├── project/
+│   ├── validation/
+│   ├── ui/
+│   ├── theme/
+│   └── canvas/         # Combined canvas selectors
 ├── store/              # Redux store setup, hooks, middleware
-├── domain/             # Pure business logic (validators, rules)
-├── infrastructure/     # External concerns (export, storage, telemetry)
+├── domain/             # Pure business logic (IdGenerator, PipelineGraph)
+├── infrastructure/     # External concerns (export, localStorage, telemetry)
 ├── hooks/              # Shared custom React hooks
-├── types/              # Shared TypeScript types
-└── utils/              # Pure utility functions
+├── types/              # Shared TypeScript types (including branded IDs)
+├── constants/          # Application constants (timing, storage keys, layout)
+└── utils/              # Validation rules and utility functions
 ```
 
 ## Testing
@@ -131,7 +141,7 @@ Kedro Builder models Kedro data pipelines. Key connection rules:
 - Dataset → Dataset (no direct data-to-data connections)
 - Task → Parameter (parameters are inputs only, not outputs)
 
-See `src/domain/validators/` for validation logic.
+See `src/utils/validation/validators/` for validation logic and `src/domain/PipelineGraph.ts` for graph operations.
 
 ## Pull Request Process
 
