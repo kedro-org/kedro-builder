@@ -58,7 +58,6 @@ export const useCanvasState = () => {
     selectedNodeIdsSet,
     selectedEdgeIdsSet,
   } = useAppSelector(selectCanvasData);
-  const theme = useAppSelector((s) => s.theme.theme);
 
   // Use memoized selectors for computed values
   const selectionType = useAppSelector(selectSelectionType);
@@ -159,7 +158,6 @@ export const useCanvasState = () => {
     reduxDatasets,
     selectedNodeIds,
     selectedEdgeIds,
-    theme,
 
     // Canvas state
     isEmpty,
