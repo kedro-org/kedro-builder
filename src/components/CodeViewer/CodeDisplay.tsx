@@ -81,10 +81,14 @@ export const CodeDisplay: React.FC = () => {
     }
   }, [selectedFile?.content, theme]);
 
-  const handleCopy = () => {
+  const handleCopy = async () => {
     if (selectedFile?.content) {
-      navigator.clipboard.writeText(selectedFile.content);
-      toast.success('Copied to clipboard!');
+      try {
+        await navigator.clipboard.writeText(selectedFile.content);
+        toast.success('Copied to clipboard!');
+      } catch {
+        toast.error('Failed to copy to clipboard');
+      }
     }
   };
 
