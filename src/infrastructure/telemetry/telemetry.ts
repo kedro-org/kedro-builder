@@ -30,9 +30,11 @@ declare global {
   }
 }
 
-// Constants
-export const TELEMETRY_KEY = 'kedro-builder-telemetry';
-export const TELEMETRY_CONSENT_SHOWN_KEY = 'kedro-builder-telemetry-consent-shown';
+import { STORAGE_KEYS } from '../../constants';
+
+// Re-export for backwards compatibility
+export const TELEMETRY_KEY = STORAGE_KEYS.TELEMETRY;
+export const TELEMETRY_CONSENT_SHOWN_KEY = STORAGE_KEYS.TELEMETRY_CONSENT_SHOWN;
 
 // List of property keys that should NEVER be sent to analytics
 // This prevents accidental PII leakage
