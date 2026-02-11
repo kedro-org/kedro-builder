@@ -8,7 +8,7 @@
  * IMPORTANT: Do NOT change these formats without a migration strategy.
  */
 
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import {
   generateId,
   generateNodeId,
@@ -25,27 +25,24 @@ describe('ID Format Contracts', () => {
   describe('Node ID Format', () => {
     it('generates IDs with node- prefix', () => {
       const id = generateNodeId();
-      expect(id).toMatch(/^node-\d+$/);
+      expect(id).toMatch(/^node-.+$/);
     });
 
-    it('generates IDs with timestamp', () => {
-      const before = Date.now();
-      const id = generateNodeId();
-      const after = Date.now();
-
-      const timestamp = parseInt(id.replace('node-', ''), 10);
-      expect(timestamp).toBeGreaterThanOrEqual(before);
-      expect(timestamp).toBeLessThanOrEqual(after);
+    it('generates unique IDs on each call', () => {
+      const id1 = generateNodeId();
+      const id2 = generateNodeId();
+      expect(id1).not.toBe(id2);
     });
 
     it('generateId("node") produces same format as generateNodeId', () => {
       const id = generateId('node');
-      expect(id).toMatch(/^node-\d+$/);
+      expect(id).toMatch(/^node-.+$/);
     });
 
     it('isNodeId correctly identifies node IDs', () => {
       expect(isNodeId('node-123456789')).toBe(true);
       expect(isNodeId('node-1')).toBe(true);
+      expect(isNodeId(generateNodeId())).toBe(true);
       expect(isNodeId('dataset-123')).toBe(false);
       expect(isNodeId('conn-a-b')).toBe(false);
       expect(isNodeId('invalid')).toBe(false);
@@ -55,27 +52,24 @@ describe('ID Format Contracts', () => {
   describe('Dataset ID Format', () => {
     it('generates IDs with dataset- prefix', () => {
       const id = generateDatasetId();
-      expect(id).toMatch(/^dataset-\d+$/);
+      expect(id).toMatch(/^dataset-.+$/);
     });
 
-    it('generates IDs with timestamp', () => {
-      const before = Date.now();
-      const id = generateDatasetId();
-      const after = Date.now();
-
-      const timestamp = parseInt(id.replace('dataset-', ''), 10);
-      expect(timestamp).toBeGreaterThanOrEqual(before);
-      expect(timestamp).toBeLessThanOrEqual(after);
+    it('generates unique IDs on each call', () => {
+      const id1 = generateDatasetId();
+      const id2 = generateDatasetId();
+      expect(id1).not.toBe(id2);
     });
 
     it('generateId("dataset") produces same format as generateDatasetId', () => {
       const id = generateId('dataset');
-      expect(id).toMatch(/^dataset-\d+$/);
+      expect(id).toMatch(/^dataset-.+$/);
     });
 
     it('isDatasetId correctly identifies dataset IDs', () => {
       expect(isDatasetId('dataset-123456789')).toBe(true);
       expect(isDatasetId('dataset-1')).toBe(true);
+      expect(isDatasetId(generateDatasetId())).toBe(true);
       expect(isDatasetId('node-123')).toBe(false);
       expect(isDatasetId('conn-a-b')).toBe(false);
       expect(isDatasetId('invalid')).toBe(false);
@@ -125,16 +119,14 @@ describe('ID Format Contracts', () => {
   });
 
   describe('Copy/Paste ID Format', () => {
-    it('generates node copy IDs with random suffix', () => {
+    it('generates node copy IDs with node- prefix', () => {
       const id = generateCopyId('node');
-      // Format: node-{timestamp}-{random}
-      expect(id).toMatch(/^node-\d+-[a-z0-9]+$/);
+      expect(id).toMatch(/^node-.+$/);
     });
 
-    it('generates dataset copy IDs with random suffix', () => {
+    it('generates dataset copy IDs with dataset- prefix', () => {
       const id = generateCopyId('dataset');
-      // Format: dataset-{timestamp}-{random}
-      expect(id).toMatch(/^dataset-\d+-[a-z0-9]+$/);
+      expect(id).toMatch(/^dataset-.+$/);
     });
 
     it('generates unique IDs even when called quickly', () => {
@@ -180,32 +172,29 @@ describe('ID Format Contracts', () => {
   });
 
   describe('ID Format Stability', () => {
-    let originalDateNow: typeof Date.now;
-
-    beforeEach(() => {
-      originalDateNow = Date.now;
+    it('node IDs always start with node- prefix', () => {
+      const ids = Array.from({ length: 10 }, () => generateNodeId());
+      ids.forEach((id) => expect(id.startsWith('node-')).toBe(true));
     });
 
-    afterEach(() => {
-      Date.now = originalDateNow;
-    });
-
-    it('node ID format is stable with mocked timestamp', () => {
-      Date.now = vi.fn(() => 1704067200000); // 2024-01-01 00:00:00 UTC
-      const id = generateNodeId();
-      expect(id).toBe('node-1704067200000');
-    });
-
-    it('dataset ID format is stable with mocked timestamp', () => {
-      Date.now = vi.fn(() => 1704067200000);
-      const id = generateDatasetId();
-      expect(id).toBe('dataset-1704067200000');
+    it('dataset IDs always start with dataset- prefix', () => {
+      const ids = Array.from({ length: 10 }, () => generateDatasetId());
+      ids.forEach((id) => expect(id.startsWith('dataset-')).toBe(true));
     });
 
     it('connection ID format is stable', () => {
       const id = generateConnectionId('node-1704067200000', 'dataset-1704067200001');
       // No conn- prefix for localStorage compatibility
       expect(id).toBe('node-1704067200000-dataset-1704067200001');
+    });
+
+    it('generated IDs are compatible with existing type guards', () => {
+      // Old timestamp-based IDs should still be recognized
+      expect(isNodeId('node-1704067200000')).toBe(true);
+      expect(isDatasetId('dataset-1704067200000')).toBe(true);
+      // New UUID-based IDs should also be recognized
+      expect(isNodeId(generateNodeId())).toBe(true);
+      expect(isDatasetId(generateDatasetId())).toBe(true);
     });
   });
 });
