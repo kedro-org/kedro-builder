@@ -7,6 +7,8 @@ import {
   toSnakeCase,
   formatFunctionParams,
   indentCode,
+  getNodeInputDatasets,
+  getNodeOutputDatasets,
 } from './helpers';
 
 /**
@@ -63,8 +65,8 @@ function generateNodeFunction(
   datasets: Record<string, KedroDataset>
 ): string {
   const funcName = toSnakeCase(node.name);
-  const inputs = getNodeInputs(node, connections, datasets);
-  const outputs = getNodeOutputs(node, connections, datasets);
+  const inputs = getNodeInputDatasets(node, connections, datasets);
+  const outputs = getNodeOutputDatasets(node, connections, datasets);
 
   // Use user's custom code if provided
   if (node.functionCode && node.functionCode.trim()) {
@@ -148,50 +150,3 @@ function getReturnType(outputs: string[]): string {
   return `Tuple[${outputs.map(() => 'pd.DataFrame').join(', ')}]`;
 }
 
-/**
- * Get input datasets for a node.
- * Finds all dataset -> node connections and extracts dataset names.
- */
-function getNodeInputs(
-  node: KedroNode,
-  connections: KedroConnection[],
-  datasets: Record<string, KedroDataset>
-): string[] {
-  const inputs: string[] = [];
-
-  connections.forEach((conn) => {
-    // Find connections where dataset -> node
-    if (conn.target === node.id && conn.source.startsWith('dataset-')) {
-      const dataset = datasets[conn.source];
-      if (dataset) {
-        inputs.push(dataset.name);
-      }
-    }
-  });
-
-  return inputs;
-}
-
-/**
- * Get output datasets for a node.
- * Finds all node -> dataset connections and extracts dataset names.
- */
-function getNodeOutputs(
-  node: KedroNode,
-  connections: KedroConnection[],
-  datasets: Record<string, KedroDataset>
-): string[] {
-  const outputs: string[] = [];
-
-  connections.forEach((conn) => {
-    // Find connections where node -> dataset
-    if (conn.source === node.id && conn.target.startsWith('dataset-')) {
-      const dataset = datasets[conn.target];
-      if (dataset) {
-        outputs.push(dataset.name);
-      }
-    }
-  });
-
-  return outputs;
-}

@@ -2,6 +2,7 @@
  * Helper utilities for Kedro project export
  */
 
+import type { KedroNode, KedroDataset, KedroConnection } from '../../types/kedro';
 import { PYTHON_KEYWORDS } from '../../utils/validation';
 
 /**
@@ -157,4 +158,48 @@ export function escapeYamlString(str: string): string {
     return `"${sanitized.replace(/\\/g, '\\\\').replace(/"/g, '\\"')}"`;
   }
   return sanitized;
+}
+
+/**
+ * Get input dataset names for a node by finding all dataset→node connections.
+ */
+export function getNodeInputDatasets(
+  node: KedroNode,
+  connections: KedroConnection[],
+  datasets: Record<string, KedroDataset>
+): string[] {
+  const inputs: string[] = [];
+
+  connections.forEach((conn) => {
+    if (conn.target === node.id && conn.source.startsWith('dataset-')) {
+      const dataset = datasets[conn.source];
+      if (dataset) {
+        inputs.push(dataset.name);
+      }
+    }
+  });
+
+  return inputs;
+}
+
+/**
+ * Get output dataset names for a node by finding all node→dataset connections.
+ */
+export function getNodeOutputDatasets(
+  node: KedroNode,
+  connections: KedroConnection[],
+  datasets: Record<string, KedroDataset>
+): string[] {
+  const outputs: string[] = [];
+
+  connections.forEach((conn) => {
+    if (conn.source === node.id && conn.target.startsWith('dataset-')) {
+      const dataset = datasets[conn.target];
+      if (dataset) {
+        outputs.push(dataset.name);
+      }
+    }
+  });
+
+  return outputs;
 }

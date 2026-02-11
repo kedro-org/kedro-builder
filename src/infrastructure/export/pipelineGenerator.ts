@@ -3,7 +3,7 @@
  */
 
 import type { KedroNode, KedroDataset, KedroConnection } from '../../types/kedro';
-import { toSnakeCase, formatNodeInputs, formatNodeOutputs } from './helpers';
+import { toSnakeCase, formatNodeInputs, formatNodeOutputs, getNodeInputDatasets, getNodeOutputDatasets } from './helpers';
 
 /**
  * Generate Kedro pipeline.py file content from pipeline structure.
@@ -85,50 +85,3 @@ function generateNodeDefinition(
             )`;
 }
 
-/**
- * Get input dataset names for a node.
- * Finds all dataset -> node connections and extracts dataset names.
- */
-function getNodeInputDatasets(
-  node: KedroNode,
-  connections: KedroConnection[],
-  datasets: Record<string, KedroDataset>
-): string[] {
-  const inputs: string[] = [];
-
-  connections.forEach((conn) => {
-    // Find connections where dataset -> node
-    if (conn.target === node.id && conn.source.startsWith('dataset-')) {
-      const dataset = datasets[conn.source];
-      if (dataset) {
-        inputs.push(dataset.name);
-      }
-    }
-  });
-
-  return inputs;
-}
-
-/**
- * Get output dataset names for a node.
- * Finds all node -> dataset connections and extracts dataset names.
- */
-function getNodeOutputDatasets(
-  node: KedroNode,
-  connections: KedroConnection[],
-  datasets: Record<string, KedroDataset>
-): string[] {
-  const outputs: string[] = [];
-
-  connections.forEach((conn) => {
-    // Find connections where node -> dataset
-    if (conn.source === node.id && conn.target.startsWith('dataset-')) {
-      const dataset = datasets[conn.target];
-      if (dataset) {
-        outputs.push(dataset.name);
-      }
-    }
-  });
-
-  return outputs;
-}
