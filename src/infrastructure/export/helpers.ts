@@ -97,16 +97,6 @@ export function formatFunctionParams(
 }
 
 /**
- * Format Python docstring parameters
- */
-export function formatDocstringParams(params: string[], indent: string = '        '): string {
-  if (params.length === 0) return '';
-  return params
-    .map((p) => `${indent}${toSnakeCase(p)}: Input ${p}`)
-    .join('\n');
-}
-
-/**
  * Escape special characters for Python string literals
  */
 function escapePythonString(str: string): string {

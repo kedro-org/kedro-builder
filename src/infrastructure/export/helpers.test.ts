@@ -8,7 +8,6 @@ import {
   inferDataLayer,
   getFileExtension,
   formatFunctionParams,
-  formatDocstringParams,
   formatNodeInputs,
   formatNodeOutputs,
   indentCode,
@@ -145,30 +144,6 @@ describe('helpers', () => {
 
     it('should use custom type hint', () => {
       expect(formatFunctionParams(['data'], 'Dict')).toBe('data: Dict');
-    });
-  });
-
-  describe('formatDocstringParams', () => {
-    it('should return empty string for no params', () => {
-      expect(formatDocstringParams([])).toBe('');
-    });
-
-    it('should format single param with default indent', () => {
-      const result = formatDocstringParams(['data']);
-      expect(result).toContain('data: Input data');
-      expect(result).toMatch(/^\s{8}data:/); // 8 spaces default
-    });
-
-    it('should format multiple params', () => {
-      const result = formatDocstringParams(['input1', 'input2']);
-      expect(result).toContain('input1: Input input1');
-      expect(result).toContain('input2: Input input2');
-      expect(result).toContain('\n');
-    });
-
-    it('should use custom indent', () => {
-      const result = formatDocstringParams(['data'], '    ');
-      expect(result).toMatch(/^\s{4}data:/); // 4 spaces custom
     });
   });
 
