@@ -7,6 +7,7 @@ import { generateFileTree } from '../../utils/fileTreeGenerator';
 import type { FileNode } from '../../utils/fileTreeGenerator';
 import { ChevronRight, ChevronDown, Folder, File } from 'lucide-react';
 import { calculateTreeIndent } from '../../constants/fileTree';
+import { logger } from '../../utils/logger';
 import type { RootState } from '../../types/redux';
 import './FileTree.scss';
 
@@ -31,7 +32,7 @@ export const FileTree: React.FC = () => {
       // Get the full state only when we need to generate the tree
       return generateFileTree(store.getState());
     } catch (error) {
-      console.error('Failed to generate file tree:', error);
+      logger.error('Failed to generate file tree:', error);
       return null;
     }
     // nodeIds, datasetIds, connectionIds are intentional deps for triggering recomputation
