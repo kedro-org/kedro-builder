@@ -85,12 +85,12 @@ describe('ValidatorRegistry', () => {
     registry = new ValidatorRegistry();
   });
 
-  describe('register/unregister/get', () => {
+  describe('register', () => {
     it('should register a validator', () => {
       const validator = new EmptyNameValidator();
       registry.register(validator);
 
-      expect(registry.get('empty-name')).toBe(validator);
+      expect(registry.getAll()).toContain(validator);
     });
 
     it('should allow chaining register calls', () => {
@@ -100,27 +100,7 @@ describe('ValidatorRegistry', () => {
       const result = registry.register(v1).register(v2);
 
       expect(result).toBe(registry);
-      expect(registry.get('empty-name')).toBe(v1);
-      expect(registry.get('invalid-name')).toBe(v2);
-    });
-
-    it('should unregister a validator', () => {
-      const validator = new EmptyNameValidator();
-      registry.register(validator);
-
-      const removed = registry.unregister('empty-name');
-
-      expect(removed).toBe(true);
-      expect(registry.get('empty-name')).toBeUndefined();
-    });
-
-    it('should return false when unregistering non-existent validator', () => {
-      const removed = registry.unregister('non-existent');
-      expect(removed).toBe(false);
-    });
-
-    it('should return undefined for non-existent validator', () => {
-      expect(registry.get('non-existent')).toBeUndefined();
+      expect(registry.getAll()).toHaveLength(2);
     });
   });
 
@@ -141,42 +121,6 @@ describe('ValidatorRegistry', () => {
       expect(all).toContain(v1);
       expect(all).toContain(v2);
       expect(all).toContain(v3);
-    });
-  });
-
-  describe('getBySeverity', () => {
-    beforeEach(() => {
-      registry
-        .register(new EmptyNameValidator()) // error
-        .register(new InvalidNameValidator()) // error
-        .register(new DuplicateNameValidator()) // error
-        .register(new CircularDependencyValidator()) // error
-        .register(new MissingCodeValidator()) // warning
-        .register(new MissingConfigValidator()) // warning
-        .register(new OrphanedNodeValidator()) // warning
-        .register(new OrphanedDatasetValidator()); // warning
-    });
-
-    it('should return only error validators', () => {
-      const errors = registry.getBySeverity('error');
-      expect(errors).toHaveLength(4);
-      errors.forEach((v) => {
-        expect(v.severity).toBe('error');
-      });
-    });
-
-    it('should return only warning validators', () => {
-      const warnings = registry.getBySeverity('warning');
-      expect(warnings).toHaveLength(4);
-      warnings.forEach((v) => {
-        expect(v.severity).toBe('warning');
-      });
-    });
-
-    it('should return empty array when no validators match severity', () => {
-      const emptyRegistry = new ValidatorRegistry();
-      expect(emptyRegistry.getBySeverity('error')).toEqual([]);
-      expect(emptyRegistry.getBySeverity('warning')).toEqual([]);
     });
   });
 
@@ -218,75 +162,6 @@ describe('ValidatorRegistry', () => {
     });
   });
 
-  describe('validateErrors', () => {
-    beforeEach(() => {
-      registry
-        .register(new EmptyNameValidator()) // error
-        .register(new InvalidNameValidator()) // error
-        .register(new MissingCodeValidator()) // warning
-        .register(new OrphanedNodeValidator()); // warning
-    });
-
-    it('should only run error validators', () => {
-      const nodes: KedroNode[] = [
-        { id: 'node-1', name: '', type: 'custom', inputs: [], outputs: [], position: { x: 0, y: 0 } }, // Empty name (error)
-      ];
-
-      const state = createState(nodes);
-      const results = registry.validateErrors(state);
-
-      expect(results).toHaveLength(1);
-      expect(results[0].severity).toBe('error');
-      expect(results[0].message).toContain('has no name');
-    });
-
-    it('should not run warning validators', () => {
-      const nodes: KedroNode[] = [
-        { id: 'node-1', name: 'orphaned_node', type: 'custom', inputs: [], outputs: [], position: { x: 0, y: 0 } }, // Orphaned (warning only)
-      ];
-
-      const state = createState(nodes);
-      const results = registry.validateErrors(state);
-
-      expect(results).toEqual([]);
-    });
-  });
-
-  describe('validateWarnings', () => {
-    beforeEach(() => {
-      registry
-        .register(new EmptyNameValidator()) // error
-        .register(new InvalidNameValidator()) // error
-        .register(new MissingCodeValidator()) // warning
-        .register(new OrphanedNodeValidator()); // warning
-    });
-
-    it('should only run warning validators', () => {
-      const nodes: KedroNode[] = [
-        { id: 'node-1', name: 'orphaned_node', type: 'custom', inputs: [], outputs: [], position: { x: 0, y: 0 } }, // Orphaned (warning)
-      ];
-
-      const state = createState(nodes);
-      const results = registry.validateWarnings(state);
-
-      expect(results).toHaveLength(2); // Orphaned + missing code
-      results.forEach((r) => {
-        expect(r.severity).toBe('warning');
-      });
-    });
-
-    it('should not run error validators', () => {
-      const nodes: KedroNode[] = [
-        { id: 'node-1', name: '', type: 'custom', inputs: [], outputs: [], position: { x: 0, y: 0 } }, // Empty name (error only)
-      ];
-
-      const state = createState(nodes);
-      const results = registry.validateWarnings(state);
-
-      // Should only get warning about missing code, not empty name error
-      expect(results.every((r) => r.severity === 'warning')).toBe(true);
-    });
-  });
 });
 
 describe('CircularDependencyValidator', () => {
@@ -1198,38 +1073,25 @@ describe('OrphanedDatasetValidator', () => {
 
 describe('Factory functions', () => {
   describe('createDefaultValidatorRegistry', () => {
-    it('should create a registry with all default validators', () => {
+    it('should create a registry with all 8 default validators', () => {
       const registry = createDefaultValidatorRegistry();
+      const all = registry.getAll();
 
-      expect(registry.getAll()).toHaveLength(8);
-      expect(registry.get('circular-dependency')).toBeInstanceOf(CircularDependencyValidator);
-      expect(registry.get('duplicate-name')).toBeInstanceOf(DuplicateNameValidator);
-      expect(registry.get('invalid-name')).toBeInstanceOf(InvalidNameValidator);
-      expect(registry.get('empty-name')).toBeInstanceOf(EmptyNameValidator);
-      expect(registry.get('orphaned-node')).toBeInstanceOf(OrphanedNodeValidator);
-      expect(registry.get('orphaned-dataset')).toBeInstanceOf(OrphanedDatasetValidator);
-      expect(registry.get('missing-code')).toBeInstanceOf(MissingCodeValidator);
-      expect(registry.get('missing-config')).toBeInstanceOf(MissingConfigValidator);
-    });
-
-    it('should have 4 error validators', () => {
-      const registry = createDefaultValidatorRegistry();
-      const errorValidators = registry.getBySeverity('error');
-
-      expect(errorValidators).toHaveLength(4);
-      expect(errorValidators.map((v) => v.id)).toEqual(
-        expect.arrayContaining(['circular-dependency', 'duplicate-name', 'invalid-name', 'empty-name'])
+      expect(all).toHaveLength(8);
+      expect(all.map((v) => v.id)).toEqual(
+        expect.arrayContaining([
+          'circular-dependency', 'duplicate-name', 'invalid-name', 'empty-name',
+          'orphaned-node', 'orphaned-dataset', 'missing-code', 'missing-config',
+        ])
       );
     });
 
-    it('should have 4 warning validators', () => {
+    it('should have 4 error and 4 warning validators', () => {
       const registry = createDefaultValidatorRegistry();
-      const warningValidators = registry.getBySeverity('warning');
+      const all = registry.getAll();
 
-      expect(warningValidators).toHaveLength(4);
-      expect(warningValidators.map((v) => v.id)).toEqual(
-        expect.arrayContaining(['orphaned-node', 'orphaned-dataset', 'missing-code', 'missing-config'])
-      );
+      expect(all.filter((v) => v.severity === 'error')).toHaveLength(4);
+      expect(all.filter((v) => v.severity === 'warning')).toHaveLength(4);
     });
 
     it('should create new registry instances', () => {
@@ -1332,7 +1194,7 @@ describe('Integration tests', () => {
     expect(results).toEqual([]);
   });
 
-  it('should separate error and warning validation correctly', () => {
+  it('should produce both errors and warnings for mixed issues', () => {
     const registry = createDefaultValidatorRegistry();
 
     const nodes: KedroNode[] = [
@@ -1341,12 +1203,11 @@ describe('Integration tests', () => {
     ];
 
     const state = createState(nodes);
+    const results = registry.validateAll(state);
 
-    const errors = registry.validateErrors(state);
-    const warnings = registry.validateWarnings(state);
+    const errors = results.filter((r) => r.severity === 'error');
+    const warnings = results.filter((r) => r.severity === 'warning');
 
-    expect(errors.every((e) => e.severity === 'error')).toBe(true);
-    expect(warnings.every((w) => w.severity === 'warning')).toBe(true);
     expect(errors.length).toBeGreaterThan(0);
     expect(warnings.length).toBeGreaterThan(0);
   });
