@@ -8,17 +8,16 @@ import {
   selectNode,
   toggleNodeSelection,
   clearSelection,
-  deleteNodes,
 } from '@/features/nodes/nodesSlice';
 import {
   addDataset,
   updateDatasetPosition,
-  deleteDataset,
 } from '@/features/datasets/datasetsSlice';
-import { closeConfigPanel, openConfigPanel, setPendingComponent } from '@/features/ui/uiSlice';
+import { openConfigPanel, setPendingComponent } from '@/features/ui/uiSlice';
 import { clearConnectionSelection } from '@/features/connections/connectionsSlice';
 import { generateId, isNodeId, isDatasetId } from '@/domain/IdGenerator';
 import { useSelectAndOpenConfig } from '@/hooks/useSelectAndOpenConfig';
+import { useDeleteItems } from './useDeleteItems';
 import { logger } from '@/utils/logger';
 import { trackEvent } from '@/infrastructure/telemetry';
 import { DND_TYPES } from '@/constants';
@@ -45,6 +44,7 @@ export const useNodeHandlers = ({ onNodesChange, setIsDraggingOver, isDraggingOv
   const dispatch = useAppDispatch();
   const { screenToFlowPosition } = useReactFlow();
   const selectAndOpenConfig = useSelectAndOpenConfig();
+  const deleteItems = useDeleteItems();
 
   // State for custom delete confirmation dialog
   const [nodeDeleteConfirmation, setNodeDeleteConfirmation] = useState<NodeDeleteConfirmation | null>(null);
@@ -83,25 +83,12 @@ export const useNodeHandlers = ({ onNodesChange, setIsDraggingOver, isDraggingOv
   const confirmNodeDelete = useCallback(() => {
     if (!nodeDeleteConfirmation) return;
 
-    // Delete nodes (all at once)
-    if (nodeDeleteConfirmation.nodeIds.length > 0) {
-      logger.delete('Deleting nodes:', nodeDeleteConfirmation.nodeIds);
-      dispatch(deleteNodes(nodeDeleteConfirmation.nodeIds));
-    }
-
-    // Delete datasets (one by one - since deleteDataset takes a single ID)
-    if (nodeDeleteConfirmation.datasetIds.length > 0) {
-      logger.delete('Deleting datasets:', nodeDeleteConfirmation.datasetIds);
-      nodeDeleteConfirmation.datasetIds.forEach((id) => {
-        dispatch(deleteDataset(id));
-      });
-    }
-
-    // Clear selection and close config panel after deletion
-    dispatch(clearSelection());
-    dispatch(closeConfigPanel());
+    deleteItems([
+      ...nodeDeleteConfirmation.nodeIds,
+      ...nodeDeleteConfirmation.datasetIds,
+    ]);
     setNodeDeleteConfirmation(null);
-  }, [nodeDeleteConfirmation, dispatch]);
+  }, [nodeDeleteConfirmation, deleteItems]);
 
   // Cancel node delete action
   const cancelNodeDelete = useCallback(() => {
