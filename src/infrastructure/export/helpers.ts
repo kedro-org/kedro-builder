@@ -11,7 +11,8 @@ export function toSnakeCase(str: string): string {
   return str
     .trim()
     .replace(/\s+/g, '_')
-    .replace(/[A-Z]/g, (letter) => `_${letter.toLowerCase()}`)
+    .replace(/([A-Z]+)([A-Z][a-z])/g, '$1_$2')
+    .replace(/([a-z\d])([A-Z])/g, '$1_$2')
     .replace(/^_/, '')
     .replace(/__+/g, '_')
     .toLowerCase();
@@ -105,6 +106,13 @@ export function formatDocstringParams(params: string[], indent: string = '      
 }
 
 /**
+ * Escape special characters for Python string literals
+ */
+function escapePythonString(str: string): string {
+  return str.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
+}
+
+/**
  * Format inputs for Kedro node definition
  * Single input: "input_name"
  * Multiple inputs: ["input1", "input2"]
@@ -112,8 +120,8 @@ export function formatDocstringParams(params: string[], indent: string = '      
  */
 export function formatNodeInputs(inputs: string[]): string {
   if (inputs.length === 0) return 'None';
-  if (inputs.length === 1) return `"${inputs[0]}"`;
-  return `[${inputs.map((i) => `"${i}"`).join(', ')}]`;
+  if (inputs.length === 1) return `"${escapePythonString(inputs[0])}"`;
+  return `[${inputs.map((i) => `"${escapePythonString(i)}"`).join(', ')}]`;
 }
 
 /**
@@ -124,8 +132,8 @@ export function formatNodeInputs(inputs: string[]): string {
  */
 export function formatNodeOutputs(outputs: string[]): string {
   if (outputs.length === 0) return 'None';
-  if (outputs.length === 1) return `"${outputs[0]}"`;
-  return `[${outputs.map((o) => `"${o}"`).join(', ')}]`;
+  if (outputs.length === 1) return `"${escapePythonString(outputs[0])}"`;
+  return `[${outputs.map((o) => `"${escapePythonString(o)}"`).join(', ')}]`;
 }
 
 /**
@@ -143,8 +151,10 @@ export function indentCode(code: string, spaces: number = 4): string {
  * Escape special characters in YAML strings
  */
 export function escapeYamlString(str: string): string {
-  if (/[:#[\]{}|>@`]/.test(str) || str.includes('\n')) {
-    return `"${str.replace(/"/g, '\\"')}"`;
+  // Strip YAML tags to prevent injection (e.g., !!python/object)
+  const sanitized = str.replace(/!!/g, '');
+  if (/[:#[\]{}|>@`!]/.test(sanitized) || sanitized.includes('\n')) {
+    return `"${sanitized.replace(/\\/g, '\\\\').replace(/"/g, '\\"')}"`;
   }
-  return str;
+  return sanitized;
 }

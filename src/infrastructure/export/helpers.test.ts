@@ -20,7 +20,7 @@ describe('helpers', () => {
     it('should convert CamelCase to snake_case', () => {
       expect(toSnakeCase('MyFunction')).toBe('my_function');
       expect(toSnakeCase('ProcessData')).toBe('process_data');
-      expect(toSnakeCase('XMLParser')).toBe('x_m_l_parser');
+      expect(toSnakeCase('XMLParser')).toBe('xml_parser');
     });
 
     it('should convert spaces to underscores', () => {
