@@ -8,7 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
-- 279 new tests increasing total test count from 219 to 498
+- 279 new tests increasing total test count from 219 to 482
   - Added comprehensive test coverage for custom hooks
   - Added tests for domain logic and validators
   - Added tests for filepath utilities and file tree generator
@@ -27,6 +27,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added barrel exports for hooks/ and infrastructure/ directories
   - Simplified module consumption
   - Cleaner public API surface
+- ValidatorRegistry trimmed from 8 methods to 3 (`register`, `getAll`, `validateAll`)
+  - Removed unused `unregister`, `get`, `getBySeverity`, `validateErrors`, `validateWarnings`
+- Canvas mega-selector split: theme selected independently to avoid invalidating node/edge memoization
+- Logger production default changed from INFO to WARN for quieter production console
+- Telemetry storage keys now reference centralized `STORAGE_KEYS` constants
 
 ### Fixed
 - Generated pipeline.py now uses correct Kedro API
@@ -41,6 +46,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - O(n^2) performance issue in `deleteNodes` and `deleteDatasets` reducers
   - Replaced array iteration lookups with Set-based lookups
   - Significantly improved deletion performance for large pipelines
+- Duplicate `ValidationError` type consolidated to single canonical source (`utils/validation/types.ts`)
+- Duplicate `getNodeInputDatasets`/`getNodeOutputDatasets` extracted to shared `export/helpers.ts`
+- Duplicate delete logic across 3 hooks consolidated into `useDeleteItems` shared hook
+- Unsafe `as RootState` cast in CodeDisplay replaced with narrow `FileTreeInput` interface
+- Redundant `validatePipeline` call in `useValidation` replaced with Redux state read
+- Duplicate `getConnectionsArray()` in 3 validators extracted to `validators/helpers.ts`
+- Unhandled promise rejection in clipboard.writeText now caught with error toast
+- `projectGenerator.ts` pass-through module removed; logic lives directly in `KedroProjectBuilder.ts`
 
 ### Removed
 - 8 unused dependencies reducing bundle size
@@ -52,3 +65,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - @types/js-yaml
   - @types/file-saver
   - @types/react-syntax-highlighter
+- 6 unused identity selectors from `uiSelectors.ts` and 6 from `validationSelectors.ts`
+- Unused `formatDocstringParams()` export from helpers
+- Unused `theme` return value from `useCanvasState` hook
+- Direct `console.log`/`console.error` calls replaced with centralized `logger` utility

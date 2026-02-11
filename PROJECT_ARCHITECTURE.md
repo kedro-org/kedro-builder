@@ -306,13 +306,13 @@ Kedro Builder uses **Redux Toolkit** with a **normalized state structure** for e
 ## Validation & Export Implementation
 
 - **Pipeline Validation (`src/utils/validation/`)**
-  Modular validator classes following the Strategy pattern. Each validator (CircularDependency, DuplicateName, EmptyName, InvalidName, OrphanedNode, OrphanedDataset, MissingCode, MissingConfig) implements a common interface. The `PipelineGraph` domain service handles DFS-based cycle detection by converting dataset connections into node-to-node edges.
+  Modular validator classes following the Strategy pattern. Each validator (CircularDependency, DuplicateName, EmptyName, InvalidName, OrphanedNode, OrphanedDataset, MissingCode, MissingConfig) implements a common `Validator` interface. The `ValidatorRegistry` exposes three methods: `register`, `getAll`, and `validateAll`. Shared helpers like `getConnectionsArray` are extracted to `validators/helpers.ts`. The `PipelineGraph` domain service handles DFS-based cycle detection by converting dataset connections into node-to-node edges.
 
 - **Input Validation (`src/utils/validation/inputValidation.ts`)**
   Real-time validation for node/dataset names with snake_case enforcement, Python keyword detection, and length limits.
 
 - **Export Flow (`src/components/App/hooks/useValidation.ts`)**
-  `handleViewCode` and `handleExport` both run validation. The export wizard consumes `ValidationResult` state; when users confirm, `generateKedroProject` collects graph data and writes:
+  `handleViewCode` and `handleExport` both run validation and store results in Redux. When the export wizard opens, it reads validation results from Redux state (avoiding redundant re-validation). When users confirm, `generateKedroProject` (in `KedroProjectBuilder.ts`) collects graph data and writes:
   - `pyproject.toml`, `.gitignore`, `README.md`
   - `conf/base` (catalog, logging, parameters) and `conf/local/credentials.yml`
   - `src/<package>/` pipelines (`nodes.py`, `pipeline.py`, registry, settings)
@@ -336,9 +336,11 @@ kedro-builder/
 │   │   ├── PipelineGraph.ts     # Graph building, cycle detection, orphan finding
 │   │   └── index.ts             # Barrel exports
 │   ├── infrastructure/          # External service integrations
-│   │   ├── export/              # Kedro project generators + tests
+│   │   ├── export/              # Kedro project generators, helpers, tests
+│   │   │   ├── KedroProjectBuilder.ts  # ZIP generation + download
+│   │   │   └── helpers.ts       # Shared export utilities (snake_case, formatting)
 │   │   ├── localStorage/        # Persistence with validation & graceful degradation
-│   │   └── telemetry/           # Heap analytics integration
+│   │   └── telemetry/           # Heap analytics (uses centralized STORAGE_KEYS)
 │   ├── components/
 │   │   ├── App/                 # Shell, layout, validation hooks
 │   │   ├── Canvas/              # ReactFlow integration, overlays, handlers
@@ -364,13 +366,17 @@ kedro-builder/
 │   │   ├── useClearSelections.ts # Clear all selections
 │   │   ├── useSelectAndOpenConfig.ts # Select + open config panel
 │   │   └── useTelemetry.ts      # Telemetry tracking hook
+│   │   # Canvas-specific hooks in components/Canvas/hooks/:
+│   │   #   useDeleteItems.ts    # Shared delete logic for nodes/datasets/edges
 │   ├── store/                   # Store configuration, typed hooks, middleware
 │   ├── utils/
 │   │   ├── validation/          # Validator classes (Strategy pattern)
-│   │   │   ├── validators/      # Individual validators
+│   │   │   ├── validators/      # Individual validators + shared helpers
 │   │   │   ├── inputValidation.ts  # Real-time input validation
-│   │   │   └── pipelineValidation.ts
-│   │   ├── logger.ts
+│   │   │   ├── pipelineValidation.ts  # ValidatorRegistry wrapper
+│   │   │   └── types.ts         # Canonical ValidationError type
+│   │   ├── fileTreeGenerator.ts # Code viewer file tree (FileTreeInput interface)
+│   │   ├── logger.ts            # Centralized logger (WARN in prod, DEBUG in dev)
 │   │   └── filepath.ts
 │   ├── styles/                  # Global styles & variables
 │   ├── types/                   # Domain and Redux typings
@@ -380,7 +386,8 @@ kedro-builder/
 ├── public/                      # Static assets
 ├── README.md                    # Quick start & usage
 ├── PROJECT_ARCHITECTURE.md      # This document
-├── REFACTORING_PLAN.md          # Refactoring phases and progress
+├── CONTRIBUTING.md              # Setup, code standards, PR guidelines
+├── CHANGELOG.md                 # Keep a Changelog format
 └── package.json / tsconfig / vite.config.ts
 ```
 
@@ -436,14 +443,15 @@ export const autoSaveMiddleware: Middleware<{}, RootState> = store => next => ac
 
 ### Optimized Selectors with Set-based Lookups (src/features/canvas/canvasSelectors.ts)
 ```typescript
-// Combined selector reduces 6 calls to 1, Set provides O(1) selection checks
-export const selectCanvasState = createSelector(
-  [selectAllNodes, selectAllDatasets, selectSelectedNodeIds, selectSelectedDatasetIds],
-  (nodes, datasets, selectedNodeIds, selectedDatasetIds) => ({
+// Combined selector with Set provides O(1) selection checks
+// Theme is selected separately to avoid invalidating node/edge memoization on toggle
+export const selectCanvasData = createSelector(
+  [selectAllNodes, selectAllDatasets, selectSelectedNodeIds, selectSelectedEdgeIds],
+  (nodes, datasets, selectedNodeIds, selectedEdgeIds) => ({
     nodes,
     datasets,
     selectedNodeIdsSet: new Set(selectedNodeIds),
-    selectedDatasetIdsSet: new Set(selectedDatasetIds),
+    selectedEdgeIdsSet: new Set(selectedEdgeIds),
   })
 );
 ```
@@ -473,10 +481,24 @@ export const validateNodeName = (name: string): ValidationResult => {
 
 ## Testing Strategy
 
+**482 tests** across 18 test files, **70%+ coverage** (all refactored code 95-100%).
+
 - **Unit Tests (Vitest + Testing Library)**
-  - Validation helper tests (`validation.test.ts`)
+  - Custom hooks tests (`hooks/hooks.test.tsx` — 47 tests)
+  - Domain logic tests (`domain/PipelineGraph.test.ts` — 46 tests)
+  - Validator class tests (`validators/validators.test.ts` — 94 tests)
   - Export generator tests (`catalogGenerator.test.ts`, `nodesGenerator.test.ts`, `pipelineGenerator.test.ts`, `helpers.test.ts`)
+  - Utility tests (`filepath.test.ts` — 46 tests, `fileTreeGenerator.test.ts` — 44 tests)
   - Slice reducer tests covering node/dataset/connection mutations
+
+- **Integration Tests**
+  - Pipeline create → connect → export flow
+  - Pipeline create → validate flow
+
+- **Contract Tests**
+  - ID format contracts (`idFormats.contracts.test.ts`)
+  - localStorage key contracts (`localStorage.contracts.test.ts`)
+  - Event name contracts (`events.contracts.test.ts`)
 
 - **Test Infrastructure**
   - Mock store utilities (`src/test/utils/mockStore.ts`)
@@ -485,9 +507,10 @@ export const validateNodeName = (name: string): ValidationResult => {
 
 - **Coverage Areas**
   - Domain logic (ID generation, graph operations)
-  - Validation rules (all validator classes)
+  - Validation rules (all 8 validator classes)
   - Code generation (all Kedro file generators)
   - Redux slice reducers
+  - Custom hooks (100% coverage)
 
 ---
 
