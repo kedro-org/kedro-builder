@@ -3,11 +3,11 @@
  * Checks for datasets with no connections
  */
 
-import type { RootState } from '../../../types/redux';
-import type { KedroConnection } from '../../../types/kedro';
+import type { RootState } from '@/types/redux';
+import type { KedroConnection } from '@/types/kedro';
 import type { ValidationError } from '../types';
 import type { Validator } from './Validator';
-import { findOrphanedDatasets } from '../../../domain/PipelineGraph';
+import { findOrphanedDatasets } from '@/domain/PipelineGraph';
 
 export class OrphanedDatasetValidator implements Validator {
   readonly id = 'orphaned-dataset';

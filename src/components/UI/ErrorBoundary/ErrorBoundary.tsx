@@ -1,7 +1,7 @@
 import { Component, type ReactNode, type ErrorInfo } from 'react';
 import { AlertTriangle, RefreshCw } from 'lucide-react';
 import { Button } from '../Button/Button';
-import { logger } from '../../../utils/logger';
+import { logger } from '@/utils/logger';
 import './ErrorBoundary.scss';
 
 interface ErrorBoundaryProps {

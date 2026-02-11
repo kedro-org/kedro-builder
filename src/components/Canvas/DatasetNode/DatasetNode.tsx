@@ -19,9 +19,9 @@ import {
   type LucideIcon,
 } from 'lucide-react';
 import classNames from 'classnames';
-import type { KedroDataset } from '../../../types/kedro';
-import { useAppSelector } from '../../../store/hooks';
-import { selectDatasetValidationStatus } from '../../../features/validation/validationSelectors';
+import type { KedroDataset } from '@/types/kedro';
+import { useAppSelector } from '@/store/hooks';
+import { selectDatasetValidationStatus } from '@/features/validation/validationSelectors';
 import './DatasetNode.scss';
 
 // Map dataset types to their icons

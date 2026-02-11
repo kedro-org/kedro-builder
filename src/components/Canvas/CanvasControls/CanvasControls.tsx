@@ -1,6 +1,6 @@
 import { Background, Controls, MiniMap, BackgroundVariant } from '@xyflow/react';
 import type { Node } from '@xyflow/react';
-import { CANVAS } from '../../../constants/canvas';
+import { CANVAS } from '@/constants/canvas';
 import './CanvasControls.scss';
 
 interface CanvasControlsProps {

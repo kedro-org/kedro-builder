@@ -1,12 +1,12 @@
 import { Database } from 'lucide-react';
-import { useAppDispatch, useAppSelector } from '../../../store/hooks';
-import { addNode } from '../../../features/nodes/nodesSlice';
-import { addDataset } from '../../../features/datasets/datasetsSlice';
-import { openProjectSetup, setPendingComponent } from '../../../features/ui/uiSlice';
-import { generateId } from '../../../domain/IdGenerator';
-import { useClearSelections } from '../../../hooks/useClearSelections';
-import { useSelectAndOpenConfig } from '../../../hooks/useSelectAndOpenConfig';
-import { CANVAS } from '../../../constants/canvas';
+import { useAppDispatch, useAppSelector } from '@/store/hooks';
+import { addNode } from '@/features/nodes/nodesSlice';
+import { addDataset } from '@/features/datasets/datasetsSlice';
+import { openProjectSetup, setPendingComponent } from '@/features/ui/uiSlice';
+import { generateId } from '@/domain/IdGenerator';
+import { useClearSelections } from '@/hooks/useClearSelections';
+import { useSelectAndOpenConfig } from '@/hooks/useSelectAndOpenConfig';
+import { CANVAS } from '@/constants/canvas';
 import './EmptyState.scss';
 
 interface EmptyStateProps {

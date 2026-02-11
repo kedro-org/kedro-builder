@@ -1,6 +1,6 @@
 import { Moon, Sun } from 'lucide-react';
-import { useAppDispatch, useAppSelector } from '../../../store/hooks';
-import { toggleTheme } from '../../../features/theme/themeSlice';
+import { useAppDispatch, useAppSelector } from '@/store/hooks';
+import { toggleTheme } from '@/features/theme/themeSlice';
 import './ThemeToggle.scss';
 
 export const ThemeToggle = () => {

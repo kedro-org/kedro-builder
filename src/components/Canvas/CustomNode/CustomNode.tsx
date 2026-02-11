@@ -1,9 +1,9 @@
 import { memo } from 'react';
 import { Handle, Position, type NodeProps } from '@xyflow/react';
 import classNames from 'classnames';
-import type { KedroNode } from '../../../types/kedro';
-import { useAppSelector } from '../../../store/hooks';
-import { selectNodeValidationStatus } from '../../../features/validation/validationSelectors';
+import type { KedroNode } from '@/types/kedro';
+import { useAppSelector } from '@/store/hooks';
+import { selectNodeValidationStatus } from '@/features/validation/validationSelectors';
 import './CustomNode.scss';
 
 export const CustomNode = memo<NodeProps>(({ data, selected }) => {

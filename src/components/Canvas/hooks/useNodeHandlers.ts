@@ -1,7 +1,7 @@
 import { useCallback, useState } from 'react';
 import { useReactFlow } from '@xyflow/react';
 import type { Node, NodeMouseHandler, OnNodesChange, NodeChange } from '@xyflow/react';
-import { useAppDispatch } from '../../../store/hooks';
+import { useAppDispatch } from '@/store/hooks';
 import {
   addNode,
   updateNodePosition,
@@ -9,20 +9,20 @@ import {
   toggleNodeSelection,
   clearSelection,
   deleteNodes,
-} from '../../../features/nodes/nodesSlice';
+} from '@/features/nodes/nodesSlice';
 import {
   addDataset,
   updateDatasetPosition,
   deleteDataset,
-} from '../../../features/datasets/datasetsSlice';
-import { closeConfigPanel, openConfigPanel, setPendingComponent } from '../../../features/ui/uiSlice';
-import { clearConnectionSelection } from '../../../features/connections/connectionsSlice';
-import { generateId, isNodeId, isDatasetId } from '../../../domain/IdGenerator';
-import { useSelectAndOpenConfig } from '../../../hooks/useSelectAndOpenConfig';
-import { logger } from '../../../utils/logger';
-import { trackEvent } from '../../../infrastructure/telemetry';
-import { DND_TYPES } from '../../../constants';
-import type { NodeType, DatasetType } from '../../../types/kedro';
+} from '@/features/datasets/datasetsSlice';
+import { closeConfigPanel, openConfigPanel, setPendingComponent } from '@/features/ui/uiSlice';
+import { clearConnectionSelection } from '@/features/connections/connectionsSlice';
+import { generateId, isNodeId, isDatasetId } from '@/domain/IdGenerator';
+import { useSelectAndOpenConfig } from '@/hooks/useSelectAndOpenConfig';
+import { logger } from '@/utils/logger';
+import { trackEvent } from '@/infrastructure/telemetry';
+import { DND_TYPES } from '@/constants';
+import type { NodeType, DatasetType } from '@/types/kedro';
 
 // Type for node delete confirmation state
 export interface NodeDeleteConfirmation {

@@ -1,11 +1,11 @@
 import { useCallback, useState } from 'react';
-import { useAppDispatch } from '../../../store/hooks';
-import { clearSelection, deleteNodes } from '../../../features/nodes/nodesSlice';
-import { deleteDataset } from '../../../features/datasets/datasetsSlice';
-import { clearConnectionSelection, deleteConnections } from '../../../features/connections/connectionsSlice';
-import { closeConfigPanel } from '../../../features/ui/uiSlice';
-import { isNodeId, isDatasetId } from '../../../domain/IdGenerator';
-import { logger } from '../../../utils/logger';
+import { useAppDispatch } from '@/store/hooks';
+import { clearSelection, deleteNodes } from '@/features/nodes/nodesSlice';
+import { deleteDataset } from '@/features/datasets/datasetsSlice';
+import { clearConnectionSelection, deleteConnections } from '@/features/connections/connectionsSlice';
+import { closeConfigPanel } from '@/features/ui/uiSlice';
+import { isNodeId, isDatasetId } from '@/domain/IdGenerator';
+import { logger } from '@/utils/logger';
 
 // Types for delete confirmation state
 export interface DeleteConfirmation {

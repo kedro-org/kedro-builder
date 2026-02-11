@@ -1,19 +1,19 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { useAppDispatch } from '../../../store/hooks';
-import { store } from '../../../store';
+import { useAppDispatch } from '@/store/hooks';
+import { store } from '@/store';
 import {
   openCodeViewer,
   openExportWizard,
   closeExportWizard,
-} from '../../../features/ui/uiSlice';
-import { setValidationResults } from '../../../features/validation/validationSlice';
-import { validatePipeline } from '../../../utils/validation';
-import type { ValidationResult } from '../../../utils/validation';
-import { generateKedroProject, downloadProject } from '../../../infrastructure/export';
-import { logger } from '../../../utils/logger';
-import { trackEvent } from '../../../infrastructure/telemetry';
-import { TIMING } from '../../../constants/timing';
-import { onConfigUpdated } from '../../../constants';
+} from '@/features/ui/uiSlice';
+import { setValidationResults } from '@/features/validation/validationSlice';
+import { validatePipeline } from '@/utils/validation';
+import type { ValidationResult } from '@/utils/validation';
+import { generateKedroProject, downloadProject } from '@/infrastructure/export';
+import { logger } from '@/utils/logger';
+import { trackEvent } from '@/infrastructure/telemetry';
+import { TIMING } from '@/constants/timing';
+import { onConfigUpdated } from '@/constants';
 import toast from 'react-hot-toast';
 
 // Debounce delay for validation to avoid excessive computation on rapid changes

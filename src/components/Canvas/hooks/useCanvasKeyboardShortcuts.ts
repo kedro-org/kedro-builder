@@ -1,9 +1,9 @@
 import { useEffect } from 'react';
-import { useAppDispatch } from '../../../store/hooks';
-import { selectNodes } from '../../../features/nodes/nodesSlice';
-import { closeConfigPanel } from '../../../features/ui/uiSlice';
-import { useClearSelections } from '../../../hooks/useClearSelections';
-import type { KedroNode, KedroDataset } from '../../../types/kedro';
+import { useAppDispatch } from '@/store/hooks';
+import { selectNodes } from '@/features/nodes/nodesSlice';
+import { closeConfigPanel } from '@/features/ui/uiSlice';
+import { useClearSelections } from '@/hooks/useClearSelections';
+import type { KedroNode, KedroDataset } from '@/types/kedro';
 
 interface KeyboardShortcutsProps {
   reduxNodes: KedroNode[];

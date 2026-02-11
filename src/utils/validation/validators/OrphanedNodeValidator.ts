@@ -3,11 +3,11 @@
  * Checks for nodes with no connections
  */
 
-import type { RootState } from '../../../types/redux';
-import type { KedroConnection } from '../../../types/kedro';
+import type { RootState } from '@/types/redux';
+import type { KedroConnection } from '@/types/kedro';
 import type { ValidationError } from '../types';
 import type { Validator } from './Validator';
-import { findOrphanedNodes } from '../../../domain/PipelineGraph';
+import { findOrphanedNodes } from '@/domain/PipelineGraph';
 
 export class OrphanedNodeValidator implements Validator {
   readonly id = 'orphaned-node';

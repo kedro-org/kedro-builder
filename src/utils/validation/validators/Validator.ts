@@ -3,7 +3,7 @@
  * Each validator implements this interface and focuses on a single validation concern
  */
 
-import type { RootState } from '../../../types/redux';
+import type { RootState } from '@/types/redux';
 import type { ValidationError } from '../types';
 
 /**

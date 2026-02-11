@@ -1,14 +1,14 @@
 import { useCallback, useRef } from 'react';
 import { addEdge } from '@xyflow/react';
 import type { Connection, Edge, Node, OnConnect } from '@xyflow/react';
-import { useAppDispatch } from '../../../store/hooks';
-import { addConnection } from '../../../features/connections/connectionsSlice';
-import { store } from '../../../store';
+import { useAppDispatch } from '@/store/hooks';
+import { addConnection } from '@/features/connections/connectionsSlice';
+import { store } from '@/store';
 import toast from 'react-hot-toast';
 import { wouldCreateCycle } from './utils/cycleDetection';
 import { useGhostPreview } from './useGhostPreview';
 import { useDragToCreate } from './useDragToCreate';
-import { isNodeId, isDatasetId, generateConnectionId } from '../../../domain';
+import { isNodeId, isDatasetId, generateConnectionId } from '@/domain';
 
 // Re-export GhostPreviewState for backwards compatibility
 export type { GhostPreviewState } from './useGhostPreview';

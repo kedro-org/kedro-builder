@@ -1,12 +1,12 @@
 import { useState, useMemo, useCallback, useLayoutEffect } from 'react';
 import { useNodesState, useEdgesState } from '@xyflow/react';
 import type { Node } from '@xyflow/react';
-import { useAppSelector } from '../../../store/hooks';
+import { useAppSelector } from '@/store/hooks';
 import {
   selectCanvasDataWithSets,
   selectSelectionType,
   selectTotalSelected,
-} from '../../../features/canvas/canvasSelectors';
+} from '@/features/canvas/canvasSelectors';
 
 // Constants for edge styling (extracted to prevent recreation)
 const MARKER_END_DEFAULT = {

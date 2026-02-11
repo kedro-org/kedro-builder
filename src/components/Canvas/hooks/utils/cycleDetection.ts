@@ -1,4 +1,4 @@
-import { isNodeId, isDatasetId } from '../../../../domain/IdGenerator';
+import { isNodeId, isDatasetId } from '@/domain/IdGenerator';
 
 /**
  * Utility for detecting cycles in pipeline connections

@@ -1,14 +1,14 @@
 import { useCallback, useRef, useEffect } from 'react';
 import { useReactFlow } from '@xyflow/react';
 import type { OnConnectStart, OnConnectEnd } from '@xyflow/react';
-import { useAppDispatch } from '../../../store/hooks';
-import { addNode } from '../../../features/nodes/nodesSlice';
-import { addDataset } from '../../../features/datasets/datasetsSlice';
-import { openConfigPanel, setPendingComponent } from '../../../features/ui/uiSlice';
-import { generateId, isDatasetId } from '../../../domain/IdGenerator';
-import { TIMING } from '../../../constants/timing';
-import { trackEvent } from '../../../infrastructure/telemetry';
-import type { KedroNode, KedroDataset } from '../../../types/kedro';
+import { useAppDispatch } from '@/store/hooks';
+import { addNode } from '@/features/nodes/nodesSlice';
+import { addDataset } from '@/features/datasets/datasetsSlice';
+import { openConfigPanel, setPendingComponent } from '@/features/ui/uiSlice';
+import { generateId, isDatasetId } from '@/domain/IdGenerator';
+import { TIMING } from '@/constants/timing';
+import { trackEvent } from '@/infrastructure/telemetry';
+import type { KedroNode, KedroDataset } from '@/types/kedro';
 
 // Connection edge creation delay (ms) - allows ReactFlow to process the new node first
 const CONNECTION_CREATION_DELAY = 100;

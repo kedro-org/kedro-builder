@@ -3,11 +3,11 @@
  * Detects cycles in the pipeline graph
  */
 
-import type { RootState } from '../../../types/redux';
-import type { KedroConnection } from '../../../types/kedro';
+import type { RootState } from '@/types/redux';
+import type { KedroConnection } from '@/types/kedro';
 import type { ValidationError } from '../types';
 import type { Validator } from './Validator';
-import { buildDependencyGraph, detectCycles } from '../../../domain/PipelineGraph';
+import { buildDependencyGraph, detectCycles } from '@/domain/PipelineGraph';
 
 export class CircularDependencyValidator implements Validator {
   readonly id = 'circular-dependency';

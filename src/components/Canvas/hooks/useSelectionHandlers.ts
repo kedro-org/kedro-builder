@@ -1,23 +1,23 @@
 import { useCallback, useEffect } from 'react';
 import { useReactFlow } from '@xyflow/react';
 import type { Edge, EdgeMouseHandler, OnSelectionChangeParams } from '@xyflow/react';
-import { useAppDispatch } from '../../../store/hooks';
-import { clearSelection, deleteNodes, selectNodes } from '../../../features/nodes/nodesSlice';
-import { deleteDataset } from '../../../features/datasets/datasetsSlice';
+import { useAppDispatch } from '@/store/hooks';
+import { clearSelection, deleteNodes, selectNodes } from '@/features/nodes/nodesSlice';
+import { deleteDataset } from '@/features/datasets/datasetsSlice';
 import {
   selectConnection,
   clearConnectionSelection,
   deleteConnections,
-} from '../../../features/connections/connectionsSlice';
-import { closeConfigPanel } from '../../../features/ui/uiSlice';
-import { isNodeId, isDatasetId } from '../../../domain/IdGenerator';
-import { logger } from '../../../utils/logger';
-import type { KedroNode, KedroDataset } from '../../../types/kedro';
+} from '@/features/connections/connectionsSlice';
+import { closeConfigPanel } from '@/features/ui/uiSlice';
+import { isNodeId, isDatasetId } from '@/domain/IdGenerator';
+import { logger } from '@/utils/logger';
+import type { KedroNode, KedroDataset } from '@/types/kedro';
 import { useDeleteConfirmation } from './useDeleteConfirmation';
 import { useCopyPaste } from './useCopyPaste';
 import { useCanvasKeyboardShortcuts } from './useCanvasKeyboardShortcuts';
-import { useClearSelections } from '../../../hooks/useClearSelections';
-import { onFocusNode } from '../../../constants';
+import { useClearSelections } from '@/hooks/useClearSelections';
+import { onFocusNode } from '@/constants';
 
 interface SelectionHandlersProps {
   reduxNodes: KedroNode[];
