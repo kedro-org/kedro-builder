@@ -1,7 +1,6 @@
 import { renderHook, act } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { Provider } from 'react-redux';
-import { configureStore } from '@reduxjs/toolkit';
 import type { ReactNode } from 'react';
 import { useClearSelections } from './useClearSelections';
 import { useConfirmDialog } from './useConfirmDialog';
@@ -46,7 +45,7 @@ describe('useClearSelections', () => {
     it('dispatches clearSelection action', () => {
       const initialState = createMockState({
         nodes: {
-          byId: { 'node-1': { id: 'node-1', name: 'Test', type: 'task', inputs: [], outputs: [], position: { x: 0, y: 0 } } },
+          byId: { 'node-1': { id: 'node-1', name: 'Test', type: 'custom', inputs: [], outputs: [], position: { x: 0, y: 0 } } },
           allIds: ['node-1'],
           selected: ['node-1'],
           hovered: null,
@@ -95,7 +94,7 @@ describe('useClearSelections', () => {
     it('clears both node and connection selections simultaneously', () => {
       const initialState = createMockState({
         nodes: {
-          byId: { 'node-1': { id: 'node-1', name: 'Test', type: 'task', inputs: [], outputs: [], position: { x: 0, y: 0 } } },
+          byId: { 'node-1': { id: 'node-1', name: 'Test', type: 'custom', inputs: [], outputs: [], position: { x: 0, y: 0 } } },
           allIds: ['node-1'],
           selected: ['node-1'],
           hovered: null,
@@ -145,7 +144,7 @@ describe('useClearSelections', () => {
     it('can be called multiple times safely', () => {
       const initialState = createMockState({
         nodes: {
-          byId: { 'node-1': { id: 'node-1', name: 'Test', type: 'task', inputs: [], outputs: [], position: { x: 0, y: 0 } } },
+          byId: { 'node-1': { id: 'node-1', name: 'Test', type: 'custom', inputs: [], outputs: [], position: { x: 0, y: 0 } } },
           allIds: ['node-1'],
           selected: ['node-1'],
           hovered: null,
@@ -628,7 +627,7 @@ describe('useTelemetry', () => {
     it('calls trackEvent with event name and properties', () => {
       const { result } = renderHook(() => useTelemetry());
 
-      const properties = { count: 1, type: 'task' };
+      const properties = { count: 1, type: 'custom' };
       result.current.track('node_added', properties);
 
       expect(trackEventSpy).toHaveBeenCalledWith('node_added', properties);
