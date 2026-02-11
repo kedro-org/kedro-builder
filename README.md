@@ -54,12 +54,14 @@ Issues are surfaced in the validation panel with actionable messages and severit
 - Resetting a project clears Redux state and storage for a clean slate.
 
 ## Tech Stack
-- React 19 + TypeScript (strict), bundled with Vite 5
-- Redux Toolkit for normalized graph state, react-hot-toast for feedback
-- @xyflow/react (ReactFlow) for the canvas, custom node/edge renderers, and bulk actions overlay
-- Radix UI primitives + SCSS modules for accessible, themeable UI
-- JSZip and YAML helpers for Kedro project generation
-- Vitest + Testing Library for unit coverage of slices, validation, and generators
+- React 19 + TypeScript 5 (strict mode), bundled with Vite 5
+- Redux Toolkit for normalized graph state (7 slices, byId/allIds pattern)
+- @xyflow/react 12.8+ for the canvas, custom node/edge renderers, and bulk actions overlay
+- Radix UI primitives + SCSS with BEM conventions for accessible, themeable UI
+- JSZip for Kedro project ZIP generation (string templates, no YAML library)
+- 8 pluggable validators (Strategy pattern) for pipeline validation
+- Vitest + React Testing Library (498 tests, 70%+ coverage)
+- react-hot-toast for feedback, react-hook-form for config panels
 
 ## Project Layout
 ```
@@ -78,18 +80,22 @@ src/
 ├── styles/           # Global SCSS styles and theme variables
 └── constants/        # Application constants
 ```
-See `PROJECT_ARCHITECTURE.md` for in-depth architecture notes and diagrams.
+See [ADR-001](./ADR-001-target-architecture.md) and [ADR-002](./ADR-002-reactflow-patterns.md) for architecture decisions.
 
 ## Development Scripts
 ```bash
-npm run dev       # Start dev server with HMR
-npm run build     # Production build (tsc + Vite)
-npm run preview   # Preview the production build
-npm run lint      # ESLint (TypeScript + React rules)
-npm run test      # Vitest in watchless mode
-npm run test:ui   # Vitest UI runner
-npm run test:coverage  # Coverage report
+npm run dev            # Start dev server with HMR
+npm run build          # Production build (tsc -b + Vite)
+npm run preview        # Preview the production build
+npm run lint           # ESLint (TypeScript + React rules)
+npm run test           # Vitest in watchless mode
+npm run test:ui        # Vitest UI runner
+npm run test:coverage  # Coverage report (target: 70%+)
 ```
+
+## Contributing
+
+See [CONTRIBUTING.md](./CONTRIBUTING.md) for setup instructions, code standards, and PR guidelines.
 
 ---
 Built with AI assistance.
