@@ -18,9 +18,15 @@ hljs.registerLanguage('ini', ini);
 hljs.registerLanguage('markdown', markdown);
 
 export const CodeDisplay: React.FC = () => {
-  const state = useAppSelector((rootState) => rootState);
-  const theme = useAppSelector((rootState) => rootState.theme.theme);
-  const selectedFilePath = useAppSelector((rootState) => rootState.ui.selectedCodeFile);
+  const projectCurrent = useAppSelector((s) => s.project.current);
+  const nodesById = useAppSelector((s) => s.nodes.byId);
+  const nodesAllIds = useAppSelector((s) => s.nodes.allIds);
+  const datasetsById = useAppSelector((s) => s.datasets.byId);
+  const datasetsAllIds = useAppSelector((s) => s.datasets.allIds);
+  const connectionsById = useAppSelector((s) => s.connections.byId);
+  const connectionsAllIds = useAppSelector((s) => s.connections.allIds);
+  const theme = useAppSelector((s) => s.theme.theme);
+  const selectedFilePath = useAppSelector((s) => s.ui.selectedCodeFile);
   const codeRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
@@ -45,17 +51,21 @@ export const CodeDisplay: React.FC = () => {
     };
   }, [theme]);
 
-  // Generate file tree only when relevant state parts change (not on every state update)
+  // Generate file tree only when relevant domain data changes
   const fileTree = useMemo(() => {
     try {
+      const state = {
+        project: { current: projectCurrent },
+        nodes: { byId: nodesById, allIds: nodesAllIds },
+        datasets: { byId: datasetsById, allIds: datasetsAllIds },
+        connections: { byId: connectionsById, allIds: connectionsAllIds },
+      } as import('../../types/redux').RootState;
       return generateFileTree(state);
     } catch (error) {
       console.error('Failed to generate file tree:', error);
       return null;
     }
-    // Using specific nested properties for performance; state object is stable reference
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [state.project.current, state.nodes.allIds, state.datasets.allIds, state.connections.allIds]);
+  }, [projectCurrent, nodesById, nodesAllIds, datasetsById, datasetsAllIds, connectionsById, connectionsAllIds]);
 
   const selectedFile = useMemo(() => {
     if (!selectedFilePath || !fileTree) return null;
