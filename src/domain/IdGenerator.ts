@@ -56,7 +56,8 @@ export function generateDatasetId(): DatasetId {
 }
 
 /**
- * Generate a unique ID for a component (generic version)
+ * Generate a unique ID for a component (generic version).
+ * Note: For connections, use generateConnectionId(source, target) instead.
  */
 export function generateId(type: 'node'): NodeId;
 export function generateId(type: 'dataset'): DatasetId;
@@ -77,8 +78,8 @@ export function generateId(type: ComponentType): string {
 }
 
 /**
- * Generate a unique ID for copy/paste operations
- * Uses the same UUID-based generation as regular IDs
+ * Generate a unique ID for copy/paste operations.
+ * Uses the same UUID-based generation as regular IDs.
  */
 export function generateCopyId(type: 'node'): NodeId;
 export function generateCopyId(type: 'dataset'): DatasetId;
@@ -87,18 +88,23 @@ export function generateCopyId(type: 'node' | 'dataset'): string {
 }
 
 /**
- * Generate a deterministic connection ID from source and target
- * This allows deduplication of connections
+ * Generate a deterministic connection ID from source and target.
+ * This allows deduplication of connections.
  *
- * Format: `{source}-{target}` (e.g., `node-123-dataset-456`)
- * Note: No `conn-` prefix for compatibility with existing persisted data.
+ * @param source - Source component ID
+ * @param target - Target component ID
+ * @returns Connection ID in format `{source}-{target}` (no `conn-` prefix)
  */
 export function generateConnectionId(source: string, target: string): ConnectionId {
   return `${source}-${target}` as ConnectionId;
 }
 
 /**
- * Parse a component ID to extract its type
+ * Parse a component ID to extract its type.
+ * Checks for node, dataset, or connection patterns in the ID string.
+ *
+ * @param id - Component ID to parse
+ * @returns Component type or null if unrecognized
  */
 export function parseIdType(id: string): ComponentType | null {
   // Check for connection first since it contains both node- and dataset-

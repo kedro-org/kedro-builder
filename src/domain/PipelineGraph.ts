@@ -27,11 +27,13 @@ export interface CycleResult {
 }
 
 /**
- * Build a dependency graph from connections
- * Returns a map of node ID -> Set of downstream node IDs
+ * Build a dependency graph from connections.
+ * Returns a map of node ID to set of downstream node IDs.
+ * The graph traces node → dataset → node paths to build effective node-to-node dependencies.
  *
- * The graph traces: node → dataset → node paths
- * to build effective node-to-node dependencies
+ * @param nodeIds - All node IDs in the pipeline
+ * @param connections - All connections between components
+ * @returns Map of node ID to downstream node IDs
  */
 export function buildDependencyGraph(
   nodeIds: string[],
@@ -91,8 +93,10 @@ export function buildDependencyGraph(
 }
 
 /**
- * Detect cycles in the dependency graph using DFS
- * Returns the first cycle found, if any
+ * Detect cycles in the dependency graph using DFS.
+ *
+ * @param graph - Dependency graph from buildDependencyGraph
+ * @returns Array of cycle results with paths
  */
 export function detectCycles(graph: Map<string, Set<string>>): CycleResult[] {
   const cycles: CycleResult[] = [];
@@ -122,7 +126,8 @@ export function detectCycles(graph: Map<string, Set<string>>): CycleResult[] {
 }
 
 /**
- * DFS helper for cycle detection
+ * DFS helper for cycle detection.
+ * Recursively traverses the graph to find cycles in the recursion stack.
  */
 function detectCycleDFS(
   node: string,
@@ -154,7 +159,10 @@ function detectCycleDFS(
 }
 
 /**
- * Find all connected node IDs from connections
+ * Find all connected node IDs from connections.
+ *
+ * @param connections - Pipeline connections
+ * @returns Set of node IDs that have at least one connection
  */
 export function getConnectedNodes(connections: KedroConnection[]): Set<string> {
   const connectedNodes = new Set<string>();
@@ -168,7 +176,10 @@ export function getConnectedNodes(connections: KedroConnection[]): Set<string> {
 }
 
 /**
- * Find all connected dataset IDs from connections
+ * Find all connected dataset IDs from connections.
+ *
+ * @param connections - Pipeline connections
+ * @returns Set of dataset IDs that have at least one connection
  */
 export function getConnectedDatasets(connections: KedroConnection[]): Set<string> {
   const connectedDatasets = new Set<string>();
@@ -182,7 +193,11 @@ export function getConnectedDatasets(connections: KedroConnection[]): Set<string
 }
 
 /**
- * Find orphaned nodes (nodes with no connections)
+ * Find orphaned nodes (nodes with no connections).
+ *
+ * @param nodeIds - All node IDs in the pipeline
+ * @param connections - Pipeline connections
+ * @returns Array of node IDs that are not connected
  */
 export function findOrphanedNodes(
   nodeIds: string[],
@@ -193,7 +208,11 @@ export function findOrphanedNodes(
 }
 
 /**
- * Find orphaned datasets (datasets with no connections)
+ * Find orphaned datasets (datasets with no connections).
+ *
+ * @param datasetIds - All dataset IDs in the pipeline
+ * @param connections - Pipeline connections
+ * @returns Array of dataset IDs that are not connected
  */
 export function findOrphanedDatasets(
   datasetIds: string[],

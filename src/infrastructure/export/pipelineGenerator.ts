@@ -6,7 +6,14 @@ import type { KedroNode, KedroDataset, KedroConnection } from '../../types/kedro
 import { toSnakeCase, formatNodeInputs, formatNodeOutputs } from './helpers';
 
 /**
- * Generate pipeline.py content
+ * Generate Kedro pipeline.py file content from pipeline structure.
+ * Creates a complete Python module with imports and node definitions.
+ *
+ * @param nodes - Pipeline nodes to include
+ * @param connections - Connections between nodes and datasets
+ * @param datasets - Dataset definitions by ID
+ * @param pipelineName - Name of the pipeline
+ * @returns Complete pipeline.py file content as string
  */
 export function generatePipeline(
   nodes: KedroNode[],
@@ -55,7 +62,8 @@ ${nodesStr}
 }
 
 /**
- * Generate a single node definition for the pipeline
+ * Generate a single node definition for the pipeline.
+ * Creates the Kedro node() call with func, inputs, outputs, and name.
  */
 function generateNodeDefinition(
   node: KedroNode,
@@ -78,7 +86,8 @@ function generateNodeDefinition(
 }
 
 /**
- * Get input dataset names for a node
+ * Get input dataset names for a node.
+ * Finds all dataset -> node connections and extracts dataset names.
  */
 function getNodeInputDatasets(
   node: KedroNode,
@@ -101,7 +110,8 @@ function getNodeInputDatasets(
 }
 
 /**
- * Get output dataset names for a node
+ * Get output dataset names for a node.
+ * Finds all node -> dataset connections and extracts dataset names.
  */
 function getNodeOutputDatasets(
   node: KedroNode,

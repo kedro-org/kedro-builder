@@ -10,7 +10,14 @@ import {
 } from './helpers';
 
 /**
- * Generate nodes.py content
+ * Generate Kedro nodes.py file content from pipeline nodes.
+ * Creates Python functions for each node with proper signatures and optional custom code.
+ *
+ * @param nodes - Pipeline nodes to generate functions for
+ * @param connections - Connections to determine inputs/outputs
+ * @param datasets - Dataset definitions by ID
+ * @param pipelineName - Name of the pipeline
+ * @returns Complete nodes.py file content as string
  */
 export function generateNodes(
   nodes: KedroNode[],
@@ -47,7 +54,8 @@ logger = logging.getLogger(__name__)
 }
 
 /**
- * Generate a single node function
+ * Generate a single node function.
+ * Uses custom code if provided, otherwise generates a template function.
  */
 function generateNodeFunction(
   node: KedroNode,
@@ -68,7 +76,8 @@ function generateNodeFunction(
 }
 
 /**
- * Extract function name from user's Python code
+ * Extract function name from user's Python code.
+ * Matches the function definition pattern and returns the name.
  */
 function extractFunctionName(code: string): string | null {
   const match = code.match(/def\s+([a-zA-Z_][a-zA-Z0-9_]*)\s*\(/);
@@ -76,7 +85,8 @@ function extractFunctionName(code: string): string | null {
 }
 
 /**
- * Generate function using user's custom code
+ * Generate function using user's custom code.
+ * Validates function name and wraps code in proper signature if needed.
  */
 function generateCustomFunction(
   funcName: string,
@@ -111,7 +121,8 @@ ${indentedCode}`;
 }
 
 /**
- * Generate template function with simple placeholder
+ * Generate template function with simple placeholder.
+ * Creates a function signature with pass statement for user to implement.
  */
 function generateTemplateFunction(
   funcName: string,
@@ -128,7 +139,8 @@ function generateTemplateFunction(
 }
 
 /**
- * Get return type hint based on number of outputs
+ * Get return type hint based on number of outputs.
+ * Returns None, pd.DataFrame, or Tuple[pd.DataFrame, ...].
  */
 function getReturnType(outputs: string[]): string {
   if (outputs.length === 0) return 'None';
@@ -137,7 +149,8 @@ function getReturnType(outputs: string[]): string {
 }
 
 /**
- * Get input datasets for a node
+ * Get input datasets for a node.
+ * Finds all dataset -> node connections and extracts dataset names.
  */
 function getNodeInputs(
   node: KedroNode,
@@ -160,7 +173,8 @@ function getNodeInputs(
 }
 
 /**
- * Get output datasets for a node
+ * Get output datasets for a node.
+ * Finds all node -> dataset connections and extracts dataset names.
  */
 function getNodeOutputs(
   node: KedroNode,

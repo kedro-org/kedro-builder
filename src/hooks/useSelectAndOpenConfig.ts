@@ -7,12 +7,11 @@ import { TIMING } from '../constants/timing';
 type ComponentType = 'node' | 'dataset';
 
 /**
- * Hook that provides a function to select a component and open its config panel
- * This pattern is commonly used after creating a new node/dataset to:
- * 1. Select the newly created component
- * 2. Open the config panel for immediate configuration
+ * Hook that provides a function to select a component and open its config panel.
+ * Commonly used after creating a new node/dataset for immediate configuration.
+ * Uses a small delay to ensure the component is rendered before selection.
  *
- * Uses a small delay to ensure the component is rendered before selection
+ * @returns Function to select a component and open its config panel
  */
 export function useSelectAndOpenConfig() {
   const dispatch = useAppDispatch();

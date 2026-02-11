@@ -4,12 +4,10 @@ import { clearSelection } from '../features/nodes/nodesSlice';
 import { clearConnectionSelection } from '../features/connections/connectionsSlice';
 
 /**
- * Hook that provides a function to clear all selections (nodes and connections)
- * This pattern is commonly needed across the canvas when:
- * - User clicks empty canvas area
- * - User presses Escape
- * - After paste operation
- * - After delete operation
+ * Hook that provides a function to clear all selections (nodes and connections).
+ * Use when user clicks canvas, presses Escape, or after paste/delete operations.
+ *
+ * @returns Function to clear all selections
  */
 export function useClearSelections() {
   const dispatch = useAppDispatch();

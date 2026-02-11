@@ -7,7 +7,11 @@ import { DATASET_TYPE_MAPPING } from '../../constants/datasetTypes';
 import { inferDataLayer, getFileExtension, escapeYamlString, toSnakeCase } from './helpers';
 
 /**
- * Generate catalog.yml content
+ * Generate Kedro catalog.yml file content from dataset definitions.
+ * Creates a YAML data catalog with type, filepath, layer, and versioning config.
+ *
+ * @param datasets - Array of dataset definitions
+ * @returns Complete catalog.yml file content as string
  */
 export function generateCatalog(datasets: KedroDataset[]): string {
   const header = `# Data Catalog
@@ -31,7 +35,8 @@ export function generateCatalog(datasets: KedroDataset[]): string {
 }
 
 /**
- * Generate a single catalog entry
+ * Generate a single catalog entry in YAML format.
+ * Includes type, filepath, layer, and versioning configuration.
  */
 function generateCatalogEntry(dataset: KedroDataset): string {
   const datasetName = dataset.name;
@@ -77,7 +82,8 @@ function generateCatalogEntry(dataset: KedroDataset): string {
 }
 
 /**
- * Infer filepath from dataset name and type
+ * Infer filepath from dataset name and type.
+ * Generates a sensible default path in data/{layer}/{name}{ext} format.
  */
 function inferFilepath(name: string, kedroType: string): string {
   const safeName = toSnakeCase(name) || 'dataset';
