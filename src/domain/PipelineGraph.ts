@@ -221,3 +221,54 @@ export function findOrphanedDatasets(
   const connectedDatasets = getConnectedDatasets(connections);
   return datasetIds.filter((id) => !connectedDatasets.has(id));
 }
+
+/**
+ * Check if adding a new connection would create a cycle.
+ * Reuses buildDependencyGraph with the hypothetical connection included.
+ */
+export function wouldCreateCycle(
+  newSource: string,
+  newTarget: string,
+  existingConnections: KedroConnection[],
+  nodeIds: string[],
+): boolean {
+  const connections: KedroConnection[] = [
+    ...existingConnections,
+    { id: '_temp', source: newSource, target: newTarget, sourceHandle: '', targetHandle: '' },
+  ];
+  const graph = buildDependencyGraph(nodeIds, connections);
+  return hasCycleInGraph(graph);
+}
+
+/**
+ * Check if a dependency graph contains any cycle (boolean, no path tracking).
+ */
+function hasCycleInGraph(graph: Map<string, Set<string>>): boolean {
+  const visited = new Set<string>();
+  const recStack = new Set<string>();
+
+  function dfs(node: string): boolean {
+    visited.add(node);
+    recStack.add(node);
+
+    const neighbors = graph.get(node) || new Set();
+    for (const neighbor of neighbors) {
+      if (!visited.has(neighbor)) {
+        if (dfs(neighbor)) return true;
+      } else if (recStack.has(neighbor)) {
+        return true;
+      }
+    }
+
+    recStack.delete(node);
+    return false;
+  }
+
+  for (const nodeId of graph.keys()) {
+    if (!visited.has(nodeId)) {
+      if (dfs(nodeId)) return true;
+    }
+  }
+
+  return false;
+}

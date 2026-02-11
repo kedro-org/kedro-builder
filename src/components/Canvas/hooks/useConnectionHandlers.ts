@@ -153,10 +153,9 @@ export const useConnectionHandlers = ({
       const state = store.getState();
       const existingConnections = state.connections.allIds.map((id) => state.connections.byId[id]);
       const nodeIds = state.nodes.allIds;
-      const datasetIds = state.datasets.allIds;
 
       // Check for cycles
-      if (wouldCreateCycle(connection.source, connection.target, existingConnections, nodeIds, datasetIds)) {
+      if (wouldCreateCycle(connection.source, connection.target, existingConnections, nodeIds)) {
         toast.error('Cannot create connection: This would create a circular dependency', {
           duration: 4000,
           position: 'bottom-right',
