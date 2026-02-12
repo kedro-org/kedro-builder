@@ -17,6 +17,7 @@ import {
   generateGitignore,
   generateReadme,
   generateInitPy,
+  generateMainPy,
   generateGitkeep,
   generateTelemetry,
 } from './staticFilesGenerator';
@@ -176,6 +177,7 @@ export class KedroProjectBuilder {
 
     // Package root
     this.zip.file(`src/${pythonPackage}/__init__.py`, generateInitPy());
+    this.zip.file(`src/${pythonPackage}/__main__.py`, generateMainPy(pythonPackage));
     this.zip.file(`src/${pythonPackage}/settings.py`, generateSettings());
     this.zip.file(`src/${pythonPackage}/pipeline_registry.py`, generatePipelineRegistry());
 

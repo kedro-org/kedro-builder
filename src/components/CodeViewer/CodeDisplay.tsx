@@ -30,6 +30,7 @@ export const CodeDisplay: React.FC = () => {
   const selectedFilePath = useAppSelector((s) => s.ui.selectedCodeFile);
   const codeRef = useRef<HTMLElement>(null);
 
+  // Load highlight.js theme CSS from local bundle (not CDN)
   useEffect(() => {
     const existingLink = document.getElementById('hljs-theme');
     if (existingLink) {
@@ -40,8 +41,8 @@ export const CodeDisplay: React.FC = () => {
     link.id = 'hljs-theme';
     link.rel = 'stylesheet';
     link.href = theme === 'dark'
-      ? 'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css'
-      : 'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-light.min.css';
+      ? `${import.meta.env.BASE_URL}hljs/atom-one-dark.min.css`
+      : `${import.meta.env.BASE_URL}hljs/atom-one-light.min.css`;
     document.head.appendChild(link);
 
     return () => {

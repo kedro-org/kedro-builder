@@ -351,6 +351,34 @@ export function generateGitkeep(): string {
 }
 
 /**
+ * Generate __main__.py entry point for the Kedro project.
+ * Required by pyproject.toml [project.scripts] for `pip install -e .` to work.
+ */
+export function generateMainPy(pythonPackage: string): string {
+  return `"""${pythonPackage} entry point."""
+from pathlib import Path
+
+from kedro.framework.cli.utils import find_run_command
+from kedro.framework.project import configure_project
+
+
+def main(*args, **kwargs):
+    package_name = Path(__file__).parent.name
+    configure_project(package_name)
+
+    interactive = hasattr(__builtins__, "__IPYTHON__")
+    kwargs["standalone_mode"] = not interactive
+
+    run = find_run_command(package_name)
+    run(*args, **kwargs)
+
+
+if __name__ == "__main__":
+    main()
+`;
+}
+
+/**
  * Generate .telemetry file for Kedro telemetry settings
  */
 export function generateTelemetry(): string {
