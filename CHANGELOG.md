@@ -8,7 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
-- 279 new tests increasing total test count from 219 to 482
+- 279 new tests added in initial test expansion (219 to 498 peak)
   - Added comprehensive test coverage for custom hooks
   - Added tests for domain logic and validators
   - Added tests for filepath utilities and file tree generator
@@ -18,6 +18,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Path alias `@/` configured in tsconfig.json and vite.config.ts for cleaner imports
 
 ### Changed
+- Test suite trimmed from 482 to 340 tests (142 removed, 2,448 lines cut) with zero coverage impact
+  - Removed redundant typeof checks, duplicate tests, spy passthrough assertions
+  - Removed irrelevant edge cases (S3/Windows paths, unicode, very long paths)
+  - Consolidated mirror tests (connected-as-input/output) and simplified edge case coverage
 - Legacy 343-line pipelineValidation.ts replaced with 27-line ValidatorRegistry wrapper
   - Refactored to use Strategy pattern with pluggable validators
   - Improved maintainability and testability

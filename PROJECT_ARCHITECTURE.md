@@ -481,15 +481,15 @@ export const validateNodeName = (name: string): ValidationResult => {
 
 ## Testing Strategy
 
-**482 tests** across 18 test files, **70%+ coverage** (all refactored code 95-100%).
+**340 tests** across 18 test files, **64%+ coverage** (all refactored code 95-100%).
 
 - **Unit Tests (Vitest + Testing Library)**
-  - Custom hooks tests (`hooks/hooks.test.tsx` — 47 tests)
-  - Domain logic tests (`domain/PipelineGraph.test.ts` — 46 tests)
-  - Validator class tests (`validators/validators.test.ts` — 94 tests)
-  - Export generator tests (`catalogGenerator.test.ts`, `nodesGenerator.test.ts`, `pipelineGenerator.test.ts`, `helpers.test.ts`)
-  - Utility tests (`filepath.test.ts` — 46 tests, `fileTreeGenerator.test.ts` — 44 tests)
-  - Slice reducer tests covering node/dataset/connection mutations
+  - Custom hooks tests (`hooks/hooks.test.tsx` — 12 tests)
+  - Domain logic tests (`domain/PipelineGraph.test.ts` — 27 tests)
+  - Validator class tests (`validators/validators.test.ts` — 41 tests)
+  - Export generator tests (`catalogGenerator.test.ts` — 33, `nodesGenerator.test.ts` — 19, `pipelineGenerator.test.ts` — 10, `helpers.test.ts` — 41)
+  - Utility tests (`filepath.test.ts` — 23 tests, `fileTreeGenerator.test.ts` — 21 tests)
+  - Slice reducer tests covering node/dataset/connection mutations (14 each)
 
 - **Integration Tests**
   - Pipeline create → connect → export flow
