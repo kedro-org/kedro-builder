@@ -1,0 +1,64 @@
+import { describe, it, expect, vi } from 'vitest';
+import { screen } from '@testing-library/react';
+import { renderWithProviders } from '@/test/utils/testUtils';
+import { ConfigPanel } from './ConfigPanel';
+import type { RootState } from '@/types/redux';
+
+// Mock dispatchConfigUpdated (used by sub-forms)
+vi.mock('@/constants', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@/constants')>();
+  return { ...actual, dispatchConfigUpdated: vi.fn() };
+});
+
+const mockNode = {
+  id: 'node-1', name: 'clean_data', type: 'data_processing' as const,
+  inputs: [], outputs: [], position: { x: 0, y: 0 },
+};
+
+const mockDataset = {
+  id: 'ds-1', name: 'raw_data', type: 'csv' as const,
+  filepath: 'data/01_raw/raw.csv', position: { x: 0, y: 0 },
+};
+
+describe('ConfigPanel', () => {
+  it('returns null when panel is closed', () => {
+    const { container } = renderWithProviders(<ConfigPanel />, {
+      preloadedState: {
+        ui: {
+          showConfigPanel: false, selectedComponent: null,
+          showTutorial: false, tutorialStep: 1, tutorialCompleted: false,
+          showWalkthrough: false, walkthroughStep: 1, walkthroughCompleted: false,
+          showProjectSetup: false, hasActiveProject: true,
+          showCodePreview: false, showValidationPanel: false,
+          canvasZoom: 1, canvasPosition: { x: 0, y: 0 },
+          showCodeViewer: false, selectedCodeFile: null,
+          showExportWizard: false, pendingComponentId: null,
+        },
+      } as Partial<RootState>,
+    });
+
+    expect(container.querySelector('.config-panel')).toBeNull();
+  });
+
+  it('shows "Configure Node" title when a node is selected', () => {
+    renderWithProviders(<ConfigPanel />, {
+      preloadedState: {
+        nodes: { byId: { 'node-1': mockNode }, allIds: ['node-1'], selected: [], hovered: null },
+        ui: {
+          showConfigPanel: true,
+          selectedComponent: { type: 'node', id: 'node-1' },
+          showTutorial: false, tutorialStep: 1, tutorialCompleted: false,
+          showWalkthrough: false, walkthroughStep: 1, walkthroughCompleted: false,
+          showProjectSetup: false, hasActiveProject: true,
+          showCodePreview: false, showValidationPanel: false,
+          canvasZoom: 1, canvasPosition: { x: 0, y: 0 },
+          showCodeViewer: false, selectedCodeFile: null,
+          showExportWizard: false, pendingComponentId: null,
+        },
+        validation: { errors: [], warnings: [], isValid: true, lastChecked: null },
+      } as Partial<RootState>,
+    });
+
+    expect(screen.getByText('Configure Node')).toBeInTheDocument();
+  });
+});
