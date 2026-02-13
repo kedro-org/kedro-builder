@@ -12,72 +12,12 @@
  */
 import { describe, it, expect } from 'vitest';
 import { validatePipeline } from './validation';
-import type { RootState } from '../types/redux';
 import type { KedroNode, KedroDataset, KedroConnection } from '../types/kedro';
-
-// Helper to create a minimal valid state
-function createState(
-  nodes: KedroNode[] = [],
-  datasets: KedroDataset[] = [],
-  connections: KedroConnection[] = []
-): RootState {
-  return {
-    nodes: {
-      byId: Object.fromEntries(nodes.map((n) => [n.id, n])),
-      allIds: nodes.map((n) => n.id),
-      selected: [],
-      hovered: null,
-    },
-    datasets: {
-      byId: Object.fromEntries(datasets.map((d) => [d.id, d])),
-      allIds: datasets.map((d) => d.id),
-      selected: [],
-    },
-    connections: {
-      byId: Object.fromEntries(connections.map((c) => [c.id, c])),
-      allIds: connections.map((c) => c.id),
-      selected: [],
-    },
-    ui: {
-      showTutorial: false,
-      tutorialStep: 0,
-      tutorialCompleted: false,
-      showWalkthrough: false,
-      walkthroughStep: 0,
-      walkthroughCompleted: false,
-      showProjectSetup: false,
-      hasActiveProject: false,
-      selectedComponent: null,
-      showConfigPanel: false,
-      showCodePreview: false,
-      showValidationPanel: false,
-      canvasZoom: 1,
-      canvasPosition: { x: 0, y: 0 },
-      showCodeViewer: false,
-      selectedCodeFile: null,
-      showExportWizard: false,
-      pendingComponentId: null,
-    },
-    project: {
-      current: null,
-      savedList: [],
-      lastSaved: null,
-    },
-    validation: {
-      errors: [],
-      warnings: [],
-      isValid: true,
-      lastChecked: null,
-    },
-    theme: {
-      theme: 'light',
-    },
-  };
-}
+import { createTestState } from '../test/utils/mockStore';
 
 describe('validatePipeline (public API)', () => {
   it('should return valid result for empty pipeline', () => {
-    const result = validatePipeline(createState());
+    const result = validatePipeline(createTestState());
 
     expect(result.isValid).toBe(true);
     expect(result.errors).toHaveLength(0);
@@ -105,7 +45,7 @@ describe('validatePipeline (public API)', () => {
       { id: '5', source: 'node-3', target: 'dataset-3', sourceHandle: 'out', targetHandle: 'in' },
     ];
 
-    const result = validatePipeline(createState(nodes, datasets, connections));
+    const result = validatePipeline(createTestState(nodes, datasets, connections));
 
     expect(result.isValid).toBe(true);
     expect(result.errors).toHaveLength(0);
@@ -119,7 +59,7 @@ describe('validatePipeline (public API)', () => {
       { id: 'node-2', name: 'orphaned_node', type: 'custom', inputs: [], outputs: [], position: { x: 0, y: 0 } },
     ];
 
-    const result = validatePipeline(createState(nodes));
+    const result = validatePipeline(createTestState(nodes));
 
     // Errors present → isValid must be false
     expect(result.isValid).toBe(false);
@@ -150,7 +90,7 @@ describe('validatePipeline (public API)', () => {
     }));
 
     const start = Date.now();
-    const result = validatePipeline(createState(nodes, datasets));
+    const result = validatePipeline(createTestState(nodes, datasets));
     const duration = Date.now() - start;
 
     expect(result).toBeDefined();

@@ -2,8 +2,8 @@
  * @vitest-environment node
  */
 import { describe, it, expect, beforeEach } from 'vitest';
-import type { RootState } from '../../../types/redux';
 import type { KedroNode, KedroDataset, KedroConnection } from '../../../types/kedro';
+import { createTestState } from '../../../test/utils/mockStore';
 import {
   ValidatorRegistry,
   CircularDependencyValidator,
@@ -17,66 +17,6 @@ import {
   createDefaultValidatorRegistry,
   getDefaultValidatorRegistry,
 } from './index';
-
-// Helper to create a minimal valid state
-function createState(
-  nodes: KedroNode[] = [],
-  datasets: KedroDataset[] = [],
-  connections: KedroConnection[] = []
-): RootState {
-  return {
-    nodes: {
-      byId: Object.fromEntries(nodes.map((n) => [n.id, n])),
-      allIds: nodes.map((n) => n.id),
-      selected: [],
-      hovered: null,
-    },
-    datasets: {
-      byId: Object.fromEntries(datasets.map((d) => [d.id, d])),
-      allIds: datasets.map((d) => d.id),
-      selected: [],
-    },
-    connections: {
-      byId: Object.fromEntries(connections.map((c) => [c.id, c])),
-      allIds: connections.map((c) => c.id),
-      selected: [],
-    },
-    ui: {
-      showTutorial: false,
-      tutorialStep: 0,
-      tutorialCompleted: false,
-      showWalkthrough: false,
-      walkthroughStep: 0,
-      walkthroughCompleted: false,
-      showProjectSetup: false,
-      hasActiveProject: false,
-      selectedComponent: null,
-      showConfigPanel: false,
-      showCodePreview: false,
-      showValidationPanel: false,
-      canvasZoom: 1,
-      canvasPosition: { x: 0, y: 0 },
-      showCodeViewer: false,
-      selectedCodeFile: null,
-      showExportWizard: false,
-      pendingComponentId: null,
-    },
-    project: {
-      current: null,
-      savedList: [],
-      lastSaved: null,
-    },
-    validation: {
-      errors: [],
-      warnings: [],
-      isValid: true,
-      lastChecked: null,
-    },
-    theme: {
-      theme: 'light',
-    },
-  };
-}
 
 describe('ValidatorRegistry', () => {
   let registry: ValidatorRegistry;
@@ -98,7 +38,7 @@ describe('ValidatorRegistry', () => {
   });
 
   it('should return empty array for empty registry', () => {
-    expect(registry.validateAll(createState())).toEqual([]);
+    expect(registry.validateAll(createTestState())).toEqual([]);
   });
 
   it('should collect results from all validators', () => {
@@ -109,7 +49,7 @@ describe('ValidatorRegistry', () => {
 
     registry.register(new EmptyNameValidator()).register(new InvalidNameValidator());
 
-    const results = registry.validateAll(createState(nodes));
+    const results = registry.validateAll(createTestState(nodes));
     expect(results).toHaveLength(2);
     expect(results.some((r) => r.message.includes('has no name'))).toBe(true);
     expect(results.some((r) => r.message.includes('Invalid node name'))).toBe(true);
@@ -121,7 +61,7 @@ describe('ValidatorRegistry', () => {
     ];
 
     registry.register(new EmptyNameValidator()).register(new InvalidNameValidator());
-    expect(registry.validateAll(createState(nodes))).toEqual([]);
+    expect(registry.validateAll(createTestState(nodes))).toEqual([]);
   });
 });
 
@@ -138,7 +78,7 @@ describe('CircularDependencyValidator', () => {
       { id: '2', source: 'dataset-1', target: 'node-2', sourceHandle: 'out', targetHandle: 'in' },
     ];
 
-    expect(validator.validate(createState(nodes, [], connections))).toEqual([]);
+    expect(validator.validate(createTestState(nodes, [], connections))).toEqual([]);
   });
 
   it('should detect circular dependency', () => {
@@ -157,7 +97,7 @@ describe('CircularDependencyValidator', () => {
       { id: '4', source: 'dataset-2', target: 'node-1', sourceHandle: 'out', targetHandle: 'in' },
     ];
 
-    const results = validator.validate(createState(nodes, datasets, connections));
+    const results = validator.validate(createTestState(nodes, datasets, connections));
     expect(results).toHaveLength(1);
     expect(results[0].severity).toBe('error');
     expect(results[0].componentType).toBe('pipeline');
@@ -175,7 +115,7 @@ describe('DuplicateNameValidator', () => {
       { id: 'node-1', name: 'node_a', type: 'custom', inputs: [], outputs: [], position: { x: 0, y: 0 } },
       { id: 'node-2', name: 'node_b', type: 'custom', inputs: [], outputs: [], position: { x: 0, y: 0 } },
     ];
-    expect(validator.validate(createState(nodes))).toEqual([]);
+    expect(validator.validate(createTestState(nodes))).toEqual([]);
   });
 
   it('should detect duplicate node names', () => {
@@ -184,7 +124,7 @@ describe('DuplicateNameValidator', () => {
       { id: 'node-2', name: 'process_data', type: 'custom', inputs: [], outputs: [], position: { x: 0, y: 0 } },
     ];
 
-    const results = validator.validate(createState(nodes));
+    const results = validator.validate(createTestState(nodes));
     expect(results).toHaveLength(2);
     expect(results[0].severity).toBe('error');
     expect(results[0].componentType).toBe('node');
@@ -197,7 +137,7 @@ describe('DuplicateNameValidator', () => {
       { id: 'dataset-2', name: 'my_data', type: 'parquet', position: { x: 0, y: 0 } },
     ];
 
-    const results = validator.validate(createState([], datasets));
+    const results = validator.validate(createTestState([], datasets));
     expect(results).toHaveLength(2);
     expect(results[0].componentType).toBe('dataset');
     expect(results[0].message).toContain('Duplicate dataset name "my_data"');
@@ -208,7 +148,7 @@ describe('DuplicateNameValidator', () => {
       { id: 'node-1', name: 'MyNode', type: 'custom', inputs: [], outputs: [], position: { x: 0, y: 0 } },
       { id: 'node-2', name: 'mynode', type: 'custom', inputs: [], outputs: [], position: { x: 0, y: 0 } },
     ];
-    expect(validator.validate(createState(nodes))).toHaveLength(2);
+    expect(validator.validate(createTestState(nodes))).toHaveLength(2);
   });
 
   it('should allow same name across nodes and datasets', () => {
@@ -218,7 +158,7 @@ describe('DuplicateNameValidator', () => {
     const datasets: KedroDataset[] = [
       { id: 'dataset-1', name: 'same_name', type: 'csv', position: { x: 0, y: 0 } },
     ];
-    expect(validator.validate(createState(nodes, datasets))).toEqual([]);
+    expect(validator.validate(createTestState(nodes, datasets))).toEqual([]);
   });
 
   it('should handle multiple duplicate groups', () => {
@@ -229,7 +169,7 @@ describe('DuplicateNameValidator', () => {
       { id: 'node-4', name: 'group_b', type: 'custom', inputs: [], outputs: [], position: { x: 0, y: 0 } },
     ];
 
-    const results = validator.validate(createState(nodes));
+    const results = validator.validate(createTestState(nodes));
     expect(results).toHaveLength(4);
   });
 
@@ -238,7 +178,7 @@ describe('DuplicateNameValidator', () => {
       { id: 'node-1', name: '  my_node  ', type: 'custom', inputs: [], outputs: [], position: { x: 0, y: 0 } },
       { id: 'node-2', name: 'my_node', type: 'custom', inputs: [], outputs: [], position: { x: 0, y: 0 } },
     ];
-    expect(validator.validate(createState(nodes))).toHaveLength(2);
+    expect(validator.validate(createTestState(nodes))).toHaveLength(2);
   });
 });
 
@@ -250,7 +190,7 @@ describe('EmptyNameValidator', () => {
       { id: 'node-1', name: '', type: 'custom', inputs: [], outputs: [], position: { x: 0, y: 0 } },
     ];
 
-    const results = validator.validate(createState(nodes));
+    const results = validator.validate(createTestState(nodes));
     expect(results).toHaveLength(1);
     expect(results[0].severity).toBe('error');
     expect(results[0].componentId).toBe('node-1');
@@ -262,7 +202,7 @@ describe('EmptyNameValidator', () => {
       { id: 'node-1', name: '   ', type: 'custom', inputs: [], outputs: [], position: { x: 0, y: 0 } },
       { id: 'node-2', name: 'Unnamed Node', type: 'custom', inputs: [], outputs: [], position: { x: 0, y: 0 } },
     ];
-    expect(validator.validate(createState(nodes))).toHaveLength(2);
+    expect(validator.validate(createTestState(nodes))).toHaveLength(2);
   });
 
   it('should detect empty dataset names and default names', () => {
@@ -271,7 +211,7 @@ describe('EmptyNameValidator', () => {
       { id: 'dataset-2', name: 'Unnamed Dataset', type: 'csv', position: { x: 0, y: 0 } },
     ];
 
-    const results = validator.validate(createState([], datasets));
+    const results = validator.validate(createTestState([], datasets));
     expect(results).toHaveLength(2);
     expect(results[0].componentType).toBe('dataset');
     expect(results[0].message).toBe('Dataset has no name');
@@ -284,7 +224,7 @@ describe('EmptyNameValidator', () => {
     const datasets: KedroDataset[] = [
       { id: 'dataset-1', name: 'valid_dataset', type: 'csv', position: { x: 0, y: 0 } },
     ];
-    expect(validator.validate(createState(nodes, datasets))).toEqual([]);
+    expect(validator.validate(createTestState(nodes, datasets))).toEqual([]);
   });
 });
 
@@ -297,7 +237,7 @@ describe('InvalidNameValidator', () => {
       { id: 'node-2', name: 'my_node_name', type: 'custom', inputs: [], outputs: [], position: { x: 0, y: 0 } },
       { id: 'node-3', name: 'Node 123', type: 'custom', inputs: [], outputs: [], position: { x: 0, y: 0 } },
     ];
-    expect(validator.validate(createState(nodes))).toEqual([]);
+    expect(validator.validate(createTestState(nodes))).toEqual([]);
   });
 
   it('should reject node names starting with number or with special characters', () => {
@@ -307,7 +247,7 @@ describe('InvalidNameValidator', () => {
       { id: 'node-3', name: 'node-name', type: 'custom', inputs: [], outputs: [], position: { x: 0, y: 0 } },
     ];
 
-    const results = validator.validate(createState(nodes));
+    const results = validator.validate(createTestState(nodes));
     expect(results).toHaveLength(3);
     results.forEach((result) => {
       expect(result.severity).toBe('error');
@@ -320,7 +260,7 @@ describe('InvalidNameValidator', () => {
       { id: 'dataset-1', name: 'my_dataset', type: 'csv', position: { x: 0, y: 0 } },
       { id: 'dataset-2', name: 'raw_data_2023', type: 'csv', position: { x: 0, y: 0 } },
     ];
-    expect(validator.validate(createState([], datasets))).toEqual([]);
+    expect(validator.validate(createTestState([], datasets))).toEqual([]);
   });
 
   it('should reject dataset names with uppercase, spaces, hyphens, dots, or leading number/underscore', () => {
@@ -331,7 +271,7 @@ describe('InvalidNameValidator', () => {
       { id: 'dataset-4', name: '2023_data', type: 'csv', position: { x: 0, y: 0 } },
     ];
 
-    const results = validator.validate(createState([], datasets));
+    const results = validator.validate(createTestState([], datasets));
     expect(results).toHaveLength(4);
     results.forEach((result) => {
       expect(result.message).toContain('Invalid dataset name');
@@ -346,7 +286,7 @@ describe('MissingCodeValidator', () => {
     const nodes: KedroNode[] = [
       { id: 'node-1', name: 'my_node', type: 'custom', inputs: [], outputs: [], functionCode: 'return data', position: { x: 0, y: 0 } },
     ];
-    expect(validator.validate(createState(nodes))).toEqual([]);
+    expect(validator.validate(createTestState(nodes))).toEqual([]);
   });
 
   it('should warn about nodes without code, with empty code, or whitespace-only code', () => {
@@ -356,7 +296,7 @@ describe('MissingCodeValidator', () => {
       { id: 'node-3', name: 'whitespace_code', type: 'custom', inputs: [], outputs: [], functionCode: '   \n  ', position: { x: 0, y: 0 } },
     ];
 
-    const results = validator.validate(createState(nodes));
+    const results = validator.validate(createTestState(nodes));
     expect(results).toHaveLength(3);
     expect(results[0].severity).toBe('warning');
     expect(results[0].componentId).toBe('node-1');
@@ -371,7 +311,7 @@ describe('MissingCodeValidator', () => {
       { id: 'node-2', name: 'without_code', type: 'custom', inputs: [], outputs: [], position: { x: 0, y: 0 } },
     ];
 
-    const results = validator.validate(createState(nodes));
+    const results = validator.validate(createTestState(nodes));
     expect(results).toHaveLength(1);
     expect(results[0].message).toContain('without_code');
   });
@@ -384,7 +324,7 @@ describe('MissingConfigValidator', () => {
     const datasets: KedroDataset[] = [
       { id: 'dataset-1', name: 'my_csv', type: 'csv', filepath: 'data/my.csv', position: { x: 0, y: 0 } },
     ];
-    expect(validator.validate(createState([], datasets))).toEqual([]);
+    expect(validator.validate(createTestState([], datasets))).toEqual([]);
   });
 
   it('should warn about missing type', () => {
@@ -392,7 +332,7 @@ describe('MissingConfigValidator', () => {
       { id: 'dataset-1', name: 'my_data', type: undefined as unknown as KedroDataset['type'], filepath: 'data.csv', position: { x: 0, y: 0 } },
     ];
 
-    const results = validator.validate(createState([], datasets));
+    const results = validator.validate(createTestState([], datasets));
     expect(results).toHaveLength(1);
     expect(results[0].severity).toBe('warning');
     expect(results[0].message).toBe('Dataset "my_data" is missing: type');
@@ -403,7 +343,7 @@ describe('MissingConfigValidator', () => {
       { id: 'dataset-1', name: 'my_csv', type: 'csv', filepath: '', position: { x: 0, y: 0 } },
     ];
 
-    const results = validator.validate(createState([], datasets));
+    const results = validator.validate(createTestState([], datasets));
     expect(results).toHaveLength(1);
     expect(results[0].message).toContain('missing: filepath');
   });
@@ -413,7 +353,7 @@ describe('MissingConfigValidator', () => {
       { id: 'dataset-1', name: 'incomplete', type: undefined as unknown as KedroDataset['type'], position: { x: 0, y: 0 } },
     ];
 
-    const results = validator.validate(createState([], datasets));
+    const results = validator.validate(createTestState([], datasets));
     expect(results).toHaveLength(1);
     expect(results[0].message).toBe('Dataset "incomplete" is missing: type, filepath');
   });
@@ -423,7 +363,7 @@ describe('MissingConfigValidator', () => {
       { id: 'dataset-1', name: 'temp_data', type: 'memory', position: { x: 0, y: 0 } },
       { id: 'dataset-2', name: 'temp_data_2', type: 'memory', filepath: '', position: { x: 0, y: 0 } },
     ];
-    expect(validator.validate(createState([], datasets))).toEqual([]);
+    expect(validator.validate(createTestState([], datasets))).toEqual([]);
   });
 
   it('should detect multiple datasets with missing config', () => {
@@ -433,7 +373,7 @@ describe('MissingConfigValidator', () => {
       { id: 'dataset-3', name: 'complete', type: 'json', filepath: 'data.json', position: { x: 0, y: 0 } },
     ];
 
-    const results = validator.validate(createState([], datasets));
+    const results = validator.validate(createTestState([], datasets));
     expect(results).toHaveLength(2);
   });
 });
@@ -449,7 +389,7 @@ describe('OrphanedNodeValidator', () => {
       { id: 'conn-1', source: 'node-1', target: 'dataset-1', sourceHandle: 'out', targetHandle: 'in' },
     ];
 
-    expect(validator.validate(createState(nodes, [], connections))).toEqual([]);
+    expect(validator.validate(createTestState(nodes, [], connections))).toEqual([]);
   });
 
   it('should warn about orphaned nodes', () => {
@@ -461,7 +401,7 @@ describe('OrphanedNodeValidator', () => {
       { id: 'conn-1', source: 'node-1', target: 'dataset-1', sourceHandle: 'out', targetHandle: 'in' },
     ];
 
-    const results = validator.validate(createState(nodes, [], connections));
+    const results = validator.validate(createTestState(nodes, [], connections));
     expect(results).toHaveLength(1);
     expect(results[0].severity).toBe('warning');
     expect(results[0].componentId).toBe('node-2');
@@ -473,7 +413,7 @@ describe('OrphanedNodeValidator', () => {
       { id: 'node-1', name: 'orphan_1', type: 'custom', inputs: [], outputs: [], position: { x: 0, y: 0 } },
       { id: 'node-2', name: 'orphan_2', type: 'custom', inputs: [], outputs: [], position: { x: 0, y: 0 } },
     ];
-    expect(validator.validate(createState(nodes))).toHaveLength(2);
+    expect(validator.validate(createTestState(nodes))).toHaveLength(2);
   });
 });
 
@@ -491,7 +431,7 @@ describe('OrphanedDatasetValidator', () => {
       { id: 'conn-1', source: 'node-1', target: 'dataset-1', sourceHandle: 'out', targetHandle: 'in' },
     ];
 
-    expect(validator.validate(createState(nodes, datasets, connections))).toEqual([]);
+    expect(validator.validate(createTestState(nodes, datasets, connections))).toEqual([]);
   });
 
   it('should warn about orphaned datasets', () => {
@@ -503,7 +443,7 @@ describe('OrphanedDatasetValidator', () => {
       { id: 'conn-1', source: 'node-1', target: 'dataset-1', sourceHandle: 'out', targetHandle: 'in' },
     ];
 
-    const results = validator.validate(createState([], datasets, connections));
+    const results = validator.validate(createTestState([], datasets, connections));
     expect(results).toHaveLength(1);
     expect(results[0].severity).toBe('warning');
     expect(results[0].componentId).toBe('dataset-2');
@@ -515,7 +455,7 @@ describe('OrphanedDatasetValidator', () => {
       { id: 'dataset-1', name: 'orphan_1', type: 'csv', position: { x: 0, y: 0 } },
       { id: 'dataset-2', name: 'orphan_2', type: 'csv', position: { x: 0, y: 0 } },
     ];
-    expect(validator.validate(createState([], datasets))).toHaveLength(2);
+    expect(validator.validate(createTestState([], datasets))).toHaveLength(2);
   });
 });
 
@@ -555,7 +495,7 @@ describe('Integration', () => {
       { id: 'node-4', name: 'duplicate', type: 'custom', inputs: [], outputs: [], position: { x: 0, y: 0 } },
     ];
 
-    const results = registry.validateAll(createState(nodes));
+    const results = registry.validateAll(createTestState(nodes));
     const errors = results.filter((r) => r.severity === 'error');
     const warnings = results.filter((r) => r.severity === 'warning');
 
@@ -580,6 +520,6 @@ describe('Integration', () => {
       { id: 'conn-3', source: 'node-2', target: 'dataset-2', sourceHandle: 'out', targetHandle: 'in' },
     ];
 
-    expect(registry.validateAll(createState(nodes, datasets, connections))).toEqual([]);
+    expect(registry.validateAll(createTestState(nodes, datasets, connections))).toEqual([]);
   });
 });
