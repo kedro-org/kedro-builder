@@ -1,194 +1,79 @@
 /**
  * Window Event Contract Tests
  *
- * These tests lock the custom event formats used for cross-component communication.
- * The event names and payload shapes are part of the public contract.
- *
- * Events:
- * - focusNode: Fired when a node should be focused/centered in the canvas
- * - configUpdated: Fired when node/dataset config changes (triggers validation refresh)
+ * Tests the REAL dispatch and subscribe helpers from constants/events.ts.
+ * Previous version tested its own mocks -- this version imports and exercises
+ * the actual application code against real window events.
  *
  * IMPORTANT: Do NOT change event names or payload shapes without updating all consumers.
  */
 
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
+import {
+  APP_EVENTS,
+  dispatchFocusNode,
+  dispatchConfigUpdated,
+  onFocusNode,
+  onConfigUpdated,
+} from '../../constants/events';
 
 describe('Window Event Contracts', () => {
-  let eventListeners: Map<string, EventListener[]>;
-  let originalAddEventListener: typeof window.addEventListener;
-  let originalRemoveEventListener: typeof window.removeEventListener;
-  let originalDispatchEvent: typeof window.dispatchEvent;
-
-  beforeEach(() => {
-    eventListeners = new Map();
-
-    originalAddEventListener = window.addEventListener;
-    originalRemoveEventListener = window.removeEventListener;
-    originalDispatchEvent = window.dispatchEvent;
-
-    // Mock addEventListener to track listeners
-    window.addEventListener = vi.fn((type: string, listener: EventListener) => {
-      if (!eventListeners.has(type)) {
-        eventListeners.set(type, []);
-      }
-      eventListeners.get(type)!.push(listener);
-    }) as typeof window.addEventListener;
-
-    // Mock removeEventListener
-    window.removeEventListener = vi.fn((type: string, listener: EventListener) => {
-      const listeners = eventListeners.get(type);
-      if (listeners) {
-        const index = listeners.indexOf(listener);
-        if (index > -1) {
-          listeners.splice(index, 1);
-        }
-      }
-    }) as typeof window.removeEventListener;
-
-    // Mock dispatchEvent to call registered listeners
-    window.dispatchEvent = vi.fn((event: Event) => {
-      const listeners = eventListeners.get(event.type);
-      if (listeners) {
-        listeners.forEach((listener) => listener(event));
-      }
-      return true;
-    }) as typeof window.dispatchEvent;
+  it('APP_EVENTS values are locked', () => {
+    expect(APP_EVENTS.CONFIG_UPDATED).toBe('configUpdated');
+    expect(APP_EVENTS.FOCUS_NODE).toBe('focusNode');
+    // Exactly 2 events -- adding a new event must be intentional
+    expect(Object.keys(APP_EVENTS)).toHaveLength(2);
   });
 
-  afterEach(() => {
-    window.addEventListener = originalAddEventListener;
-    window.removeEventListener = originalRemoveEventListener;
-    window.dispatchEvent = originalDispatchEvent;
+  it('dispatchFocusNode fires a real CustomEvent with the correct detail', () => {
+    const spy = vi.fn();
+    window.addEventListener('focusNode', spy);
+
+    dispatchFocusNode('node-42');
+
+    expect(spy).toHaveBeenCalledTimes(1);
+    const event = spy.mock.calls[0][0] as CustomEvent;
+    expect(event.detail).toEqual({ nodeId: 'node-42' });
+
+    window.removeEventListener('focusNode', spy);
   });
 
-  describe('focusNode Event', () => {
-    it('event name is exactly "focusNode"', () => {
-      const EVENT_NAME = 'focusNode';
-      expect(EVENT_NAME).toBe('focusNode');
-    });
+  it('dispatchConfigUpdated fires a real CustomEvent with no detail', () => {
+    const spy = vi.fn();
+    window.addEventListener('configUpdated', spy);
 
-    it('event is a CustomEvent', () => {
-      const event = new CustomEvent('focusNode', {
-        detail: { nodeId: 'node-123' },
-      });
+    dispatchConfigUpdated();
 
-      expect(event).toBeInstanceOf(CustomEvent);
-      expect(event.type).toBe('focusNode');
-    });
+    expect(spy).toHaveBeenCalledTimes(1);
+    const event = spy.mock.calls[0][0] as CustomEvent;
+    expect(event.type).toBe('configUpdated');
 
-    it('event detail contains nodeId string', () => {
-      const handler = vi.fn();
-      window.addEventListener('focusNode', handler);
-
-      const event = new CustomEvent('focusNode', {
-        detail: { nodeId: 'node-123456789' },
-      });
-      window.dispatchEvent(event);
-
-      expect(handler).toHaveBeenCalledTimes(1);
-      const receivedEvent = handler.mock.calls[0][0] as CustomEvent;
-      expect(receivedEvent.detail).toEqual({ nodeId: 'node-123456789' });
-      expect(typeof receivedEvent.detail.nodeId).toBe('string');
-    });
-
-    it('nodeId can be a node ID format', () => {
-      const handler = vi.fn();
-      window.addEventListener('focusNode', handler);
-
-      window.dispatchEvent(
-        new CustomEvent('focusNode', {
-          detail: { nodeId: 'node-1704067200000' },
-        })
-      );
-
-      const detail = (handler.mock.calls[0][0] as CustomEvent).detail;
-      expect(detail.nodeId).toMatch(/^node-\d+$/);
-    });
-
-    it('nodeId can be a dataset ID format', () => {
-      const handler = vi.fn();
-      window.addEventListener('focusNode', handler);
-
-      window.dispatchEvent(
-        new CustomEvent('focusNode', {
-          detail: { nodeId: 'dataset-1704067200000' },
-        })
-      );
-
-      const detail = (handler.mock.calls[0][0] as CustomEvent).detail;
-      expect(detail.nodeId).toMatch(/^dataset-\d+$/);
-    });
-
-    it('supports adding and removing listeners', () => {
-      const handler = vi.fn();
-
-      window.addEventListener('focusNode', handler);
-      window.dispatchEvent(new CustomEvent('focusNode', { detail: { nodeId: 'node-1' } }));
-      expect(handler).toHaveBeenCalledTimes(1);
-
-      window.removeEventListener('focusNode', handler);
-      window.dispatchEvent(new CustomEvent('focusNode', { detail: { nodeId: 'node-2' } }));
-      expect(handler).toHaveBeenCalledTimes(1); // Still 1, not 2
-    });
+    window.removeEventListener('configUpdated', spy);
   });
 
-  describe('configUpdated Event', () => {
-    it('event name is exactly "configUpdated"', () => {
-      const EVENT_NAME = 'configUpdated';
-      expect(EVENT_NAME).toBe('configUpdated');
-    });
+  it('onFocusNode subscribes and cleanup unsubscribes', () => {
+    const handler = vi.fn();
+    const cleanup = onFocusNode(handler);
 
-    it('event is a CustomEvent with no detail', () => {
-      const event = new CustomEvent('configUpdated');
+    dispatchFocusNode('dataset-99');
+    expect(handler).toHaveBeenCalledWith('dataset-99');
 
-      expect(event).toBeInstanceOf(CustomEvent);
-      expect(event.type).toBe('configUpdated');
-      expect(event.detail).toBeNull();
-    });
+    cleanup();
 
-    it('handlers receive the event without payload', () => {
-      const handler = vi.fn();
-      window.addEventListener('configUpdated', handler);
-
-      window.dispatchEvent(new CustomEvent('configUpdated'));
-
-      expect(handler).toHaveBeenCalledTimes(1);
-      const receivedEvent = handler.mock.calls[0][0] as CustomEvent;
-      expect(receivedEvent.type).toBe('configUpdated');
-    });
-
-    it('can be dispatched without any arguments', () => {
-      const handler = vi.fn();
-      window.addEventListener('configUpdated', handler);
-
-      // This is how it's dispatched in NodeConfigForm and DatasetConfigForm
-      window.dispatchEvent(new CustomEvent('configUpdated'));
-
-      expect(handler).toHaveBeenCalled();
-    });
+    dispatchFocusNode('dataset-100');
+    expect(handler).toHaveBeenCalledTimes(1); // still 1 after cleanup
   });
 
-  describe('Event Contract Documentation', () => {
-    it('documents all custom events used in the application', () => {
-      // This test serves as documentation for all custom events
-      const customEvents = {
-        focusNode: {
-          description: 'Fired to focus/center a node or dataset in the canvas',
-          payload: '{ nodeId: string }',
-          producers: ['ValidationItem.tsx'],
-          consumers: ['useSelectionHandlers.ts'],
-        },
-        configUpdated: {
-          description: 'Fired when node/dataset configuration changes',
-          payload: 'none',
-          producers: ['NodeConfigForm.tsx', 'DatasetConfigForm.tsx'],
-          consumers: ['useValidation.ts'],
-        },
-      };
+  it('onConfigUpdated subscribes and cleanup unsubscribes', () => {
+    const handler = vi.fn();
+    const cleanup = onConfigUpdated(handler);
 
-      expect(Object.keys(customEvents)).toHaveLength(2);
-      expect(customEvents.focusNode).toBeDefined();
-      expect(customEvents.configUpdated).toBeDefined();
-    });
+    dispatchConfigUpdated();
+    expect(handler).toHaveBeenCalledTimes(1);
+
+    cleanup();
+
+    dispatchConfigUpdated();
+    expect(handler).toHaveBeenCalledTimes(1); // still 1 after cleanup
   });
 });
