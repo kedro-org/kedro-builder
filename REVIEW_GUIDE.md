@@ -201,46 +201,6 @@ Test infrastructure, 340 tests, contract tests, coverage assessment.
 
 ---
 
-## Known Issues (Remaining)
-
-These are known architectural issues that reviewers will encounter. They are documented here so reviewers can evaluate them rather than discovering them fresh:
-
-| Issue | Severity | Location | Status |
-|-------|----------|----------|--------|
-| `memo()` defeated by array replacement | High | `useCanvasState.ts` — `useLayoutEffect` creates new arrays, defeating `React.memo()` on `CustomNode`/`DatasetNode` | Deferred — requires ADR-002 architecture change |
-| `store.getState()` in useValidation | Medium | `useValidation.ts` — 5 call sites bypass React's reactivity model | Open — may be intentional for imperative validation |
-| Deprecated validation shim still imported | Low | `src/utils/validation.ts` — re-export shim still imported by ~10 files | Open — imports should point to `./validation/index` |
-
----
-
-## Completed Refactoring (for context)
-
-The following issues were identified during discovery and have already been fixed:
-
-| Issue | Fix |
-|-------|-----|
-| `Node()` instead of `node()` in generated pipeline.py | Fixed — now uses Kedro 3.x `node()` function with `name=` parameter |
-| `Date.now()` ID collisions | Fixed — now uses `crypto.randomUUID()` with fallback |
-| O(n²) in `deleteNodes`/`deleteDatasets` | Fixed — uses `Set` for O(n) single-pass deletion |
-| CodeDisplay subscribed to entire root state | Fixed — uses 7 granular selectors + `useMemo` |
-| Dead dependencies (dexie, handlebars, etc.) | Fixed — 8 packages removed |
-| `ValidationError` type duplication | Fixed — single canonical source in `utils/validation/types.ts` |
-| localStorage key hardcoding | Fixed — all use `STORAGE_KEYS` constants + `safeGetItem` |
-| localStorage side effects in reducers | Fixed — reducers are pure, middleware handles persistence |
-| CDN dependency for highlight.js CSS | Fixed — CSS bundled locally in `public/hljs/` |
-| `store.getState()` in useConnectionHandlers | Fixed — uses `useAppSelector` with proper dependency arrays |
-| Missing `__main__.py` in exported ZIP | Fixed — generated in `withPackageStructure()` |
-| `toSnakeCase` bug with consecutive uppercase | Fixed — `XMLParser` → `xml_parser` |
-| Python/YAML string escaping | Fixed — proper special character handling |
-| Procedural `projectGenerator.ts` duplication | Fixed — deleted, `KedroProjectBuilder` is sole source of truth |
-| Legacy 343-line `pipelineValidation.ts` | Fixed — replaced with 27-line `ValidatorRegistry` wrapper |
-| ValidatorRegistry had 8 methods, only 1 used | Fixed — trimmed to 3 methods |
-| Duplicate `getNodeInputs`/`getNodeOutputs` helpers | Fixed — consolidated to single shared helper |
-| Duplicate `getConnectionsArray` in validators | Fixed — shared helper extracted |
-| Unused `formatDocstringParams` | Fixed — deleted |
-
----
-
 ## How to Review
 
 1. Read this guide first (architecture + data flow)
