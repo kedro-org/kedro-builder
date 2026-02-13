@@ -166,20 +166,20 @@ Learn the vocabulary: `NodeId`, `DatasetId`, `KedroNode`, `KedroDataset`, `RootS
 ### [Phase 2: Constants & Configuration](https://github.com/kedro-org/kedro-builder/issues/23) (8 files, ~1 hour)
 All magic values: canvas defaults, storage keys, dataset types, timing constants.
 
-### [Phase 3: Domain Layer](https://github.com/kedro-org/kedro-builder/issues/24) (3 files, ~1 hour)
-Pure business logic: ID generation (`crypto.randomUUID()`), graph cycle detection, orphan detection.
+### [Phase 3: Domain Layer](https://github.com/kedro-org/kedro-builder/issues/24) (4 files, ~1 hour)
+Pure business logic + tests: ID generation (`crypto.randomUUID()`), graph cycle detection, orphan detection.
 
-### [Phase 4: Redux Store & Slices](https://github.com/kedro-org/kedro-builder/issues/25) (17 files, ~2 hours)
-State management: 7 feature slices, normalized state, auto-save middleware, selectors.
+### [Phase 4: Redux Store & Slices](https://github.com/kedro-org/kedro-builder/issues/25) (20 files, ~2 hours)
+State management + tests: 7 feature slices, normalized state, auto-save middleware, selectors.
 
 ### [Phase 5: Persistence & Telemetry](https://github.com/kedro-org/kedro-builder/issues/26) (5 files, ~1 hour)
 External integrations: localStorage with Zod validation, Heap Analytics with PII blocking.
 
-### [Phase 6: Validation Engine](https://github.com/kedro-org/kedro-builder/issues/27) (14 files, ~1.5 hours)
-Pipeline validation: 8 pluggable validators (4 errors, 4 warnings), ValidatorRegistry.
+### [Phase 6: Validation Engine](https://github.com/kedro-org/kedro-builder/issues/27) (16 files, ~1.5 hours)
+Pipeline validation + tests: 8 pluggable validators (4 errors, 4 warnings), ValidatorRegistry.
 
-### [Phase 7: Utilities & Hooks](https://github.com/kedro-org/kedro-builder/issues/28) (7 files, ~1 hour)
-Shared utilities and app-level React hooks bridging infrastructure and Redux.
+### [Phase 7: Utilities & Hooks](https://github.com/kedro-org/kedro-builder/issues/28) (10 files, ~1 hour)
+Shared utilities, app-level hooks + tests: filepath, fileTree, logger, telemetry, selections.
 
 ### [Phase 8: UI Primitives & Styling](https://github.com/kedro-org/kedro-builder/issues/29) (18 files, ~1.5 hours)
 Design tokens, theme system, reusable components (Button, Input, ErrorBoundary, etc.).
@@ -190,14 +190,14 @@ Component Palette (drag source) and Config Panel (node/dataset forms).
 ### [Phase 10: Canvas System](https://github.com/kedro-org/kedro-builder/issues/31) (29 files, ~2.5 hours)
 The heart: ReactFlow integration, custom nodes/edges, 9 canvas hooks.
 
-### [Phase 11: Code Generation & Export](https://github.com/kedro-org/kedro-builder/issues/32) (13 files, ~2 hours)
-The crown jewel: Builder pattern generating complete Kedro project ZIPs.
+### [Phase 11: Code Generation & Export](https://github.com/kedro-org/kedro-builder/issues/32) (19 files, ~2 hours)
+The crown jewel + tests: Builder pattern generating complete Kedro project ZIPs.
 
 ### [Phase 12: App Shell & Features](https://github.com/kedro-org/kedro-builder/issues/33) (27 files, ~2 hours)
 How everything connects: initialization flow, modals, tutorial, walkthrough.
 
-### [Phase 13: Tests & Quality](https://github.com/kedro-org/kedro-builder/issues/34) (18 files, ~1.5 hours)
-Test infrastructure, 340 tests, contract tests, coverage assessment.
+### [Phase 13: Test Infrastructure & Coverage](https://github.com/kedro-org/kedro-builder/issues/34) (7 files, ~1 hour)
+Test setup, mock utilities, contract tests, and coverage gap assessment.
 
 ---
 

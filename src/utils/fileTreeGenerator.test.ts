@@ -3,89 +3,18 @@
  */
 import { describe, it, expect } from 'vitest';
 import { generateFileTree, findFileByPath, getFileLanguage } from './fileTreeGenerator';
-import type { RootState } from '../types/redux';
 import type { KedroNode, KedroDataset, KedroConnection } from '../types/kedro';
-
-// Helper to create a minimal valid state
-function createState(
-  nodes: KedroNode[] = [],
-  datasets: KedroDataset[] = [],
-  connections: KedroConnection[] = [],
-  projectOverrides: Partial<NonNullable<RootState['project']['current']>> = {}
-): RootState {
-  return {
-    nodes: {
-      byId: Object.fromEntries(nodes.map((n) => [n.id, n])),
-      allIds: nodes.map((n) => n.id),
-      selected: [],
-      hovered: null,
-    },
-    datasets: {
-      byId: Object.fromEntries(datasets.map((d) => [d.id, d])),
-      allIds: datasets.map((d) => d.id),
-      selected: [],
-    },
-    connections: {
-      byId: Object.fromEntries(connections.map((c) => [c.id, c])),
-      allIds: connections.map((c) => c.id),
-      selected: [],
-    },
-    ui: {
-      showTutorial: false,
-      tutorialStep: 0,
-      tutorialCompleted: false,
-      showWalkthrough: false,
-      walkthroughStep: 0,
-      walkthroughCompleted: false,
-      showProjectSetup: false,
-      hasActiveProject: true,
-      selectedComponent: null,
-      showConfigPanel: false,
-      showCodePreview: false,
-      showValidationPanel: false,
-      canvasZoom: 1,
-      canvasPosition: { x: 0, y: 0 },
-      showCodeViewer: false,
-      selectedCodeFile: null,
-      showExportWizard: false,
-      pendingComponentId: null,
-    },
-    project: {
-      current: {
-        id: 'project-1',
-        name: 'test_project',
-        pythonPackage: 'test_project',
-        pipelineName: 'default',
-        description: 'Test project description',
-        createdAt: Date.now(),
-        updatedAt: Date.now(),
-        ...projectOverrides,
-      },
-      savedList: [],
-      lastSaved: null,
-    },
-    validation: {
-      errors: [],
-      warnings: [],
-      isValid: true,
-      lastChecked: null,
-    },
-    theme: {
-      theme: 'light',
-    },
-  };
-}
+import { createTestState } from '../test/utils/mockStore';
 
 describe('fileTreeGenerator', () => {
   describe('generateFileTree', () => {
     it('should throw error when no active project', () => {
-      const state = createState();
-      state.project.current = null;
+      const state = createTestState();
       expect(() => generateFileTree(state)).toThrow('No active project');
     });
 
     it('should generate correct root structure', () => {
-      const state = createState();
+      const state = createTestState([], [], [], {});
       const tree = generateFileTree(state);
 
       expect(tree.name).toBe('test_project');
@@ -104,7 +33,7 @@ describe('fileTreeGenerator', () => {
     });
 
     it('should generate conf structure with catalog and credentials', () => {
-      const state = createState();
+      const state = createTestState([], [], [], {});
       const tree = generateFileTree(state);
 
       const catalogFile = findFileByPath(tree, 'conf/base/catalog.yml');
@@ -118,7 +47,7 @@ describe('fileTreeGenerator', () => {
     });
 
     it('should generate all 8 data layer folders', () => {
-      const state = createState();
+      const state = createTestState([], [], [], {});
       const tree = generateFileTree(state);
 
       const dataFolder = tree.children!.find((c) => c.name === 'data');
@@ -130,7 +59,7 @@ describe('fileTreeGenerator', () => {
     });
 
     it('should generate pipeline structure with nodes.py and pipeline.py', () => {
-      const state = createState();
+      const state = createTestState([], [], [], {});
       const tree = generateFileTree(state);
 
       const nodesFile = findFileByPath(tree, 'src/test_project/pipelines/default/nodes.py');
@@ -144,7 +73,7 @@ describe('fileTreeGenerator', () => {
     });
 
     it('should mark key files with isKeyFile flag', () => {
-      const state = createState();
+      const state = createTestState([], [], [], {});
       const tree = generateFileTree(state);
 
       expect(findFileByPath(tree, 'conf/base/catalog.yml')?.isKeyFile).toBe(true);
@@ -153,7 +82,7 @@ describe('fileTreeGenerator', () => {
     });
 
     it('should generate content for root files', () => {
-      const state = createState();
+      const state = createTestState([], [], [], {});
       const tree = generateFileTree(state);
 
       const pyprojectFile = tree.children!.find((c) => c.name === 'pyproject.toml');
@@ -164,7 +93,7 @@ describe('fileTreeGenerator', () => {
     });
 
     it('should use custom project metadata', () => {
-      const state = createState([], [], [], {
+      const state = createTestState([], [], [], {
         name: 'custom_project',
         pythonPackage: 'custom_package',
         pipelineName: 'custom_pipeline',
@@ -183,7 +112,7 @@ describe('fileTreeGenerator', () => {
         { id: 'dataset-2', name: 'processed_data', type: 'parquet', filepath: 'data/02_intermediate/processed.parquet', position: { x: 100, y: 0 } },
       ];
 
-      const state = createState([], datasets);
+      const state = createTestState([], datasets, [], {});
       const tree = generateFileTree(state);
       const catalogFile = findFileByPath(tree, 'conf/base/catalog.yml');
 
@@ -196,7 +125,7 @@ describe('fileTreeGenerator', () => {
         { id: 'node-1', name: 'process_data', type: 'data_processing', inputs: [], outputs: [], functionCode: 'return data', position: { x: 0, y: 0 } },
       ];
 
-      const state = createState(nodes);
+      const state = createTestState(nodes, [], [], {});
       const nodesFile = findFileByPath(generateFileTree(state), 'src/test_project/pipelines/default/nodes.py');
       expect(nodesFile?.content).toContain('def process_data');
     });
@@ -212,7 +141,7 @@ describe('fileTreeGenerator', () => {
         { id: 'conn-1', source: 'node-1', target: 'dataset-1', sourceHandle: 'out', targetHandle: 'in' },
       ];
 
-      const state = createState(nodes, datasets, connections);
+      const state = createTestState(nodes, datasets, connections, {});
       const pipelineFile = findFileByPath(generateFileTree(state), 'src/test_project/pipelines/default/pipeline.py');
       expect(pipelineFile?.content).toContain('node(');
     });
@@ -222,13 +151,13 @@ describe('fileTreeGenerator', () => {
         { id: 'node-1', name: 'process', type: 'custom', inputs: [], outputs: [], position: { x: 0, y: 0 } },
       ];
 
-      const state = createState(nodes, []);
+      const state = createTestState(nodes, [], [], {});
       const catalogFile = findFileByPath(generateFileTree(state), 'conf/base/catalog.yml');
       expect(catalogFile?.content).toContain('# No datasets defined');
     });
 
     it('should set correct expanded flags', () => {
-      const state = createState();
+      const state = createTestState([], [], [], {});
       const tree = generateFileTree(state);
 
       expect(tree.expanded).toBe(true);
@@ -268,7 +197,7 @@ describe('fileTreeGenerator', () => {
         { id: 'conn-5', source: 'node-3', target: 'dataset-3', sourceHandle: 'out', targetHandle: 'in' },
       ];
 
-      const state = createState(nodes, datasets, connections);
+      const state = createTestState(nodes, datasets, connections, {});
       const tree = generateFileTree(state);
 
       const catalogFile = findFileByPath(tree, 'conf/base/catalog.yml');
@@ -282,7 +211,7 @@ describe('fileTreeGenerator', () => {
         { id: 'dataset-1', name: 'data', type: 'parquet', position: { x: 0, y: 0 } },
       ];
 
-      const state = createState([], datasets);
+      const state = createTestState([], datasets, [], {});
       const tree = generateFileTree(state);
       const pyprojectFile = tree.children!.find((c) => c.name === 'pyproject.toml');
       expect(pyprojectFile?.content).toContain('pandas-parquetdataset');
@@ -293,7 +222,7 @@ describe('fileTreeGenerator', () => {
         { id: 'dataset-1', name: 'data', type: 'csv', position: { x: 0, y: 0 } },
       ];
 
-      const state = createState([], datasets);
+      const state = createTestState([], datasets, [], {});
       const tree = generateFileTree(state);
       const nodesFile = findFileByPath(tree, 'src/test_project/pipelines/default/nodes.py');
       expect(nodesFile).toBeDefined();
@@ -303,7 +232,7 @@ describe('fileTreeGenerator', () => {
 
   describe('findFileByPath', () => {
     it('should find root, files, and nested files', () => {
-      const state = createState();
+      const state = createTestState([], [], [], {});
       const tree = generateFileTree(state);
 
       expect(findFileByPath(tree, '/')?.name).toBe('test_project');
@@ -314,7 +243,7 @@ describe('fileTreeGenerator', () => {
     });
 
     it('should return null for non-existent paths', () => {
-      const state = createState();
+      const state = createTestState([], [], [], {});
       const tree = generateFileTree(state);
 
       expect(findFileByPath(tree, 'does/not/exist.txt')).toBeNull();
