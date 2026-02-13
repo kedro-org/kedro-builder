@@ -1,19 +1,19 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { useAppDispatch } from '../../../store/hooks';
-import { store } from '../../../store';
+import { useAppDispatch } from '@/store/hooks';
+import { store } from '@/store';
 import {
   openCodeViewer,
   openExportWizard,
   closeExportWizard,
-} from '../../../features/ui/uiSlice';
-import { setValidationResults } from '../../../features/validation/validationSlice';
-import { validatePipeline } from '../../../utils/validation';
-import type { ValidationResult } from '../../../utils/validation';
-import { generateKedroProject, downloadProject } from '../../../infrastructure/export';
-import { logger } from '../../../utils/logger';
-import { trackEvent } from '../../../infrastructure/telemetry';
-import { TIMING } from '../../../constants/timing';
-import { onConfigUpdated } from '../../../constants';
+} from '@/features/ui/uiSlice';
+import { setValidationResults } from '@/features/validation/validationSlice';
+import { validatePipeline } from '@/utils/validation';
+import type { ValidationResult } from '@/utils/validation';
+import { generateKedroProject, downloadProject } from '@/infrastructure/export';
+import { logger } from '@/utils/logger';
+import { trackEvent } from '@/infrastructure/telemetry';
+import { TIMING } from '@/constants/timing';
+import { onConfigUpdated } from '@/constants';
 import toast from 'react-hot-toast';
 
 // Debounce delay for validation to avoid excessive computation on rapid changes
@@ -81,12 +81,12 @@ export const useValidation = ({ showExportWizard }: UseValidationProps) => {
   }, [showExportWizard, runDebouncedValidation]);
 
   // Sync export validation result when showExportWizard changes
+  // Both handleExport and CodeViewerModal already validated and stored results
+  // in Redux before opening the wizard, so read from Redux instead of re-computing.
   useEffect(() => {
     if (showExportWizard) {
-      // Get validation results from Redux (already set by CodeViewerModal or handleExport)
-      const state = store.getState();
-      const validationResult = validatePipeline(state);
-      setExportValidationResult(validationResult);
+      const { errors, warnings, isValid } = store.getState().validation;
+      setExportValidationResult({ errors, warnings, isValid });
     }
   }, [showExportWizard]);
 

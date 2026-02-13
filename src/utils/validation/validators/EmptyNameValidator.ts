@@ -3,7 +3,7 @@
  * Checks for empty or default names
  */
 
-import type { RootState } from '../../../types/redux';
+import type { RootState } from '@/types/redux';
 import type { ValidationError } from '../types';
 import type { Validator } from './Validator';
 

@@ -1,23 +1,18 @@
 import { useCallback, useEffect } from 'react';
 import { useReactFlow } from '@xyflow/react';
 import type { Edge, EdgeMouseHandler, OnSelectionChangeParams } from '@xyflow/react';
-import { useAppDispatch } from '../../../store/hooks';
-import { clearSelection, deleteNodes, selectNodes } from '../../../features/nodes/nodesSlice';
-import { deleteDataset } from '../../../features/datasets/datasetsSlice';
-import {
-  selectConnection,
-  clearConnectionSelection,
-  deleteConnections,
-} from '../../../features/connections/connectionsSlice';
-import { closeConfigPanel } from '../../../features/ui/uiSlice';
-import { isNodeId, isDatasetId } from '../../../domain/IdGenerator';
-import { logger } from '../../../utils/logger';
-import type { KedroNode, KedroDataset } from '../../../types/kedro';
+import { useAppDispatch } from '@/store/hooks';
+import { clearSelection, selectNodes } from '@/features/nodes/nodesSlice';
+import { selectConnection } from '@/features/connections/connectionsSlice';
+import { closeConfigPanel } from '@/features/ui/uiSlice';
+import { logger } from '@/utils/logger';
+import type { KedroNode, KedroDataset } from '@/types/kedro';
 import { useDeleteConfirmation } from './useDeleteConfirmation';
+import { useDeleteItems } from './useDeleteItems';
 import { useCopyPaste } from './useCopyPaste';
 import { useCanvasKeyboardShortcuts } from './useCanvasKeyboardShortcuts';
-import { useClearSelections } from '../../../hooks/useClearSelections';
-import { onFocusNode } from '../../../constants';
+import { useClearSelections } from '@/hooks/useClearSelections';
+import { onFocusNode } from '@/constants';
 
 interface SelectionHandlersProps {
   reduxNodes: KedroNode[];
@@ -46,7 +41,8 @@ export const useSelectionHandlers = ({
   const { fitView, getNode } = useReactFlow();
   const clearAllSelections = useClearSelections();
 
-  // Delete confirmation sub-hook
+  // Delete hooks
+  const deleteItems = useDeleteItems();
   const {
     deleteConfirmation,
     showBulkDeleteConfirmation,
@@ -64,22 +60,9 @@ export const useSelectionHandlers = ({
 
     // If no confirmation needed (single item), delete immediately
     if (!needsConfirmation) {
-      if (selectedNodeIds.length > 0) {
-        selectedNodeIds.forEach((id) => {
-          if (isNodeId(id)) {
-            dispatch(deleteNodes([id]));
-          } else if (isDatasetId(id)) {
-            dispatch(deleteDataset(id));
-          }
-        });
-        dispatch(clearSelection());
-      }
-      if (selectedEdgeIds.length > 0) {
-        dispatch(deleteConnections(selectedEdgeIds));
-        dispatch(clearConnectionSelection());
-      }
+      deleteItems(selectedNodeIds, selectedEdgeIds);
     }
-  }, [dispatch, selectedNodeIds, selectedEdgeIds, showBulkDeleteConfirmation]);
+  }, [deleteItems, selectedNodeIds, selectedEdgeIds, showBulkDeleteConfirmation]);
 
   // Keyboard shortcuts sub-hook
   useCanvasKeyboardShortcuts({
@@ -155,11 +138,10 @@ export const useSelectionHandlers = ({
 
       // If no confirmation needed (single edge), delete immediately
       if (!needsConfirmation && edgeIds.length > 0) {
-        dispatch(deleteConnections(edgeIds));
-        dispatch(clearConnectionSelection());
+        deleteItems([], edgeIds);
       }
     },
-    [dispatch, showEdgesDeleteConfirmation]
+    [deleteItems, showEdgesDeleteConfirmation]
   );
 
   // ===== Focus Node Event Listener =====

@@ -1,12 +1,12 @@
 /**
  * IdGenerator - Centralized ID generation for pipeline components
  *
- * All component IDs follow a consistent pattern: `{type}-{timestamp}`
- * This ensures uniqueness within a session and makes debugging easier.
+ * All component IDs follow a consistent pattern: `{type}-{uuid}`
+ * This ensures uniqueness across sessions and concurrent operations.
  *
- * ID Format Contracts (preserved from original):
- * - Nodes: `node-{timestamp}` or `node-{timestamp}-{random}` for copy/paste
- * - Datasets: `dataset-{timestamp}` or `dataset-{timestamp}-{random}` for copy/paste
+ * ID Format Contracts:
+ * - Nodes: `node-{uuid}` (prefix-based type detection preserved)
+ * - Datasets: `dataset-{uuid}` (prefix-based type detection preserved)
  * - Connections: `{source}-{target}` (deterministic for deduplication)
  *
  * Note: Connection IDs do NOT have a `conn-` prefix to maintain compatibility
@@ -30,70 +30,81 @@ export type { NodeId, DatasetId, ConnectionId, ComponentId } from '../types/ids'
 export type ComponentType = 'node' | 'dataset' | 'connection';
 
 /**
+ * Generate a unique suffix for IDs.
+ * Uses crypto.randomUUID() for collision-free generation,
+ * with a timestamp+random fallback for environments without it.
+ */
+function uniqueSuffix(): string {
+  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+    return crypto.randomUUID();
+  }
+  return `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
+}
+
+/**
  * Generate a unique ID for a node
- * Uses timestamp for uniqueness within a session
  */
 export function generateNodeId(): NodeId {
-  return `node-${Date.now()}` as NodeId;
+  return `node-${uniqueSuffix()}` as NodeId;
 }
 
 /**
  * Generate a unique ID for a dataset
- * Uses timestamp for uniqueness within a session
  */
 export function generateDatasetId(): DatasetId {
-  return `dataset-${Date.now()}` as DatasetId;
+  return `dataset-${uniqueSuffix()}` as DatasetId;
 }
 
 /**
- * Generate a unique ID for a component (generic version)
- * Uses timestamp for uniqueness within a session
+ * Generate a unique ID for a component (generic version).
+ * Note: For connections, use generateConnectionId(source, target) instead.
  */
 export function generateId(type: 'node'): NodeId;
 export function generateId(type: 'dataset'): DatasetId;
 export function generateId(type: 'connection'): ConnectionId;
 export function generateId(type: ComponentType): string;
 export function generateId(type: ComponentType): string {
-  const timestamp = Date.now();
   switch (type) {
     case 'node':
-      return `node-${timestamp}`;
+      return `node-${uniqueSuffix()}`;
     case 'dataset':
-      return `dataset-${timestamp}`;
+      return `dataset-${uniqueSuffix()}`;
     case 'connection':
       // Connections require source/target - use generateConnectionId instead
-      // This case exists for type completeness but shouldn't be used
       throw new Error('Use generateConnectionId(source, target) for connection IDs');
     default:
-      return `${type}-${timestamp}`;
+      return `${type}-${uniqueSuffix()}`;
   }
 }
 
 /**
- * Generate a unique ID for copy/paste operations
- * Adds random suffix to avoid collisions when pasting multiple items quickly
+ * Generate a unique ID for copy/paste operations.
+ * Uses the same UUID-based generation as regular IDs.
  */
 export function generateCopyId(type: 'node'): NodeId;
 export function generateCopyId(type: 'dataset'): DatasetId;
 export function generateCopyId(type: 'node' | 'dataset'): string {
-  const timestamp = Date.now();
-  const random = Math.random().toString(36).slice(2, 11);
-  return `${type}-${timestamp}-${random}`;
+  return `${type}-${uniqueSuffix()}`;
 }
 
 /**
- * Generate a deterministic connection ID from source and target
- * This allows deduplication of connections
+ * Generate a deterministic connection ID from source and target.
+ * This allows deduplication of connections.
  *
- * Format: `{source}-{target}` (e.g., `node-123-dataset-456`)
- * Note: No `conn-` prefix for compatibility with existing persisted data.
+ * @param source - Source component ID
+ * @param target - Target component ID
+ * @returns Connection ID in format `{source}-{target}` (no `conn-` prefix)
  */
 export function generateConnectionId(source: string, target: string): ConnectionId {
   return `${source}-${target}` as ConnectionId;
 }
 
 /**
- * Parse a component ID to extract its type
+ * Parse a component ID to extract its type.
+ * Checks for node, dataset, or connection patterns in the ID string.
+ *
+ * @param id - Component ID to parse
+ * @returns Component type or null if unrecognized
  */
 export function parseIdType(id: string): ComponentType | null {
   // Check for connection first since it contains both node- and dataset-

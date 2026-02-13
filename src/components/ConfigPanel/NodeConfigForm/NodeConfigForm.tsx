@@ -1,16 +1,16 @@
 import { useForm } from 'react-hook-form';
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { useAppDispatch } from '../../../store/hooks';
-import { updateNode, deleteNode } from '../../../features/nodes/nodesSlice';
-import { clearPendingComponent } from '../../../features/ui/uiSlice';
-import type { KedroNode } from '../../../types/kedro';
+import { useAppDispatch } from '@/store/hooks';
+import { updateNode, deleteNode } from '@/features/nodes/nodesSlice';
+import { clearPendingComponent } from '@/features/ui/uiSlice';
+import type { KedroNode } from '@/types/kedro';
 import { Button } from '../../UI/Button/Button';
 import { Input } from '../../UI/Input/Input';
 import { ConfirmDialog } from '../../UI/ConfirmDialog';
-import { isPythonKeyword } from '../../../utils/validation';
-import { toSnakeCase } from '../../../infrastructure/export/helpers';
-import { useConfirmDialog } from '../../../hooks/useConfirmDialog';
-import { dispatchConfigUpdated } from '../../../constants';
+import { isPythonKeyword } from '@/utils/validation';
+import { toSnakeCase } from '@/infrastructure/export/helpers';
+import { useConfirmDialog } from '@/hooks/useConfirmDialog';
+import { dispatchConfigUpdated } from '@/constants';
 import './NodeConfigForm.scss';
 
 interface NodeFormData {

@@ -130,15 +130,7 @@ export interface KedroConnection {
   [key: string]: unknown;
 }
 
-export interface ValidationError {
-  id: string;
-  severity: 'error' | 'warning';
-  componentId: string;
-  componentType: 'node' | 'dataset' | 'connection' | 'pipeline';
-  field?: string;
-  message: string;
-  suggestion?: string;
-}
+// ValidationError is defined in utils/validation/types.ts (single canonical source)
 
 export interface ProjectMetadata {
   id: string;

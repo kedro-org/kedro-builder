@@ -3,11 +3,11 @@
  * Checks for nodes with no connections
  */
 
-import type { RootState } from '../../../types/redux';
-import type { KedroConnection } from '../../../types/kedro';
+import type { RootState } from '@/types/redux';
 import type { ValidationError } from '../types';
 import type { Validator } from './Validator';
-import { findOrphanedNodes } from '../../../domain/PipelineGraph';
+import { findOrphanedNodes } from '@/domain/PipelineGraph';
+import { getConnectionsArray } from './helpers';
 
 export class OrphanedNodeValidator implements Validator {
   readonly id = 'orphaned-node';
@@ -16,7 +16,7 @@ export class OrphanedNodeValidator implements Validator {
 
   validate(state: RootState): ValidationError[] {
     const warnings: ValidationError[] = [];
-    const connections = this.getConnectionsArray(state);
+    const connections = getConnectionsArray(state);
     const orphanedNodeIds = findOrphanedNodes(state.nodes.allIds, connections);
 
     orphanedNodeIds.forEach((nodeId) => {
@@ -32,9 +32,5 @@ export class OrphanedNodeValidator implements Validator {
     });
 
     return warnings;
-  }
-
-  private getConnectionsArray(state: RootState): KedroConnection[] {
-    return state.connections.allIds.map((id) => state.connections.byId[id]).filter(Boolean);
   }
 }

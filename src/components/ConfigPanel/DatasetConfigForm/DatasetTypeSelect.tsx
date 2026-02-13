@@ -1,8 +1,8 @@
 import React, { useMemo } from 'react';
-import { DATASET_TYPES } from '../../../constants/datasetTypes';
+import { DATASET_TYPES } from '@/constants/datasetTypes';
 import { SearchableSelect } from '../../common/SearchableSelect';
 import type { SearchableSelectOption } from '../../common/SearchableSelect';
-import type { DatasetType } from '../../../types/kedro';
+import type { DatasetType } from '@/types/kedro';
 
 interface DatasetTypeSelectProps {
   value: DatasetType;

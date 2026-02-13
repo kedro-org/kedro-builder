@@ -18,6 +18,7 @@ export interface ValidationError {
   severity: 'error' | 'warning';
   componentId: string;
   componentType: 'node' | 'dataset' | 'connection' | 'pipeline';
+  field?: string;
   message: string;
   suggestion?: string;
 }

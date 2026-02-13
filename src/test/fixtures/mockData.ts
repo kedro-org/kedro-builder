@@ -2,11 +2,11 @@ import type {
   KedroNode,
   KedroDataset,
   KedroConnection,
-  ValidationError,
   NodeType,
   DatasetType,
   DataLayer,
 } from '../../types/kedro';
+import type { ValidationError } from '../../utils/validation/types';
 
 // Mock Nodes
 export const mockNode1: KedroNode = {

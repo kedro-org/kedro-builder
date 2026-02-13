@@ -61,8 +61,6 @@ const uiSlice = createSlice({
       state.showTutorial = false;
       state.tutorialCompleted = true;
       state.tutorialStep = 1;
-      // Save to localStorage
-      localStorage.setItem('kedro_builder_tutorial_completed', 'true');
       // Auto-start walkthrough after tutorial
       state.showWalkthrough = true;
       state.walkthroughStep = 1;
@@ -93,13 +91,10 @@ const uiSlice = createSlice({
       state.showWalkthrough = false;
       state.walkthroughCompleted = true;
       state.walkthroughStep = 1;
-      // Save to localStorage
-      localStorage.setItem('kedro_builder_walkthrough_completed', 'true');
     },
     skipWalkthrough: (state) => {
       state.showWalkthrough = false;
       state.walkthroughCompleted = true;
-      localStorage.setItem('kedro_builder_walkthrough_completed', 'true');
     },
     reopenWalkthrough: (state) => {
       state.showWalkthrough = true;

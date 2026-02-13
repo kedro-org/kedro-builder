@@ -7,10 +7,19 @@ import {
   toSnakeCase,
   formatFunctionParams,
   indentCode,
+  getNodeInputDatasets,
+  getNodeOutputDatasets,
 } from './helpers';
 
 /**
- * Generate nodes.py content
+ * Generate Kedro nodes.py file content from pipeline nodes.
+ * Creates Python functions for each node with proper signatures and optional custom code.
+ *
+ * @param nodes - Pipeline nodes to generate functions for
+ * @param connections - Connections to determine inputs/outputs
+ * @param datasets - Dataset definitions by ID
+ * @param pipelineName - Name of the pipeline
+ * @returns Complete nodes.py file content as string
  */
 export function generateNodes(
   nodes: KedroNode[],
@@ -47,7 +56,8 @@ logger = logging.getLogger(__name__)
 }
 
 /**
- * Generate a single node function
+ * Generate a single node function.
+ * Uses custom code if provided, otherwise generates a template function.
  */
 function generateNodeFunction(
   node: KedroNode,
@@ -55,8 +65,8 @@ function generateNodeFunction(
   datasets: Record<string, KedroDataset>
 ): string {
   const funcName = toSnakeCase(node.name);
-  const inputs = getNodeInputs(node, connections, datasets);
-  const outputs = getNodeOutputs(node, connections, datasets);
+  const inputs = getNodeInputDatasets(node, connections, datasets);
+  const outputs = getNodeOutputDatasets(node, connections, datasets);
 
   // Use user's custom code if provided
   if (node.functionCode && node.functionCode.trim()) {
@@ -68,7 +78,8 @@ function generateNodeFunction(
 }
 
 /**
- * Extract function name from user's Python code
+ * Extract function name from user's Python code.
+ * Matches the function definition pattern and returns the name.
  */
 function extractFunctionName(code: string): string | null {
   const match = code.match(/def\s+([a-zA-Z_][a-zA-Z0-9_]*)\s*\(/);
@@ -76,7 +87,8 @@ function extractFunctionName(code: string): string | null {
 }
 
 /**
- * Generate function using user's custom code
+ * Generate function using user's custom code.
+ * Validates function name and wraps code in proper signature if needed.
  */
 function generateCustomFunction(
   funcName: string,
@@ -111,7 +123,8 @@ ${indentedCode}`;
 }
 
 /**
- * Generate template function with simple placeholder
+ * Generate template function with simple placeholder.
+ * Creates a function signature with pass statement for user to implement.
  */
 function generateTemplateFunction(
   funcName: string,
@@ -128,7 +141,8 @@ function generateTemplateFunction(
 }
 
 /**
- * Get return type hint based on number of outputs
+ * Get return type hint based on number of outputs.
+ * Returns None, pd.DataFrame, or Tuple[pd.DataFrame, ...].
  */
 function getReturnType(outputs: string[]): string {
   if (outputs.length === 0) return 'None';
@@ -136,48 +150,3 @@ function getReturnType(outputs: string[]): string {
   return `Tuple[${outputs.map(() => 'pd.DataFrame').join(', ')}]`;
 }
 
-/**
- * Get input datasets for a node
- */
-function getNodeInputs(
-  node: KedroNode,
-  connections: KedroConnection[],
-  datasets: Record<string, KedroDataset>
-): string[] {
-  const inputs: string[] = [];
-
-  connections.forEach((conn) => {
-    // Find connections where dataset -> node
-    if (conn.target === node.id && conn.source.startsWith('dataset-')) {
-      const dataset = datasets[conn.source];
-      if (dataset) {
-        inputs.push(dataset.name);
-      }
-    }
-  });
-
-  return inputs;
-}
-
-/**
- * Get output datasets for a node
- */
-function getNodeOutputs(
-  node: KedroNode,
-  connections: KedroConnection[],
-  datasets: Record<string, KedroDataset>
-): string[] {
-  const outputs: string[] = [];
-
-  connections.forEach((conn) => {
-    // Find connections where node -> dataset
-    if (conn.source === node.id && conn.target.startsWith('dataset-')) {
-      const dataset = datasets[conn.target];
-      if (dataset) {
-        outputs.push(dataset.name);
-      }
-    }
-  });
-
-  return outputs;
-}

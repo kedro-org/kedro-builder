@@ -2,8 +2,16 @@
  * Generate file tree structure for code viewer
  */
 
-import type { RootState } from '../types/redux';
+import type { KedroProject, KedroNode, KedroDataset, KedroConnection } from '../types/kedro';
 import type { ProjectMetadata } from '../infrastructure/export/staticFilesGenerator';
+
+/** Narrow input for generateFileTree — only the slices it actually reads */
+export interface FileTreeInput {
+  project: { current: KedroProject | null };
+  nodes: { byId: Record<string, KedroNode>; allIds: string[] };
+  datasets: { byId: Record<string, KedroDataset>; allIds: string[] };
+  connections: { byId: Record<string, KedroConnection>; allIds: string[] };
+}
 
 import { generateCatalog } from '../infrastructure/export/catalogGenerator';
 import { generateNodes } from '../infrastructure/export/nodesGenerator';
@@ -36,7 +44,7 @@ export interface FileNode {
  * Generate complete file tree from Redux state
  * Only includes files with content (not empty folders)
  */
-export function generateFileTree(state: RootState): FileNode {
+export function generateFileTree(state: FileTreeInput): FileNode {
   const project = state.project.current;
   if (!project) {
     throw new Error('No active project');

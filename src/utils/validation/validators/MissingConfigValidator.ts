@@ -3,7 +3,7 @@
  * Checks for datasets with missing configuration
  */
 
-import type { RootState } from '../../../types/redux';
+import type { RootState } from '@/types/redux';
 import type { ValidationError } from '../types';
 import type { Validator } from './Validator';
 

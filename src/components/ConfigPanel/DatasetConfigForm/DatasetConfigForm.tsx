@@ -1,18 +1,18 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useForm } from 'react-hook-form';
-import { useAppDispatch } from '../../../store/hooks';
-import { updateDataset, deleteDataset } from '../../../features/datasets/datasetsSlice';
-import { clearPendingComponent } from '../../../features/ui/uiSlice';
-import type { KedroDataset, DatasetType } from '../../../types/kedro';
+import { useAppDispatch } from '@/store/hooks';
+import { updateDataset, deleteDataset } from '@/features/datasets/datasetsSlice';
+import { clearPendingComponent } from '@/features/ui/uiSlice';
+import type { KedroDataset, DatasetType } from '@/types/kedro';
 import { Button } from '../../UI/Button/Button';
 import { Input } from '../../UI/Input/Input';
 import { FilepathBuilder } from '../../UI/FilepathBuilder/FilepathBuilder';
 import { ConfirmDialog } from '../../UI/ConfirmDialog';
 import { DatasetTypeSelect } from './DatasetTypeSelect';
 import { useFilepathBuilder } from './hooks/useFilepathBuilder';
-import { isPythonKeyword } from '../../../utils/validation';
-import { useConfirmDialog } from '../../../hooks/useConfirmDialog';
-import { dispatchConfigUpdated } from '../../../constants';
+import { isPythonKeyword } from '@/utils/validation';
+import { useConfirmDialog } from '@/hooks/useConfirmDialog';
+import { dispatchConfigUpdated } from '@/constants';
 import './DatasetConfigForm.scss';
 
 // Map dataset types to their expected file extensions

@@ -17,8 +17,8 @@ class Logger {
   private level: LogLevel;
 
   constructor() {
-    // Default to INFO in production, DEBUG in development
-    this.level = import.meta.env.PROD ? LogLevel.INFO : LogLevel.DEBUG;
+    // Default to WARN in production, DEBUG in development
+    this.level = import.meta.env.PROD ? LogLevel.WARN : LogLevel.DEBUG;
   }
 
   /**

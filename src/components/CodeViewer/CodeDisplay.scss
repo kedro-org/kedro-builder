@@ -83,16 +83,8 @@
     }
   }
 
-  // Theme-specific highlight.js overrides
-  &[data-theme="light"] {
-    .hljs {
-      background: transparent;
-    }
-  }
-
-  &[data-theme="dark"] {
-    .hljs {
-      background: transparent;
-    }
+  // Override highlight.js theme backgrounds so our container bg shows through
+  .hljs {
+    background: transparent;
   }
 }

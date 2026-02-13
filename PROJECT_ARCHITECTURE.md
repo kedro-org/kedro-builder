@@ -30,11 +30,12 @@ Enable Kedro newcomers and data practitioners to build production-ready pipeline
 | Runtime | React `19.1.1`, TypeScript `~5.9.3`, Vite `5.4.8` | Strict TS, fast dev feedback |
 | State | Redux Toolkit `^2.9.0`, React-Redux | Normalized graph slices + UI slices |
 | Canvas | `@xyflow/react` (ReactFlow) `^12.8.6` | Custom nodes, edges, selection tooling |
-| UI | Radix UI primitives, Lucide icons, SCSS modules | BEM-style modules with theme variables |
+| UI | Radix UI primitives, Lucide icons, SCSS | BEM conventions with CSS custom properties for theming |
 | Forms | React Hook Form `^7.65.0` | Efficient form state for config panels |
-| Export | JSZip `^3.10.1`, YAML/Handlebars-free TS templates | Pure TypeScript string templates; downloads via browser APIs |
+| Syntax Highlighting | highlight.js (locally bundled CSS) | Theme-aware code preview; no CDN dependency |
+| Export | JSZip `^3.10.1`, TypeScript string templates | Pure TS templates; downloads via browser APIs |
 | Feedback | react-hot-toast | Validation/export notifications |
-| Testing | Vitest `^4.0.5`, Testing Library | Slice + generator unit tests |
+| Testing | Vitest `^4.0.5`, Testing Library | Unit, contract, and integration tests |
 
 Node.js `18.20.1` and npm `10+` are recommended for parity with local dev scripts.
 
@@ -45,8 +46,8 @@ Node.js `18.20.1` and npm `10+` are recommended for parity with local dev script
 1. **Normalized Redux Store**
    Nodes, datasets, and connections follow the `{ byId, allIds }` pattern. This keeps lookups O(1), simplifies serialization, and reduces ReactFlow reconciliation cost.
 
-2. **ID Prefix Strategy**
-   Generated IDs use `node-*`, `dataset-*`, and `connection-*`. Components infer entity type without extra metadata which streamlines selection, deletion, and validation. Type guards (`isNodeId()`, `isDatasetId()`) provide runtime safety.
+2. **ID Prefix Strategy with UUID Generation**
+   IDs use `node-{uuid}`, `dataset-{uuid}` (via `crypto.randomUUID()` with fallback), and deterministic `{source}-{target}` for connections. Components infer entity type from prefixes, streamlining selection, deletion, and validation. Type guards (`isNodeId()`, `isDatasetId()`) provide runtime safety.
 
 3. **On-Demand Validation**
    Validation runs when users open the code viewer/export wizard or when config changes during an export session. This avoids noisy real-time errors while keeping the export flow safe.
@@ -225,16 +226,13 @@ flowchart TD
     GetState --> ExtractEdges[Extract Edges Array]
     
     ExtractNodes --> ProcessNodes[Process Node Data]
-    ProcessNodes --> NodeTemplate[Load Node Template]
-    NodeTemplate --> GenerateFunctions[Generate Python Functions]
-    
+    ProcessNodes --> GenerateFunctions[nodesGenerator: Generate nodes.py]
+
     ExtractDatasets --> ProcessDatasets[Process Dataset Data]
-    ProcessDatasets --> DatasetTemplate[Load Dataset Template]
-    DatasetTemplate --> GenerateCatalog[Generate catalog.yml]
-    
+    ProcessDatasets --> GenerateCatalog[catalogGenerator: Generate catalog.yml]
+
     ExtractEdges --> ProcessEdges[Process Edge Data]
-    ProcessEdges --> PipelineTemplate[Load Pipeline Template]
-    PipelineTemplate --> GeneratePipeline[Generate pipeline.py]
+    ProcessEdges --> GeneratePipeline[pipelineGenerator: Generate pipeline.py]
     
     GenerateFunctions --> CombineCode[Combine Python Code]
     GenerateCatalog --> CombineYAML[Combine YAML Config]
@@ -298,28 +296,30 @@ Kedro Builder uses **Redux Toolkit** with a **normalized state structure** for e
    - Simplified ReactFlow reconciliation
 
 5. **ID Prefix Strategy**
-   - `node-*`: Function nodes
-   - `dataset-*`: Dataset nodes
-   - `connection-*`: Edges between nodes and datasets
+   - `node-{uuid}`: Function nodes (via `crypto.randomUUID()`)
+   - `dataset-{uuid}`: Dataset nodes (via `crypto.randomUUID()`)
+   - `{source}-{target}`: Connection edges (deterministic, no `conn-` prefix)
+
 ---
 
 ## Validation & Export Implementation
 
 - **Pipeline Validation (`src/utils/validation/`)**
-  Modular validator classes following the Strategy pattern. Each validator (CircularDependency, DuplicateName, EmptyName, InvalidName, OrphanedNode, OrphanedDataset, MissingCode, MissingConfig) implements a common interface. The `PipelineGraph` domain service handles DFS-based cycle detection by converting dataset connections into node-to-node edges.
+  Modular validator classes following the Strategy pattern. Each validator (CircularDependency, DuplicateName, EmptyName, InvalidName, OrphanedNode, OrphanedDataset, MissingCode, MissingConfig) implements a common `Validator` interface. The `ValidatorRegistry` exposes three methods: `register`, `getAll`, and `validateAll`. Shared helpers like `getConnectionsArray` are extracted to `validators/helpers.ts`. The `PipelineGraph` domain service handles DFS-based cycle detection by converting dataset connections into node-to-node edges.
 
 - **Input Validation (`src/utils/validation/inputValidation.ts`)**
-  Real-time validation for node/dataset names with snake_case enforcement, Python keyword detection, and length limits.
+  Real-time validation for node/dataset names. Node names allow letters, numbers, underscores, and spaces (`/^[a-zA-Z][a-zA-Z0-9_\s]*$/`). Dataset names require strict snake_case (`/^[a-z][a-z0-9_]*$/`). Both check for Python keyword collisions, length limits, and duplicate names.
 
 - **Export Flow (`src/components/App/hooks/useValidation.ts`)**
-  `handleViewCode` and `handleExport` both run validation. The export wizard consumes `ValidationResult` state; when users confirm, `generateKedroProject` collects graph data and writes:
-  - `pyproject.toml`, `.gitignore`, `README.md`
-  - `conf/base` (catalog, logging, parameters) and `conf/local/credentials.yml`
-  - `src/<package>/` pipelines (`nodes.py`, `pipeline.py`, registry, settings)
-  - Data layer directories with `.gitkeep` placeholders.
+  `handleViewCode` and `handleExport` both run validation and store results in Redux. When the export wizard opens, it reads validation results from Redux state (avoiding redundant re-validation). When users confirm, `generateKedroProject` (in `KedroProjectBuilder.ts`) uses the Builder pattern to assemble:
+  - `pyproject.toml`, `.gitignore`, `README.md`, `.telemetry`
+  - `conf/base/` (catalog.yml, parameters.yml) and `conf/local/credentials.yml`
+  - `src/<package>/__init__.py`, `__main__.py`, `settings.py`, `pipeline_registry.py`
+  - `src/<package>/pipelines/<name>/` (`__init__.py`, `nodes.py`, `pipeline.py`)
+  - `data/` directories (8 Kedro layers) and `logs/` with `.gitkeep` placeholders.
 
 - **Code Generation (`src/infrastructure/export/`)**
-  TypeScript modules compose Kedro files directly without external template engines. Includes generators for catalog, nodes, pipeline, pyproject, registry, and static files.
+  TypeScript modules compose Kedro files directly without external template engines. `KedroProjectBuilder` is the sole source of truth for project assembly (the old procedural `projectGenerator.ts` was removed). Includes generators for catalog, nodes, pipeline, pyproject, registry, and static files (including `__main__.py`).
 
 - **Download**
   The zip is generated client-side via JSZip and downloaded using a temporary `<a>` element with an object URL.
@@ -336,18 +336,25 @@ kedro-builder/
 │   │   ├── PipelineGraph.ts     # Graph building, cycle detection, orphan finding
 │   │   └── index.ts             # Barrel exports
 │   ├── infrastructure/          # External service integrations
-│   │   ├── export/              # Kedro project generators + tests
+│   │   ├── export/              # Kedro project code generation (sole source of truth)
+│   │   │   ├── KedroProjectBuilder.ts  # Builder pattern: ZIP assembly + download
+│   │   │   ├── staticFilesGenerator.ts # __init__.py, __main__.py, README, .gitignore
+│   │   │   └── helpers.ts       # Shared export utilities (snake_case, formatting)
 │   │   ├── localStorage/        # Persistence with validation & graceful degradation
-│   │   └── telemetry/           # Heap analytics integration
+│   │   └── telemetry/           # Heap analytics (uses centralized STORAGE_KEYS)
 │   ├── components/
 │   │   ├── App/                 # Shell, layout, validation hooks
-│   │   ├── Canvas/              # ReactFlow integration, overlays, handlers
-│   │   ├── CodeViewer/          # File tree + syntax-highlighted preview
+│   │   ├── Canvas/              # ReactFlow integration, overlays, 9 canvas hooks
+│   │   ├── CodeViewer/          # File tree + syntax-highlighted preview (local highlight.js)
 │   │   ├── ConfigPanel/         # Node & dataset configuration forms
 │   │   ├── ExportWizard/        # Validation step + metadata confirmation
 │   │   ├── Palette/             # Drag sources for nodes/datasets
 │   │   ├── ProjectSetup/        # Project creation/edit modal
 │   │   ├── Tutorial/            # Onboarding modal
+│   │   ├── Walkthrough/         # Contextual walkthrough overlay
+│   │   ├── Settings/            # Settings modal
+│   │   ├── Feedback/            # Feedback button + modal
+│   │   ├── TelemetryConsent/    # Analytics consent banner
 │   │   ├── UI/                  # Buttons, inputs, theme toggle, ErrorBoundary
 │   │   └── ValidationPanel/     # Issue list surfaced from validation slice
 │   ├── features/                # Redux slices per domain
@@ -364,23 +371,30 @@ kedro-builder/
 │   │   ├── useClearSelections.ts # Clear all selections
 │   │   ├── useSelectAndOpenConfig.ts # Select + open config panel
 │   │   └── useTelemetry.ts      # Telemetry tracking hook
+│   │   # Canvas-specific hooks in components/Canvas/hooks/:
+│   │   #   useDeleteItems.ts    # Shared delete logic for nodes/datasets/edges
 │   ├── store/                   # Store configuration, typed hooks, middleware
 │   ├── utils/
 │   │   ├── validation/          # Validator classes (Strategy pattern)
-│   │   │   ├── validators/      # Individual validators
+│   │   │   ├── validators/      # Individual validators + shared helpers
 │   │   │   ├── inputValidation.ts  # Real-time input validation
-│   │   │   └── pipelineValidation.ts
-│   │   ├── logger.ts
+│   │   │   ├── pipelineValidation.ts  # ValidatorRegistry wrapper
+│   │   │   └── types.ts         # Canonical ValidationError type
+│   │   ├── fileTreeGenerator.ts # Code viewer file tree (FileTreeInput interface)
+│   │   ├── logger.ts            # Centralized logger (WARN in prod, DEBUG in dev)
 │   │   └── filepath.ts
 │   ├── styles/                  # Global styles & variables
 │   ├── types/                   # Domain and Redux typings
 │   │   └── ids.ts               # Branded ID types (NodeId, DatasetId, ConnectionId)
-│   ├── constants/               # Timing, layout, etc.
+│   ├── constants/               # Timing, layout, storage keys, dataset types, events
 │   └── main.tsx                 # App entry point
-├── public/                      # Static assets
+├── public/
+│   └── hljs/                    # Locally bundled highlight.js CSS themes
 ├── README.md                    # Quick start & usage
 ├── PROJECT_ARCHITECTURE.md      # This document
-├── REFACTORING_PLAN.md          # Refactoring phases and progress
+├── REVIEW_GUIDE.md              # Structured code review plan (14 phases)
+├── CONTRIBUTING.md              # Setup, code standards, PR guidelines
+├── CHANGELOG.md                 # Keep a Changelog format
 └── package.json / tsconfig / vite.config.ts
 ```
 
@@ -390,14 +404,26 @@ kedro-builder/
 
 ### Centralized ID Generation (src/domain/IdGenerator.ts)
 ```typescript
-// Type-safe ID generation with runtime guards
-export const generateId = (type: 'node' | 'dataset' | 'connection'): string => {
-  const timestamp = Date.now();
-  return `${type}-${timestamp}`;
-};
+// UUID-based ID generation with type-safe overloads
+function uniqueSuffix(): string {
+  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+    return crypto.randomUUID();
+  }
+  return `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`; // fallback
+}
 
-export const isNodeId = (id: string): boolean => id.startsWith('node-');
-export const isDatasetId = (id: string): boolean => id.startsWith('dataset-');
+export function generateNodeId(): NodeId {
+  return `node-${uniqueSuffix()}` as NodeId;
+}
+
+export function generateDatasetId(): DatasetId {
+  return `dataset-${uniqueSuffix()}` as DatasetId;
+}
+
+// Deterministic connection IDs for deduplication
+export function generateConnectionId(source: string, target: string): ConnectionId {
+  return `${source}-${target}` as ConnectionId;
+}
 ```
 
 ### Branded ID Types (src/types/ids.ts)
@@ -436,30 +462,37 @@ export const autoSaveMiddleware: Middleware<{}, RootState> = store => next => ac
 
 ### Optimized Selectors with Set-based Lookups (src/features/canvas/canvasSelectors.ts)
 ```typescript
-// Combined selector reduces 6 calls to 1, Set provides O(1) selection checks
-export const selectCanvasState = createSelector(
-  [selectAllNodes, selectAllDatasets, selectSelectedNodeIds, selectSelectedDatasetIds],
-  (nodes, datasets, selectedNodeIds, selectedDatasetIds) => ({
+// Combined selector with Set provides O(1) selection checks
+// Theme is selected separately to avoid invalidating node/edge memoization on toggle
+export const selectCanvasData = createSelector(
+  [selectAllNodes, selectAllDatasets, selectSelectedNodeIds, selectSelectedEdgeIds],
+  (nodes, datasets, selectedNodeIds, selectedEdgeIds) => ({
     nodes,
     datasets,
     selectedNodeIdsSet: new Set(selectedNodeIds),
-    selectedDatasetIdsSet: new Set(selectedDatasetIds),
+    selectedEdgeIdsSet: new Set(selectedEdgeIds),
   })
 );
 ```
 
 ### Input Validation (src/utils/validation/inputValidation.ts)
 ```typescript
-export const validateNodeName = (name: string): ValidationResult => {
-  if (!name.trim()) return { valid: false, error: 'Name is required' };
-  if (!/^[a-z][a-z0-9_]*$/.test(name)) {
-    return { valid: false, error: 'Must be snake_case starting with lowercase letter' };
-  }
-  if (PYTHON_KEYWORDS.has(name)) {
-    return { valid: false, error: 'Cannot use Python keyword as name' };
-  }
-  return { valid: true };
-};
+// Node names: allow letters, numbers, underscores, spaces (more permissive)
+const NODE_NAME_PATTERN = /^[a-zA-Z][a-zA-Z0-9_\s]*$/;
+// Dataset names: strict snake_case only
+const DATASET_NAME_PATTERN = /^[a-z][a-z0-9_]*$/;
+
+export function validateNodeName(name: string, existingNames?: Set<string>): InputValidationResult {
+  if (!trimmed) return { isValid: false, errorMessage: 'Name is required' };
+  if (!NODE_NAME_PATTERN.test(trimmed)) { /* error */ }
+  if (isPythonKeyword(trimmed)) { /* error */ }
+  if (existingNames?.has(trimmed.toLowerCase())) { /* duplicate error */ }
+  return { isValid: true };
+}
+
+export function validateDatasetName(name: string, existingNames?: Set<string>): InputValidationResult {
+  // Same structure but uses DATASET_NAME_PATTERN (strict snake_case)
+}
 ```
 
 ### Error Boundary Usage (src/components/App/AppLayout.tsx)
@@ -473,10 +506,24 @@ export const validateNodeName = (name: string): ValidationResult => {
 
 ## Testing Strategy
 
+**340 tests** across 18 test files, **64%+ coverage** (all refactored code 95-100%).
+
 - **Unit Tests (Vitest + Testing Library)**
-  - Validation helper tests (`validation.test.ts`)
-  - Export generator tests (`catalogGenerator.test.ts`, `nodesGenerator.test.ts`, `pipelineGenerator.test.ts`, `helpers.test.ts`)
-  - Slice reducer tests covering node/dataset/connection mutations
+  - Custom hooks tests (`hooks/hooks.test.tsx` — 12 tests)
+  - Domain logic tests (`domain/PipelineGraph.test.ts` — 27 tests)
+  - Validator class tests (`validators/validators.test.ts` — 41 tests)
+  - Export generator tests (`catalogGenerator.test.ts` — 33, `nodesGenerator.test.ts` — 19, `pipelineGenerator.test.ts` — 10, `helpers.test.ts` — 41)
+  - Utility tests (`filepath.test.ts` — 23 tests, `fileTreeGenerator.test.ts` — 21 tests)
+  - Slice reducer tests covering node/dataset/connection mutations (14 each)
+
+- **Integration Tests**
+  - Pipeline create → connect → export flow
+  - Pipeline create → validate flow
+
+- **Contract Tests**
+  - ID format contracts (`idFormats.contracts.test.ts`)
+  - localStorage key contracts (`localStorage.contracts.test.ts`)
+  - Event name contracts (`events.contracts.test.ts`)
 
 - **Test Infrastructure**
   - Mock store utilities (`src/test/utils/mockStore.ts`)
@@ -485,9 +532,10 @@ export const validateNodeName = (name: string): ValidationResult => {
 
 - **Coverage Areas**
   - Domain logic (ID generation, graph operations)
-  - Validation rules (all validator classes)
+  - Validation rules (all 8 validator classes)
   - Code generation (all Kedro file generators)
   - Redux slice reducers
+  - Custom hooks (100% coverage)
 
 ---
 

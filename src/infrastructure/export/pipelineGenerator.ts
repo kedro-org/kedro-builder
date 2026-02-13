@@ -3,10 +3,17 @@
  */
 
 import type { KedroNode, KedroDataset, KedroConnection } from '../../types/kedro';
-import { toSnakeCase, formatNodeInputs, formatNodeOutputs } from './helpers';
+import { toSnakeCase, formatNodeInputs, formatNodeOutputs, getNodeInputDatasets, getNodeOutputDatasets } from './helpers';
 
 /**
- * Generate pipeline.py content
+ * Generate Kedro pipeline.py file content from pipeline structure.
+ * Creates a complete Python module with imports and node definitions.
+ *
+ * @param nodes - Pipeline nodes to include
+ * @param connections - Connections between nodes and datasets
+ * @param datasets - Dataset definitions by ID
+ * @param pipelineName - Name of the pipeline
+ * @returns Complete pipeline.py file content as string
  */
 export function generatePipeline(
   nodes: KedroNode[],
@@ -36,7 +43,7 @@ This module defines the structure of your pipeline by connecting nodes
 with their input and output datasets.
 """
 
-from kedro.pipeline import Node, Pipeline${imports ? '\n' : ''}${imports ? `from .nodes import ${imports}` : ''}
+from kedro.pipeline import node, Pipeline${imports ? '\n' : ''}${imports ? `from .nodes import ${imports}` : ''}
 
 
 def create_pipeline(**kwargs) -> Pipeline:
@@ -55,7 +62,8 @@ ${nodesStr}
 }
 
 /**
- * Generate a single node definition for the pipeline
+ * Generate a single node definition for the pipeline.
+ * Creates the Kedro node() call with func, inputs, outputs, and name.
  */
 function generateNodeDefinition(
   node: KedroNode,
@@ -69,55 +77,11 @@ function generateNodeDefinition(
   const inputsStr = formatNodeInputs(inputs);
   const outputsStr = formatNodeOutputs(outputs);
 
-  return `Node(
+  return `node(
                 func=${funcName},
                 inputs=${inputsStr},
                 outputs=${outputsStr},
+                name="${funcName}_node",
             )`;
 }
 
-/**
- * Get input dataset names for a node
- */
-function getNodeInputDatasets(
-  node: KedroNode,
-  connections: KedroConnection[],
-  datasets: Record<string, KedroDataset>
-): string[] {
-  const inputs: string[] = [];
-
-  connections.forEach((conn) => {
-    // Find connections where dataset -> node
-    if (conn.target === node.id && conn.source.startsWith('dataset-')) {
-      const dataset = datasets[conn.source];
-      if (dataset) {
-        inputs.push(dataset.name);
-      }
-    }
-  });
-
-  return inputs;
-}
-
-/**
- * Get output dataset names for a node
- */
-function getNodeOutputDatasets(
-  node: KedroNode,
-  connections: KedroConnection[],
-  datasets: Record<string, KedroDataset>
-): string[] {
-  const outputs: string[] = [];
-
-  connections.forEach((conn) => {
-    // Find connections where node -> dataset
-    if (conn.source === node.id && conn.target.startsWith('dataset-')) {
-      const dataset = datasets[conn.target];
-      if (dataset) {
-        outputs.push(dataset.name);
-      }
-    }
-  });
-
-  return outputs;
-}

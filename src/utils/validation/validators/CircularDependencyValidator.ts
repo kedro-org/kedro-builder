@@ -3,11 +3,11 @@
  * Detects cycles in the pipeline graph
  */
 
-import type { RootState } from '../../../types/redux';
-import type { KedroConnection } from '../../../types/kedro';
+import type { RootState } from '@/types/redux';
 import type { ValidationError } from '../types';
 import type { Validator } from './Validator';
-import { buildDependencyGraph, detectCycles } from '../../../domain/PipelineGraph';
+import { buildDependencyGraph, detectCycles } from '@/domain/PipelineGraph';
+import { getConnectionsArray } from './helpers';
 
 export class CircularDependencyValidator implements Validator {
   readonly id = 'circular-dependency';
@@ -16,7 +16,7 @@ export class CircularDependencyValidator implements Validator {
 
   validate(state: RootState): ValidationError[] {
     const errors: ValidationError[] = [];
-    const connections = this.getConnectionsArray(state);
+    const connections = getConnectionsArray(state);
     const graph = buildDependencyGraph(state.nodes.allIds, connections);
     const cycles = detectCycles(graph);
 
@@ -39,9 +39,5 @@ export class CircularDependencyValidator implements Validator {
     });
 
     return errors;
-  }
-
-  private getConnectionsArray(state: RootState): KedroConnection[] {
-    return state.connections.allIds.map((id) => state.connections.byId[id]).filter(Boolean);
   }
 }

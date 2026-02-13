@@ -73,13 +73,13 @@ const nodesSlice = createSlice({
       }
     },
     deleteNodes: (state, action: PayloadAction<string[]>) => {
-      const ids = action.payload;
-      ids.forEach((id) => {
+      const idsToDelete = new Set(action.payload);
+      idsToDelete.forEach((id) => {
         delete state.byId[id];
-        state.allIds = state.allIds.filter((nodeId) => nodeId !== id);
-        state.selected = state.selected.filter((nodeId) => nodeId !== id);
       });
-      if (ids.includes(state.hovered || '')) {
+      state.allIds = state.allIds.filter((nodeId) => !idsToDelete.has(nodeId));
+      state.selected = state.selected.filter((nodeId) => !idsToDelete.has(nodeId));
+      if (state.hovered && idsToDelete.has(state.hovered)) {
         state.hovered = null;
       }
     },

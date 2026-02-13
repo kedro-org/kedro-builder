@@ -1,7 +1,7 @@
 import React from 'react';
 import { FileText, FileJson, Table, Archive, HardDrive, Server } from 'lucide-react';
-import type { DatasetType } from '../../../types/kedro';
-import { DND_TYPES } from '../../../constants';
+import type { DatasetType } from '@/types/kedro';
+import { DND_TYPES } from '@/constants';
 import './DatasetCard.scss';
 
 interface DatasetCardProps {

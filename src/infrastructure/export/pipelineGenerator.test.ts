@@ -11,7 +11,7 @@ describe('pipelineGenerator', () => {
       const result = generatePipeline([], [], {}, 'test_pipeline');
 
       expect(result).toContain('Pipeline definition for test_pipeline pipeline');
-      expect(result).toContain('from kedro.pipeline import Node, Pipeline');
+      expect(result).toContain('from kedro.pipeline import node, Pipeline');
       expect(result).not.toContain('from .nodes import');
       expect(result).toContain('def create_pipeline(**kwargs) -> Pipeline:');
       expect(result).toContain('return Pipeline(');
@@ -42,7 +42,7 @@ describe('pipelineGenerator', () => {
       const result = generatePipeline(nodes, connections, datasets, 'test');
 
       expect(result).toContain('from .nodes import process_data');
-      expect(result).toContain('Node(');
+      expect(result).toContain('node(');
       expect(result).toContain('func=process_data');
       expect(result).toContain('inputs="raw_data"');
       expect(result).toContain('outputs="processed_data"');

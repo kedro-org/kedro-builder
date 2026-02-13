@@ -65,12 +65,12 @@ const datasetsSlice = createSlice({
       state.selected = state.selected.filter((datasetId) => datasetId !== id);
     },
     deleteDatasets: (state, action: PayloadAction<string[]>) => {
-      const ids = action.payload;
-      ids.forEach((id) => {
+      const idsToDelete = new Set(action.payload);
+      idsToDelete.forEach((id) => {
         delete state.byId[id];
-        state.allIds = state.allIds.filter((datasetId) => datasetId !== id);
-        state.selected = state.selected.filter((datasetId) => datasetId !== id);
       });
+      state.allIds = state.allIds.filter((datasetId) => !idsToDelete.has(datasetId));
+      state.selected = state.selected.filter((datasetId) => !idsToDelete.has(datasetId));
     },
     selectDataset: (state, action: PayloadAction<string>) => {
       // Single selection - replace all

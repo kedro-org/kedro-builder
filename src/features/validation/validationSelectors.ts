@@ -2,29 +2,11 @@ import { createSelector } from '@reduxjs/toolkit';
 import type { RootState } from '../../store';
 import type { ValidationError } from '../../utils/validation';
 
-// Base selectors (not memoized - simple property access)
+// Plain selectors — no memoization needed for simple property access
 const selectValidationErrors = (state: RootState) => state.validation.errors;
 const selectValidationWarnings = (state: RootState) => state.validation.warnings;
 const selectValidationIsValid = (state: RootState) => state.validation.isValid;
 const selectValidationLastChecked = (state: RootState) => state.validation.lastChecked;
-
-// Memoized selectors
-
-/**
- * Select all validation errors
- */
-export const selectAllErrors = createSelector(
-  [selectValidationErrors],
-  (errors) => errors
-);
-
-/**
- * Select all validation warnings
- */
-export const selectAllWarnings = createSelector(
-  [selectValidationWarnings],
-  (warnings) => warnings
-);
 
 /**
  * Select validation summary with computed properties
@@ -115,34 +97,3 @@ export const selectDatasetValidationStatus = createSelector(
   }
 );
 
-/**
- * Select all errors for nodes only
- */
-export const selectNodeErrors = createSelector(
-  [selectValidationErrors],
-  (errors) => errors.filter((e) => e.componentType === 'node')
-);
-
-/**
- * Select all errors for datasets only
- */
-export const selectDatasetErrors = createSelector(
-  [selectValidationErrors],
-  (errors) => errors.filter((e) => e.componentType === 'dataset')
-);
-
-/**
- * Select all warnings for nodes only
- */
-export const selectNodeWarnings = createSelector(
-  [selectValidationWarnings],
-  (warnings) => warnings.filter((w) => w.componentType === 'node')
-);
-
-/**
- * Select all warnings for datasets only
- */
-export const selectDatasetWarnings = createSelector(
-  [selectValidationWarnings],
-  (warnings) => warnings.filter((w) => w.componentType === 'dataset')
-);

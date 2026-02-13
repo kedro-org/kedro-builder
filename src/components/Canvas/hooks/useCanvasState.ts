@@ -1,12 +1,12 @@
 import { useState, useMemo, useCallback, useLayoutEffect } from 'react';
 import { useNodesState, useEdgesState } from '@xyflow/react';
 import type { Node } from '@xyflow/react';
-import { useAppSelector } from '../../../store/hooks';
+import { useAppSelector } from '@/store/hooks';
 import {
-  selectCanvasDataWithSets,
+  selectCanvasData,
   selectSelectionType,
   selectTotalSelected,
-} from '../../../features/canvas/canvasSelectors';
+} from '@/features/canvas/canvasSelectors';
 
 // Constants for edge styling (extracted to prevent recreation)
 const MARKER_END_DEFAULT = {
@@ -48,7 +48,7 @@ const NODE_COLOR_MAP = {
  * Custom hook to manage canvas state including nodes, edges, and UI states
  */
 export const useCanvasState = () => {
-  // Get data from Redux using combined selector for better performance
+  // Get pipeline data from Redux (theme excluded to avoid unnecessary invalidation)
   const {
     nodes: reduxNodes,
     datasets: reduxDatasets,
@@ -57,8 +57,7 @@ export const useCanvasState = () => {
     selectedEdgeIds,
     selectedNodeIdsSet,
     selectedEdgeIdsSet,
-    theme,
-  } = useAppSelector(selectCanvasDataWithSets);
+  } = useAppSelector(selectCanvasData);
 
   // Use memoized selectors for computed values
   const selectionType = useAppSelector(selectSelectionType);
@@ -159,7 +158,6 @@ export const useCanvasState = () => {
     reduxDatasets,
     selectedNodeIds,
     selectedEdgeIds,
-    theme,
 
     // Canvas state
     isEmpty,

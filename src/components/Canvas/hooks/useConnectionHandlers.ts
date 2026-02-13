@@ -1,14 +1,14 @@
 import { useCallback, useRef } from 'react';
 import { addEdge } from '@xyflow/react';
 import type { Connection, Edge, Node, OnConnect } from '@xyflow/react';
-import { useAppDispatch } from '../../../store/hooks';
-import { addConnection } from '../../../features/connections/connectionsSlice';
-import { store } from '../../../store';
+import { useAppDispatch, useAppSelector } from '@/store/hooks';
+import { addConnection } from '@/features/connections/connectionsSlice';
+import { selectAllConnections } from '@/features/connections/connectionsSelectors';
 import toast from 'react-hot-toast';
 import { wouldCreateCycle } from './utils/cycleDetection';
 import { useGhostPreview } from './useGhostPreview';
 import { useDragToCreate } from './useDragToCreate';
-import { isNodeId, isDatasetId, generateConnectionId } from '../../../domain';
+import { isNodeId, isDatasetId, generateConnectionId } from '@/domain';
 
 // Re-export GhostPreviewState for backwards compatibility
 export type { GhostPreviewState } from './useGhostPreview';
@@ -50,6 +50,8 @@ export const useConnectionHandlers = ({
   setConnectionState,
 }: ConnectionHandlersProps) => {
   const dispatch = useAppDispatch();
+  const existingConnections = useAppSelector(selectAllConnections);
+  const nodeIds = useAppSelector((s) => s.nodes.allIds);
 
   // Track when a connection is made via onConnect to prevent duplicate component creation
   const connectionMadeRef = useRef(false);
@@ -149,14 +151,8 @@ export const useConnectionHandlers = ({
     (connection) => {
       if (!connection.source || !connection.target) return;
 
-      // Get current state
-      const state = store.getState();
-      const existingConnections = state.connections.allIds.map((id) => state.connections.byId[id]);
-      const nodeIds = state.nodes.allIds;
-      const datasetIds = state.datasets.allIds;
-
-      // Check for cycles
-      if (wouldCreateCycle(connection.source, connection.target, existingConnections, nodeIds, datasetIds)) {
+      // Check for cycles using Redux-subscribed state
+      if (wouldCreateCycle(connection.source, connection.target, existingConnections, nodeIds)) {
         toast.error('Cannot create connection: This would create a circular dependency', {
           duration: 4000,
           position: 'bottom-right',
@@ -196,7 +192,7 @@ export const useConnectionHandlers = ({
         })
       );
     },
-    [setEdges, dispatch]
+    [setEdges, dispatch, existingConnections, nodeIds]
   );
 
   return {

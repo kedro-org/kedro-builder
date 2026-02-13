@@ -23,18 +23,8 @@ export {
   sanitizeForPython,
 } from './inputValidation';
 
-// Pipeline validation (export validation)
-export {
-  validatePipeline,
-  checkCircularDependencies,
-  checkDuplicateNames,
-  checkInvalidNames,
-  checkEmptyNames,
-  checkOrphanedNodes,
-  checkOrphanedDatasets,
-  checkMissingCode,
-  checkMissingConfig,
-} from './pipelineValidation';
+// Pipeline validation (export validation) - delegates to Strategy validators
+export { validatePipeline } from './pipelineValidation';
 
 // Strategy pattern validators
 export {

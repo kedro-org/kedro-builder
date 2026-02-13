@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { parseFilepath, buildFilepath } from '../../../../utils/filepath';
+import { parseFilepath, buildFilepath } from '@/utils/filepath';
 
 interface UseFilepathBuilderProps {
   initialFilepath: string;

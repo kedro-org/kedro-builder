@@ -1,11 +1,6 @@
 import { useCallback, useState } from 'react';
-import { useAppDispatch } from '../../../store/hooks';
-import { clearSelection, deleteNodes } from '../../../features/nodes/nodesSlice';
-import { deleteDataset } from '../../../features/datasets/datasetsSlice';
-import { clearConnectionSelection, deleteConnections } from '../../../features/connections/connectionsSlice';
-import { closeConfigPanel } from '../../../features/ui/uiSlice';
-import { isNodeId, isDatasetId } from '../../../domain/IdGenerator';
-import { logger } from '../../../utils/logger';
+import { logger } from '@/utils/logger';
+import { useDeleteItems } from './useDeleteItems';
 
 // Types for delete confirmation state
 export interface DeleteConfirmation {
@@ -20,7 +15,7 @@ export interface DeleteConfirmation {
  * Handles both bulk deletion (nodes + datasets) and edge deletion
  */
 export const useDeleteConfirmation = () => {
-  const dispatch = useAppDispatch();
+  const deleteItems = useDeleteItems();
   const [deleteConfirmation, setDeleteConfirmation] = useState<DeleteConfirmation | null>(null);
 
   // Show bulk delete confirmation
@@ -58,37 +53,14 @@ export const useDeleteConfirmation = () => {
   const confirmDelete = useCallback(() => {
     if (!deleteConfirmation) return;
 
-    if (deleteConfirmation.type === 'bulk') {
-      // Delete nodes and datasets
-      if (deleteConfirmation.nodeIds && deleteConfirmation.nodeIds.length > 0) {
-        deleteConfirmation.nodeIds.forEach((id) => {
-          if (isNodeId(id)) {
-            dispatch(deleteNodes([id]));
-          } else if (isDatasetId(id)) {
-            dispatch(deleteDataset(id));
-          }
-        });
-        dispatch(clearSelection());
-      }
-      // Delete edges
-      if (deleteConfirmation.edgeIds && deleteConfirmation.edgeIds.length > 0) {
-        dispatch(deleteConnections(deleteConfirmation.edgeIds));
-        dispatch(clearConnectionSelection());
-      }
-    } else if (deleteConfirmation.type === 'edges') {
-      // Delete only edges
-      if (deleteConfirmation.edgeIds && deleteConfirmation.edgeIds.length > 0) {
-        dispatch(deleteConnections(deleteConfirmation.edgeIds));
-        dispatch(clearConnectionSelection());
-      }
-    }
-
-    // Close config panel after deletion
-    dispatch(closeConfigPanel());
+    deleteItems(
+      deleteConfirmation.nodeIds ?? [],
+      deleteConfirmation.edgeIds ?? [],
+    );
 
     logger.debug('Delete confirmed and executed');
     setDeleteConfirmation(null);
-  }, [deleteConfirmation, dispatch]);
+  }, [deleteConfirmation, deleteItems]);
 
   // Cancel delete action
   const cancelDelete = useCallback(() => {

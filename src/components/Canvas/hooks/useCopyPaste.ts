@@ -1,11 +1,11 @@
 import { useCallback, useState, useMemo } from 'react';
-import { useAppDispatch } from '../../../store/hooks';
-import { clearSelection, selectNodes, addNode } from '../../../features/nodes/nodesSlice';
-import { addDataset } from '../../../features/datasets/datasetsSlice';
-import { generateCopyId, isNodeId, isDatasetId } from '../../../domain/IdGenerator';
-import { logger } from '../../../utils/logger';
-import { trackEvent } from '../../../infrastructure/telemetry';
-import type { KedroNode, KedroDataset } from '../../../types/kedro';
+import { useAppDispatch } from '@/store/hooks';
+import { clearSelection, selectNodes, addNode } from '@/features/nodes/nodesSlice';
+import { addDataset } from '@/features/datasets/datasetsSlice';
+import { generateCopyId, isNodeId, isDatasetId } from '@/domain/IdGenerator';
+import { logger } from '@/utils/logger';
+import { trackEvent } from '@/infrastructure/telemetry';
+import type { KedroNode, KedroDataset } from '@/types/kedro';
 
 interface CopiedItems {
   nodes: KedroNode[];

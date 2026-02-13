@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { isNodeId } from '../../../domain/IdGenerator';
+import { isNodeId } from '@/domain/IdGenerator';
 
 export interface GhostPreviewState {
   sourceId: string;

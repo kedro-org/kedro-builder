@@ -6,6 +6,7 @@ import yaml from 'highlight.js/lib/languages/yaml';
 import ini from 'highlight.js/lib/languages/ini';
 import markdown from 'highlight.js/lib/languages/markdown';
 import { generateFileTree, findFileByPath, getFileLanguage } from '../../utils/fileTreeGenerator';
+import { logger } from '../../utils/logger';
 import { Copy } from 'lucide-react';
 import toast from 'react-hot-toast';
 import './CodeDisplay.scss';
@@ -18,11 +19,18 @@ hljs.registerLanguage('ini', ini);
 hljs.registerLanguage('markdown', markdown);
 
 export const CodeDisplay: React.FC = () => {
-  const state = useAppSelector((rootState) => rootState);
-  const theme = useAppSelector((rootState) => rootState.theme.theme);
-  const selectedFilePath = useAppSelector((rootState) => rootState.ui.selectedCodeFile);
+  const projectCurrent = useAppSelector((s) => s.project.current);
+  const nodesById = useAppSelector((s) => s.nodes.byId);
+  const nodesAllIds = useAppSelector((s) => s.nodes.allIds);
+  const datasetsById = useAppSelector((s) => s.datasets.byId);
+  const datasetsAllIds = useAppSelector((s) => s.datasets.allIds);
+  const connectionsById = useAppSelector((s) => s.connections.byId);
+  const connectionsAllIds = useAppSelector((s) => s.connections.allIds);
+  const theme = useAppSelector((s) => s.theme.theme);
+  const selectedFilePath = useAppSelector((s) => s.ui.selectedCodeFile);
   const codeRef = useRef<HTMLElement>(null);
 
+  // Load highlight.js theme CSS from local bundle (not CDN)
   useEffect(() => {
     const existingLink = document.getElementById('hljs-theme');
     if (existingLink) {
@@ -33,8 +41,8 @@ export const CodeDisplay: React.FC = () => {
     link.id = 'hljs-theme';
     link.rel = 'stylesheet';
     link.href = theme === 'dark'
-      ? 'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css'
-      : 'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-light.min.css';
+      ? `${import.meta.env.BASE_URL}hljs/atom-one-dark.min.css`
+      : `${import.meta.env.BASE_URL}hljs/atom-one-light.min.css`;
     document.head.appendChild(link);
 
     return () => {
@@ -45,17 +53,20 @@ export const CodeDisplay: React.FC = () => {
     };
   }, [theme]);
 
-  // Generate file tree only when relevant state parts change (not on every state update)
+  // Generate file tree only when relevant domain data changes
   const fileTree = useMemo(() => {
     try {
-      return generateFileTree(state);
+      return generateFileTree({
+        project: { current: projectCurrent },
+        nodes: { byId: nodesById, allIds: nodesAllIds },
+        datasets: { byId: datasetsById, allIds: datasetsAllIds },
+        connections: { byId: connectionsById, allIds: connectionsAllIds },
+      });
     } catch (error) {
-      console.error('Failed to generate file tree:', error);
+      logger.error('Failed to generate file tree:', error);
       return null;
     }
-    // Using specific nested properties for performance; state object is stable reference
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [state.project.current, state.nodes.allIds, state.datasets.allIds, state.connections.allIds]);
+  }, [projectCurrent, nodesById, nodesAllIds, datasetsById, datasetsAllIds, connectionsById, connectionsAllIds]);
 
   const selectedFile = useMemo(() => {
     if (!selectedFilePath || !fileTree) return null;
@@ -71,10 +82,14 @@ export const CodeDisplay: React.FC = () => {
     }
   }, [selectedFile?.content, theme]);
 
-  const handleCopy = () => {
+  const handleCopy = async () => {
     if (selectedFile?.content) {
-      navigator.clipboard.writeText(selectedFile.content);
-      toast.success('Copied to clipboard!');
+      try {
+        await navigator.clipboard.writeText(selectedFile.content);
+        toast.success('Copied to clipboard!');
+      } catch {
+        toast.error('Failed to copy to clipboard');
+      }
     }
   };
 
