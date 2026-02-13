@@ -5,63 +5,67 @@
  * The key formats are part of the public contract - changing them would break
  * existing users' saved data.
  *
+ * All assertions compare against real source-code exports, NOT hardcoded strings.
+ * If a key value changes in source, the corresponding test will fail — which is
+ * the entire point of a contract test.
+ *
  * IMPORTANT: Do NOT change these values without a migration strategy.
  */
 
 import { describe, it, expect } from 'vitest';
+import { STORAGE_KEYS } from '../../constants';
 import { TELEMETRY_KEY, TELEMETRY_CONSENT_SHOWN_KEY } from '../../infrastructure/telemetry';
 
 describe('localStorage Contracts', () => {
   describe('Key Format Invariants', () => {
-    it('main project storage key uses underscore format', () => {
-      // This key is used in infrastructure/localStorage/localStorage.ts
-      const STORAGE_KEY = 'kedro_builder_current_project';
-      expect(STORAGE_KEY).toBe('kedro_builder_current_project');
-      expect(STORAGE_KEY).toMatch(/^kedro_builder_/);
+    it('main project storage key is "kedro_builder_current_project"', () => {
+      expect(STORAGE_KEYS.CURRENT_PROJECT).toBe('kedro_builder_current_project');
+      expect(STORAGE_KEYS.CURRENT_PROJECT).toMatch(/^kedro_builder_/);
     });
 
-    it('theme storage key uses underscore format', () => {
-      // This key is used in features/theme/themeSlice.ts
-      const THEME_KEY = 'kedro_builder_theme';
-      expect(THEME_KEY).toBe('kedro_builder_theme');
-      expect(THEME_KEY).toMatch(/^kedro_builder_/);
+    it('theme storage key is "kedro_builder_theme"', () => {
+      expect(STORAGE_KEYS.THEME).toBe('kedro_builder_theme');
+      expect(STORAGE_KEYS.THEME).toMatch(/^kedro_builder_/);
     });
 
-    it('tutorial completion key uses underscore format', () => {
-      // This key is used in features/ui/uiSlice.ts
-      const TUTORIAL_KEY = 'kedro_builder_tutorial_completed';
-      expect(TUTORIAL_KEY).toBe('kedro_builder_tutorial_completed');
-      expect(TUTORIAL_KEY).toMatch(/^kedro_builder_/);
+    it('tutorial completion key is "kedro_builder_tutorial_completed"', () => {
+      expect(STORAGE_KEYS.TUTORIAL_COMPLETED).toBe('kedro_builder_tutorial_completed');
+      expect(STORAGE_KEYS.TUTORIAL_COMPLETED).toMatch(/^kedro_builder_/);
     });
 
-    it('walkthrough completion key uses underscore format', () => {
-      // This key is used in features/ui/uiSlice.ts
-      const WALKTHROUGH_KEY = 'kedro_builder_walkthrough_completed';
-      expect(WALKTHROUGH_KEY).toBe('kedro_builder_walkthrough_completed');
-      expect(WALKTHROUGH_KEY).toMatch(/^kedro_builder_/);
+    it('walkthrough completion key is "kedro_builder_walkthrough_completed"', () => {
+      expect(STORAGE_KEYS.WALKTHROUGH_COMPLETED).toBe('kedro_builder_walkthrough_completed');
+      expect(STORAGE_KEYS.WALKTHROUGH_COMPLETED).toMatch(/^kedro_builder_/);
     });
 
-    it('telemetry key uses dash format', () => {
-      // This key is used in infrastructure/telemetry/telemetry.ts and index.html
-      expect(TELEMETRY_KEY).toBe('kedro-builder-telemetry');
-      expect(TELEMETRY_KEY).toMatch(/^kedro-builder-/);
+    it('telemetry key is "kedro-builder-telemetry"', () => {
+      expect(STORAGE_KEYS.TELEMETRY).toBe('kedro-builder-telemetry');
+      expect(STORAGE_KEYS.TELEMETRY).toMatch(/^kedro-builder-/);
     });
 
-    it('telemetry consent shown key uses dash format', () => {
-      // This key is used in infrastructure/telemetry/telemetry.ts
-      expect(TELEMETRY_CONSENT_SHOWN_KEY).toBe('kedro-builder-telemetry-consent-shown');
-      expect(TELEMETRY_CONSENT_SHOWN_KEY).toMatch(/^kedro-builder-/);
+    it('telemetry consent shown key is "kedro-builder-telemetry-consent-shown"', () => {
+      expect(STORAGE_KEYS.TELEMETRY_CONSENT_SHOWN).toBe('kedro-builder-telemetry-consent-shown');
+      expect(STORAGE_KEYS.TELEMETRY_CONSENT_SHOWN).toMatch(/^kedro-builder-/);
+    });
+  });
+
+  describe('Telemetry module re-exports match STORAGE_KEYS', () => {
+    it('TELEMETRY_KEY is an alias for STORAGE_KEYS.TELEMETRY', () => {
+      expect(TELEMETRY_KEY).toBe(STORAGE_KEYS.TELEMETRY);
+    });
+
+    it('TELEMETRY_CONSENT_SHOWN_KEY is an alias for STORAGE_KEYS.TELEMETRY_CONSENT_SHOWN', () => {
+      expect(TELEMETRY_CONSENT_SHOWN_KEY).toBe(STORAGE_KEYS.TELEMETRY_CONSENT_SHOWN);
     });
   });
 
   describe('Key Naming Conventions', () => {
-    it('underscore keys are used for app state (theme, tutorial, walkthrough, project)', () => {
-      // These are internal app state keys
+    it('app state keys (project, theme, tutorial, walkthrough) use underscore format', () => {
       const appStateKeys = [
-        'kedro_builder_current_project',
-        'kedro_builder_theme',
-        'kedro_builder_tutorial_completed',
-        'kedro_builder_walkthrough_completed',
+        STORAGE_KEYS.CURRENT_PROJECT,
+        STORAGE_KEYS.THEME,
+        STORAGE_KEYS.TUTORIAL_COMPLETED,
+        STORAGE_KEYS.WALKTHROUGH_COMPLETED,
       ];
 
       appStateKeys.forEach((key) => {
@@ -69,9 +73,11 @@ describe('localStorage Contracts', () => {
       });
     });
 
-    it('dash keys are used for telemetry/consent', () => {
-      // These are telemetry-related keys
-      const telemetryKeys = [TELEMETRY_KEY, TELEMETRY_CONSENT_SHOWN_KEY];
+    it('telemetry keys use dash format', () => {
+      const telemetryKeys = [
+        STORAGE_KEYS.TELEMETRY,
+        STORAGE_KEYS.TELEMETRY_CONSENT_SHOWN,
+      ];
 
       telemetryKeys.forEach((key) => {
         expect(key).toMatch(/^kedro-builder-[a-z-]+$/);
@@ -79,45 +85,18 @@ describe('localStorage Contracts', () => {
     });
   });
 
-  describe('Stored Data Format Contracts', () => {
-    it('project state has required structure', () => {
-      // This is the shape of data stored in kedro_builder_current_project
-      const projectStateShape = {
-        project: expect.objectContaining({
-          id: expect.any(String),
-          name: expect.any(String),
-        }),
-        nodes: expect.any(Array),
-        datasets: expect.any(Array),
-        connections: expect.any(Array),
-      };
-
-      // Validate the shape exists (this documents the contract)
-      expect(projectStateShape).toBeDefined();
-      expect(projectStateShape.project).toBeDefined();
-      expect(projectStateShape.nodes).toBeDefined();
-      expect(projectStateShape.datasets).toBeDefined();
-      expect(projectStateShape.connections).toBeDefined();
-    });
-
-    it('theme values are light or dark', () => {
-      const validThemeValues = ['light', 'dark'];
-      expect(validThemeValues).toContain('light');
-      expect(validThemeValues).toContain('dark');
-      expect(validThemeValues.length).toBe(2);
-    });
-
-    it('telemetry values are enabled or disabled', () => {
-      const validTelemetryValues = ['enabled', 'disabled'];
-      expect(validTelemetryValues).toContain('enabled');
-      expect(validTelemetryValues).toContain('disabled');
-      expect(validTelemetryValues.length).toBe(2);
-    });
-
-    it('boolean flags are stored as string "true"', () => {
-      // Tutorial and walkthrough completion are stored as 'true' string
-      const trueStringValue = 'true';
-      expect(trueStringValue).toBe('true');
+  describe('STORAGE_KEYS completeness', () => {
+    it('has exactly 6 keys', () => {
+      const keys = Object.keys(STORAGE_KEYS);
+      expect(keys).toHaveLength(6);
+      expect(keys).toEqual(expect.arrayContaining([
+        'CURRENT_PROJECT',
+        'THEME',
+        'TUTORIAL_COMPLETED',
+        'WALKTHROUGH_COMPLETED',
+        'TELEMETRY',
+        'TELEMETRY_CONSENT_SHOWN',
+      ]));
     });
   });
 });
