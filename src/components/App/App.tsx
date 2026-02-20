@@ -91,8 +91,8 @@ function App() {
         </ErrorBoundary>
       )}
 
-      {/* Telemetry Consent Banner */}
-      <TelemetryConsent />
+      {/* Telemetry Consent Banner temporary remove for internal testing */}
+      {/* <TelemetryConsent /> */}
 
       {/* Toast notifications */}
       <Toaster />
