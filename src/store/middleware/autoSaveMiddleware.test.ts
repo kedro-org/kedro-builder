@@ -3,10 +3,10 @@
  */
 import { configureStore } from '@reduxjs/toolkit';
 import { beforeEach, afterEach, describe, expect, it, vi } from 'vitest';
-import projectReducer, { createProject } from '../../features/project/projectSlice';
+import projectReducer from '../../features/project/projectSlice';
 import nodesReducer, { addNode } from '../../features/nodes/nodesSlice';
 import datasetsReducer, { addDataset } from '../../features/datasets/datasetsSlice';
-import connectionsReducer, { addConnection } from '../../features/connections/connectionsSlice';
+import connectionsReducer from '../../features/connections/connectionsSlice';
 import uiReducer, { openConfigPanel } from '../../features/ui/uiSlice';
 import validationReducer from '../../features/validation/validationSlice';
 import themeReducer from '../../features/theme/themeSlice';
