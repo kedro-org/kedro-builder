@@ -1,8 +1,8 @@
-import { useState, useEffect } from 'react';
-import { X, Moon, Sun, BarChart3 } from 'lucide-react';
+// import { useEffect } from 'react';
+import { X, Moon, Sun } from 'lucide-react';
 import { useAppDispatch, useAppSelector } from '../../store/hooks';
 import { toggleTheme } from '../../features/theme/themeSlice';
-import { getTelemetryConsent, setTelemetryConsent } from '../../infrastructure/telemetry';
+// import { getTelemetryConsent } from '../../infrastructure/telemetry';
 import './SettingsModal.scss';
 
 interface SettingsModalProps {
@@ -22,22 +22,22 @@ interface SettingsModalProps {
 export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose }) => {
   const dispatch = useAppDispatch();
   const theme = useAppSelector((state) => state.theme.theme);
-  const [analyticsEnabled, setAnalyticsEnabled] = useState(false);
+  // const [analyticsEnabled, setAnalyticsEnabled] = useState(false);
 
-  useEffect(() => {
+  // useEffect(() => {
     // Load current telemetry consent status
-    setAnalyticsEnabled(getTelemetryConsent());
-  }, [isOpen]);
+    // setAnalyticsEnabled(getTelemetryConsent());
+  // }, [isOpen]);
 
   const handleThemeToggle = () => {
     dispatch(toggleTheme());
   };
 
-  const handleAnalyticsToggle = () => {
-    const newValue = !analyticsEnabled;
-    setAnalyticsEnabled(newValue);
-    setTelemetryConsent(newValue); // This will reload the page
-  };
+  // const handleAnalyticsToggle = () => {
+  //   const newValue = !analyticsEnabled;
+  //   setAnalyticsEnabled(newValue);
+  //   setTelemetryConsent(newValue); // This will reload the page
+  // };
 
   const handleOverlayClick = (e: React.MouseEvent) => {
     if (e.target === e.currentTarget) {
@@ -93,7 +93,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
           </section>
 
           {/* Analytics Section */}
-          <section className="settings-section">
+          {/* <section className="settings-section">
             <div className="settings-section__header">
               <div className="settings-section__icon">
                 <BarChart3 size={20} />
@@ -118,14 +118,14 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
                 <span className="settings-switch__slider" />
               </label>
             </div>
-          </section>
+          </section> */}
 
           {/* Info Note */}
-          <div className="settings-modal__note" data-heap-redact-text>
+          {/* <div className="settings-modal__note" data-heap-redact-text>
             <p>
               Note: Changing analytics settings will reload the page to apply changes.
             </p>
-          </div>
+          </div> */}
         </div>
       </div>
     </div>
