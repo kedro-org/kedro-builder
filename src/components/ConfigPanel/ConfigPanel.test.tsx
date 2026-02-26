@@ -15,11 +15,6 @@ const mockNode = {
   inputs: [], outputs: [], position: { x: 0, y: 0 },
 };
 
-const mockDataset = {
-  id: 'ds-1', name: 'raw_data', type: 'csv' as const,
-  filepath: 'data/01_raw/raw.csv', position: { x: 0, y: 0 },
-};
-
 describe('ConfigPanel', () => {
   it('returns null when panel is closed', () => {
     const { container } = renderWithProviders(<ConfigPanel />, {
