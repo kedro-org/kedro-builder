@@ -2,7 +2,6 @@ import type {
   KedroNode,
   KedroDataset,
   KedroConnection,
-  NodeType,
   DatasetType,
   DataLayer,
 } from '../../types/kedro';
@@ -12,7 +11,7 @@ import type { ValidationError } from '../../utils/validation/types';
 export const mockNode1: KedroNode = {
   id: 'node-1',
   name: 'load_data',
-  type: 'data_ingestion' as NodeType,
+  type: 'data_ingestion',
   inputs: ['raw_data'],
   outputs: ['processed_data'],
   functionCode: `def load_data(raw_data: pd.DataFrame) -> pd.DataFrame:
@@ -25,7 +24,7 @@ export const mockNode1: KedroNode = {
 export const mockNode2: KedroNode = {
   id: 'node-2',
   name: 'train_model',
-  type: 'model_training' as NodeType,
+  type: 'model_training',
   inputs: ['processed_data', 'parameters'],
   outputs: ['trained_model'],
   functionCode: `def train_model(processed_data: pd.DataFrame, parameters: Dict) -> Any:
@@ -41,7 +40,7 @@ export const mockNode2: KedroNode = {
 export const mockNode3: KedroNode = {
   id: 'node-3',
   name: 'evaluate_model',
-  type: 'model_evaluation' as NodeType,
+  type: 'model_evaluation',
   inputs: ['trained_model', 'test_data'],
   outputs: ['metrics'],
   functionCode: `def evaluate_model(trained_model: Any, test_data: pd.DataFrame) -> Dict:

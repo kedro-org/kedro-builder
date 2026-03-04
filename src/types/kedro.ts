@@ -3,12 +3,7 @@
  * These types represent the domain model for Kedro pipelines
  */
 
-export type NodeType =
-  | 'data_ingestion'
-  | 'data_processing'
-  | 'model_training'
-  | 'model_evaluation'
-  | 'custom';
+export type NodeType = string;
 
 export type DatasetType =
   // Pandas datasets

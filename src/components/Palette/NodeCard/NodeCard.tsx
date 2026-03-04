@@ -1,9 +1,9 @@
 import { Database, Cpu, BarChart3, Download, Settings } from 'lucide-react';
-import type { NodeType } from '@/types/kedro';
+import type { LucideIcon } from 'lucide-react';
 import { DND_TYPES } from '@/constants';
 import './NodeCard.scss';
 
-const NODE_ICONS = {
+const NODE_ICONS: Record<string, LucideIcon> = {
   data_ingestion: Download,
   data_processing: Database,
   model_training: Cpu,
@@ -12,13 +12,13 @@ const NODE_ICONS = {
 };
 
 interface NodeCardProps {
-  type: NodeType;
+  type: string;
   name: string;
   description: string;
 }
 
 export const NodeCard: React.FC<NodeCardProps> = ({ type, name, description }) => {
-  const Icon = NODE_ICONS[type];
+  const Icon = NODE_ICONS[type] ?? Settings;
 
   const handleDragStart = (event: React.DragEvent) => {
     event.dataTransfer.setData(DND_TYPES.NODE, type);

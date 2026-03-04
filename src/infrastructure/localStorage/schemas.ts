@@ -11,14 +11,8 @@ const PositionSchema = z.object({
   y: z.number(),
 });
 
-// Node type enum
-const NodeTypeSchema = z.enum([
-  'data_ingestion',
-  'data_processing',
-  'model_training',
-  'model_evaluation',
-  'custom',
-]);
+// Node type - open string to allow any user-defined category
+const NodeTypeSchema = z.string();
 
 // Dataset type enum (comprehensive list)
 const DatasetTypeSchema = z.enum([
