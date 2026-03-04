@@ -131,5 +131,5 @@ export interface ProjectMetadata {
   id: string;
   name: string;
   updatedAt: number;
-  storageType: 'localStorage' | 'indexedDB';
+  storageType: 'localStorage';
 }
