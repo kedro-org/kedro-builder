@@ -1,6 +1,6 @@
 import type { Middleware } from '@reduxjs/toolkit';
 import type { RootState } from '../../types/redux';
-import { STORAGE_KEYS, safeSetItem } from '../../constants';
+import { STORAGE_KEYS, safeSetItem, type StorageKey } from '../../constants';
 import { setTheme, toggleTheme } from '../../features/theme/themeSlice';
 import { completeTutorial, completeWalkthrough, skipWalkthrough } from '../../features/ui/uiSlice';
 import { logger } from '../../utils/logger';
@@ -12,7 +12,7 @@ import { logger } from '../../utils/logger';
 export const preferencesMiddleware: Middleware<object, RootState> = (store) => (next) => (action) => {
   const result = next(action);
 
-  const persistOrWarn = (key: (typeof STORAGE_KEYS)[keyof typeof STORAGE_KEYS], value: string) => {
+  const persistOrWarn = (key: StorageKey, value: string) => {
     if (!safeSetItem(key, value)) {
       logger.warn(`Failed to persist preference for key "${key}"`);
     }
