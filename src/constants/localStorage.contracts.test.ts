@@ -13,8 +13,8 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { STORAGE_KEYS } from '../../constants';
-import { TELEMETRY_KEY, TELEMETRY_CONSENT_SHOWN_KEY } from '../../infrastructure/telemetry';
+import { STORAGE_KEYS } from '.';
+import { TELEMETRY_KEY, TELEMETRY_CONSENT_SHOWN_KEY } from '../infrastructure/telemetry';
 
 describe('localStorage Contracts', () => {
   describe('Key Format Invariants', () => {
