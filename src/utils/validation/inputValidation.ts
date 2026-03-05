@@ -8,9 +8,9 @@ import { PYTHON_KEYWORDS } from '../../constants/python';
 
 export { PYTHON_KEYWORDS };
 
-// Regex patterns for name validation
-const NODE_NAME_PATTERN = /^[a-zA-Z][a-zA-Z0-9_\s]*$/;
-const DATASET_NAME_PATTERN = /^[a-z][a-z0-9_]*$/;
+// Regex patterns for name validation (exported so validators can reuse them)
+export const NODE_NAME_PATTERN = /^[a-zA-Z][a-zA-Z0-9_\s]*$/;
+export const DATASET_NAME_PATTERN = /^[a-z][a-z0-9_]*$/;
 
 /**
  * Check if a name is a reserved Python keyword
