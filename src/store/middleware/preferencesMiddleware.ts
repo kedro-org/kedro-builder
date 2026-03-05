@@ -1,5 +1,6 @@
 import type { Middleware } from '@reduxjs/toolkit';
 import type { RootState } from '../../types/redux';
+import { selectTheme } from '../../features/theme/themeSelectors';
 import { STORAGE_KEYS, safeSetItem, type StorageKey } from '../../constants';
 import { setTheme, toggleTheme } from '../../features/theme/themeSlice';
 import { completeTutorial, completeWalkthrough, skipWalkthrough } from '../../features/ui/uiSlice';
@@ -20,7 +21,7 @@ export const preferencesMiddleware: Middleware<object, RootState> = (store) => (
 
   if (setTheme.match(action) || toggleTheme.match(action)) {
     const state = store.getState();
-    persistOrWarn(STORAGE_KEYS.THEME, state.theme.theme);
+    persistOrWarn(STORAGE_KEYS.THEME, selectTheme(state));
   }
 
   if (completeTutorial.match(action)) {

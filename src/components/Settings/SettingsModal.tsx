@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { X, Moon, Sun, BarChart3 } from 'lucide-react';
 import { useAppDispatch, useAppSelector } from '../../store/hooks';
 import { toggleTheme } from '../../features/theme/themeSlice';
+import { selectTheme } from '../../features/theme/themeSelectors';
 import { getTelemetryConsent, setTelemetryConsent } from '../../infrastructure/telemetry';
 import './SettingsModal.scss';
 
@@ -21,7 +22,7 @@ interface SettingsModalProps {
  */
 export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose }) => {
   const dispatch = useAppDispatch();
-  const theme = useAppSelector((state) => state.theme.theme);
+  const theme = useAppSelector(selectTheme);
   const [analyticsEnabled, setAnalyticsEnabled] = useState(false);
 
   useEffect(() => {

@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { useAppSelector } from '../../store/hooks';
+import { selectTheme } from '../../features/theme/themeSelectors';
 import { TutorialModal } from '../Tutorial/TutorialModal';
 import { WalkthroughOverlay } from '../Walkthrough/WalkthroughOverlay';
 import { ProjectSetupModal } from '../ProjectSetup/ProjectSetupModal';
@@ -18,7 +19,7 @@ import { Toaster } from 'react-hot-toast';
 import './App.scss';
 
 function App() {
-  const theme = useAppSelector((state) => state.theme.theme);
+  const theme = useAppSelector(selectTheme);
   const showWalkthrough = useAppSelector((state) => state.ui.showWalkthrough);
   const showProjectSetup = useAppSelector((state) => state.ui.showProjectSetup);
   const showExportWizard = useAppSelector((state) => state.ui.showExportWizard);
