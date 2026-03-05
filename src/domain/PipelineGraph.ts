@@ -195,6 +195,9 @@ export function getConnectedDatasets(connections: KedroConnection[]): Set<string
 /**
  * Find orphaned nodes (nodes with no connections).
  *
+ * Complexity: O(n+m) — O(m) to build the connected-nodes Set from connections,
+ * then O(n) to filter node IDs with O(1) Set membership checks.
+ *
  * @param nodeIds - All node IDs in the pipeline
  * @param connections - Pipeline connections
  * @returns Array of node IDs that are not connected
@@ -209,6 +212,9 @@ export function findOrphanedNodes(
 
 /**
  * Find orphaned datasets (datasets with no connections).
+ *
+ * Complexity: O(n+m) — O(m) to build the connected-datasets Set from connections,
+ * then O(n) to filter dataset IDs with O(1) Set membership checks.
  *
  * @param datasetIds - All dataset IDs in the pipeline
  * @param connections - Pipeline connections
