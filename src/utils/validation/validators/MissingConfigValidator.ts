@@ -6,6 +6,7 @@
 import type { RootState } from '@/store';
 import type { ValidationError } from '../types';
 import type { Validator } from './Validator';
+import { FILEPATH_EXEMPT_TYPES } from '../../../constants/datasetTypes';
 
 export class MissingConfigValidator implements Validator {
   readonly id = 'missing-config';
@@ -24,7 +25,7 @@ export class MissingConfigValidator implements Validator {
           issues.push('type');
         }
 
-        if (dataset.type !== 'memory' && !dataset.filepath?.trim()) {
+        if (!FILEPATH_EXEMPT_TYPES.has(dataset.type ?? '') && !dataset.filepath?.trim()) {
           issues.push('filepath');
         }
 

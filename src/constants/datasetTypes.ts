@@ -150,6 +150,20 @@ export const DATASET_TYPE_MAPPING: Record<string, string> = {
 };
 
 /**
+ * Dataset types that don't use a file path (no filepath config required)
+ */
+export const FILEPATH_EXEMPT_TYPES = new Set([
+  'memory',
+  'api',
+  'gbq_table',
+  'gbq_query',
+  'sql_table',
+  'sql_query',
+  'spark_hive',
+  'tracking',
+]);
+
+/**
  * Group dataset types by category for organized display
  */
 export const groupDatasetTypesByCategory = (): Record<string, typeof DATASET_TYPES> => {
