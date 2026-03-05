@@ -88,7 +88,6 @@ export const saveProjectToLocalStorage = (state: RootState): boolean => {
     const projectData: StoredProjectState = {
       project: {
         ...state.project.current,
-        updatedAt: Date.now(), // Update timestamp on save
       },
       nodes: state.nodes.allIds.map(id => state.nodes.byId[id]),
       datasets: state.datasets.allIds.map(id => state.datasets.byId[id]),
