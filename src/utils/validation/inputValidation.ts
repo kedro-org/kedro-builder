@@ -129,7 +129,7 @@ export function validateDatasetName(name: string, existingNames?: Set<string>): 
  * Converts to snake_case and removes invalid characters
  */
 export function sanitizeForPython(name: string): string {
-  return name
+  const result = name
     .trim()
     .toLowerCase()
     .replace(/\s+/g, '_')           // Replace spaces with underscores
@@ -137,4 +137,5 @@ export function sanitizeForPython(name: string): string {
     .replace(/^[0-9]+/, '')         // Remove leading numbers
     .replace(/_+/g, '_')            // Replace multiple underscores with single
     .replace(/^_|_$/g, '');         // Remove leading/trailing underscores
+  return result || 'unnamed_function';
 }
