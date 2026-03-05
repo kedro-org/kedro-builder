@@ -4,7 +4,7 @@ import userEvent from '@testing-library/user-event';
 import { renderWithProviders } from '@/test/utils/testUtils';
 import { ValidationStepContent } from './ValidationStepContent';
 import type { ValidationResult } from '@/utils/validation';
-import type { RootState } from '@/types/redux';
+import type { RootState } from '@/store';
 
 const preloadedState = {
   nodes: { byId: {}, allIds: [], selected: [], hovered: null },

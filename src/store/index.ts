@@ -8,8 +8,6 @@ import validationReducer from '../features/validation/validationSlice';
 import themeReducer from '../features/theme/themeSlice';
 import { autoSaveMiddleware } from './middleware/autoSaveMiddleware';
 import { preferencesMiddleware } from './middleware/preferencesMiddleware';
-import type { RootState as ReduxRootState } from '../types/redux';
-
 export const store = configureStore({
   reducer: {
     project: projectReducer,
@@ -29,5 +27,5 @@ export const store = configureStore({
     }).concat(preferencesMiddleware, autoSaveMiddleware),
 });
 
-export type RootState = ReduxRootState;
+export type RootState = ReturnType<typeof store.getState>;
 export type AppDispatch = typeof store.dispatch;

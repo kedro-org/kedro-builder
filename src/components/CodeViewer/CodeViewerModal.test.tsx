@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { screen } from '@testing-library/react';
 import { renderWithProviders } from '@/test/utils/testUtils';
 import { CodeViewerModal } from './CodeViewerModal';
-import type { RootState } from '@/types/redux';
+import type { RootState } from '@/store';
 
 const baseUi = {
   showTutorial: false, tutorialStep: 1, tutorialCompleted: false,

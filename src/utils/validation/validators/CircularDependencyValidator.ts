@@ -3,7 +3,7 @@
  * Detects cycles in the pipeline graph
  */
 
-import type { RootState } from '@/types/redux';
+import type { RootState } from '@/store';
 import type { ValidationError } from '../types';
 import type { Validator } from './Validator';
 import { buildDependencyGraph, detectCycles } from '@/domain/PipelineGraph';

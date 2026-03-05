@@ -13,7 +13,7 @@ import { generatePipeline } from '../infrastructure/export/pipelineGenerator';
 import { generateCatalog } from '../infrastructure/export/catalogGenerator';
 import { generateNodes } from '../infrastructure/export/nodesGenerator';
 import { validatePipeline } from '../utils/validation/pipelineValidation';
-import type { RootState } from '../types/redux';
+import type { RootState } from '../store';
 
 describe('Pipeline: create → connect → export', () => {
   it('generates correct pipeline.py, catalog.yml, and nodes.py from store state', () => {

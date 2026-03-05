@@ -2,7 +2,7 @@ import { describe, it, expect, vi } from 'vitest';
 import { screen } from '@testing-library/react';
 import { renderWithProviders } from '@/test/utils/testUtils';
 import { ConfigPanel } from './ConfigPanel';
-import type { RootState } from '@/types/redux';
+import type { RootState } from '@/store';
 
 // Mock dispatchConfigUpdated (used by sub-forms)
 vi.mock('@/constants', async (importOriginal) => {

@@ -3,7 +3,7 @@
  * Includes graceful degradation, quota handling, and Zod validation
  */
 
-import type { RootState } from '../../types/redux';
+import type { RootState } from '../../store';
 import type { KedroProject, KedroNode, KedroDataset, KedroConnection } from '../../types/kedro';
 import { STORAGE_KEYS } from '../../constants';
 import { logger } from '../../utils/logger';

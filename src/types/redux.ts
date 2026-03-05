@@ -81,6 +81,8 @@ export interface ThemeState {
   theme: 'light' | 'dark';
 }
 
+// Kept here (not re-exported from store) to avoid a circular import in middleware files
+// that are themselves imported by store/index.ts.
 export interface RootState {
   project: ProjectState;
   nodes: NodesState;
@@ -90,3 +92,4 @@ export interface RootState {
   validation: ValidationState;
   theme: ThemeState;
 }
+

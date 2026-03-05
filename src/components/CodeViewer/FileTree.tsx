@@ -8,7 +8,7 @@ import type { FileNode } from '../../utils/fileTreeGenerator';
 import { ChevronRight, ChevronDown, Folder, File } from 'lucide-react';
 import { calculateTreeIndent } from '../../constants/fileTree';
 import { logger } from '../../utils/logger';
-import type { RootState } from '../../types/redux';
+import type { RootState } from '../../store';
 import './FileTree.scss';
 
 export const FileTree: React.FC = () => {

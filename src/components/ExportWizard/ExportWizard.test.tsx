@@ -3,7 +3,7 @@ import { screen } from '@testing-library/react';
 import { renderWithProviders } from '@/test/utils/testUtils';
 import { ExportWizard } from './ExportWizard';
 import type { ValidationResult } from '@/utils/validation';
-import type { RootState } from '@/types/redux';
+import type { RootState } from '@/store';
 
 const cleanValidation: ValidationResult = {
   errors: [],

@@ -2,7 +2,7 @@ import { describe, it, expect, vi } from 'vitest';
 import { screen } from '@testing-library/react';
 import { renderWithProviders } from '@/test/utils/testUtils';
 import { CodeDisplay } from './CodeDisplay';
-import type { RootState } from '@/types/redux';
+import type { RootState } from '@/store';
 
 // Mock highlight.js — we don't need real syntax highlighting in tests
 vi.mock('highlight.js/lib/core', () => ({
