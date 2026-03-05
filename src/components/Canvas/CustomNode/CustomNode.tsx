@@ -4,6 +4,7 @@ import classNames from 'classnames';
 import type { KedroNode } from '@/types/kedro';
 import { useAppSelector } from '@/store/hooks';
 import { makeSelectNodeValidationStatus } from '@/features/validation/validationSelectors';
+import { UNNAMED_NODE_DEFAULT } from '@/constants/ui';
 import './CustomNode.scss';
 
 export const CustomNode = memo<NodeProps>(({ data, selected }) => {
@@ -44,7 +45,7 @@ export const CustomNode = memo<NodeProps>(({ data, selected }) => {
           </svg>
         </div>
         <h4 className="custom-node__name">
-          {nodeData.name && nodeData.name.trim() !== '' ? nodeData.name : 'Unnamed Node'}
+          {nodeData.name && nodeData.name.trim() !== '' ? nodeData.name : UNNAMED_NODE_DEFAULT}
         </h4>
       </div>
 

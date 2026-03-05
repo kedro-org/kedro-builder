@@ -22,6 +22,7 @@ import classNames from 'classnames';
 import type { KedroDataset } from '@/types/kedro';
 import { useAppSelector } from '@/store/hooks';
 import { makeSelectDatasetValidationStatus } from '@/features/validation/validationSelectors';
+import { UNNAMED_DATASET_DEFAULT } from '@/constants/ui';
 import './DatasetNode.scss';
 
 // Map dataset types to their icons
@@ -111,7 +112,7 @@ export const DatasetNode = memo<NodeProps>(({ data, selected }) => {
           <Icon size={20} />
         </div>
         <div className="dataset-node__info">
-          <h4 className="dataset-node__name">{datasetData.name || 'Unnamed Dataset'}</h4>
+          <h4 className="dataset-node__name">{datasetData.name || UNNAMED_DATASET_DEFAULT}</h4>
           {datasetData.type && (
             <span className="dataset-node__type">{getExtensionLabel(datasetData.type)}</span>
           )}
