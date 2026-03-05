@@ -51,11 +51,11 @@ export const selectCanvasData = createSelector(
  */
 export const selectSelectionType = createSelector(
   [selectSelectedNodeIds, selectSelectedEdgeIds],
-  (nodeIds, edgeIds): 'nodes' | 'edges' | 'mixed' => {
+  (nodeIds, edgeIds): 'nodes' | 'edges' | 'mixed' | 'none' => {
     if (nodeIds.length > 0 && edgeIds.length > 0) return 'mixed';
     if (nodeIds.length > 0) return 'nodes';
     if (edgeIds.length > 0) return 'edges';
-    return 'nodes';
+    return 'none';
   }
 );
 

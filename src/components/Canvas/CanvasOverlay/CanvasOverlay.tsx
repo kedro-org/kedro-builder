@@ -5,7 +5,7 @@ interface CanvasOverlayProps {
   isEmpty: boolean;
   isDraggingOver: boolean;
   totalSelected: number;
-  selectionType: 'nodes' | 'edges' | 'mixed';
+  selectionType: 'nodes' | 'edges' | 'mixed' | 'none';
   onBulkDelete: () => void;
   onBulkClear: () => void;
 }
