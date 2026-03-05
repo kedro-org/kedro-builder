@@ -25,7 +25,7 @@ const nodesSlice = createSlice({
       },
       prepare: (payload: KedroNode | { type: string; position: { x: number; y: number } }) => {
         // If it's a full node, use it directly
-        if ('id' in payload) {
+        if ('id' in payload && payload.id) {
           return { payload };
         }
         // Otherwise, create a new node using IdGenerator
