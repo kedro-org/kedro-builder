@@ -30,6 +30,7 @@ const SAVE_TRIGGER_ACTIONS = [
   'datasets/updateDataset',
   'datasets/updateDatasetPosition',
   'datasets/deleteDataset',
+  'datasets/deleteDatasets',
 
   // Connection actions
   'connections/addConnection',
