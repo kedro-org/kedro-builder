@@ -11,10 +11,8 @@ export const selectAllConnections = createSelector(
   (byId, allIds) => allIds.map((id) => byId[id]).filter(Boolean)
 );
 
-export const selectConnectionById = createSelector(
-  [selectConnectionsById, (_state: RootState, connectionId: string) => connectionId],
-  (byId, connectionId) => byId[connectionId]
-);
+export const selectConnectionById = (state: RootState, connectionId: string) =>
+  state.connections.byId[connectionId];
 
 export const selectConnectionsCount = createSelector(
   [selectConnectionsAllIds],

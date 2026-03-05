@@ -12,10 +12,8 @@ export const selectAllDatasets = createSelector(
   (byId, allIds) => allIds.map((id) => byId[id]).filter(Boolean)
 );
 
-export const selectDatasetById = createSelector(
-  [selectDatasetsById, (_state: RootState, datasetId: string) => datasetId],
-  (byId, datasetId) => byId[datasetId]
-);
+export const selectDatasetById = (state: RootState, datasetId: string) =>
+  state.datasets.byId[datasetId];
 
 // Get all selected datasets as array
 export const selectSelectedDatasets = createSelector(

@@ -1,4 +1,4 @@
-import { memo } from 'react';
+import { memo, useMemo } from 'react';
 import { Handle, Position, type NodeProps } from '@xyflow/react';
 import {
   Database,
@@ -21,7 +21,7 @@ import {
 import classNames from 'classnames';
 import type { KedroDataset } from '@/types/kedro';
 import { useAppSelector } from '@/store/hooks';
-import { selectDatasetValidationStatus } from '@/features/validation/validationSelectors';
+import { makeSelectDatasetValidationStatus } from '@/features/validation/validationSelectors';
 import './DatasetNode.scss';
 
 // Map dataset types to their icons
@@ -82,10 +82,9 @@ const getExtensionLabel = (datasetType?: string): string => {
 export const DatasetNode = memo<NodeProps>(({ data, selected }) => {
   const datasetData = data as KedroDataset;
 
-  // Use memoized selector for O(1) validation lookup instead of O(n) array.some()
-  const { hasError, hasWarning } = useAppSelector((state) =>
-    selectDatasetValidationStatus(state, datasetData.id)
-  );
+  // Per-instance memoized selector — each dataset component gets its own cache entry
+  const selectValidation = useMemo(() => makeSelectDatasetValidationStatus(datasetData.id), [datasetData.id]);
+  const { hasError, hasWarning } = useAppSelector(selectValidation);
 
   // Get the appropriate icon for this dataset type
   const Icon = getDatasetIcon(datasetData.type);

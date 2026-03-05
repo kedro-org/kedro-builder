@@ -12,10 +12,8 @@ export const selectAllNodes = createSelector(
   (byId, allIds) => allIds.map((id) => byId[id]).filter(Boolean)
 );
 
-export const selectNodeById = createSelector(
-  [selectNodesById, (_state: RootState, nodeId: string) => nodeId],
-  (byId, nodeId) => byId[nodeId]
-);
+export const selectNodeById = (state: RootState, nodeId: string) =>
+  state.nodes.byId[nodeId];
 
 export const selectSelectedNode = createSelector(
   [selectNodesById, selectNodesSelected],

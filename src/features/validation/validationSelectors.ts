@@ -58,12 +58,19 @@ export const selectValidationByComponentId = createSelector(
 );
 
 /**
- * Select validation status for a specific node
- * Uses the indexed lookup for O(1) performance
+ * Factory that creates a per-instance memoized selector for a specific node.
+ *
+ * With a single shared selector and cache size 1, calling it with different
+ * nodeIds across N canvas components produces N cache misses on every state
+ * change. Using the factory gives each component instance its own selector
+ * and its own independent cache entry.
+ *
+ * Usage:
+ *   const selectValidation = useMemo(() => makeSelectNodeValidationStatus(id), [id]);
+ *   const { hasError } = useAppSelector(selectValidation);
  */
-export const selectNodeValidationStatus = createSelector(
-  [selectValidationByComponentId, (_state: RootState, nodeId: string) => nodeId],
-  (byComponentId, nodeId) => {
+export const makeSelectNodeValidationStatus = (nodeId: string) =>
+  createSelector(selectValidationByComponentId, (byComponentId) => {
     const validation = byComponentId[nodeId];
     const nodeErrors = validation?.errors.filter((e) => e.componentType === 'node') || [];
     const nodeWarnings = validation?.warnings.filter((w) => w.componentType === 'node') || [];
@@ -74,16 +81,19 @@ export const selectNodeValidationStatus = createSelector(
       errors: nodeErrors,
       warnings: nodeWarnings,
     };
-  }
-);
+  });
 
 /**
- * Select validation status for a specific dataset
- * Uses the indexed lookup for O(1) performance
+ * Factory that creates a per-instance memoized selector for a specific dataset.
+ *
+ * Same rationale as makeSelectNodeValidationStatus — use inside useMemo
+ * in per-dataset components so each instance gets its own cache:
+ *
+ *   const selectValidation = useMemo(() => makeSelectDatasetValidationStatus(id), [id]);
+ *   const { hasError } = useAppSelector(selectValidation);
  */
-export const selectDatasetValidationStatus = createSelector(
-  [selectValidationByComponentId, (_state: RootState, datasetId: string) => datasetId],
-  (byComponentId, datasetId) => {
+export const makeSelectDatasetValidationStatus = (datasetId: string) =>
+  createSelector(selectValidationByComponentId, (byComponentId) => {
     const validation = byComponentId[datasetId];
     const datasetErrors = validation?.errors.filter((e) => e.componentType === 'dataset') || [];
     const datasetWarnings = validation?.warnings.filter((w) => w.componentType === 'dataset') || [];
@@ -94,6 +104,5 @@ export const selectDatasetValidationStatus = createSelector(
       errors: datasetErrors,
       warnings: datasetWarnings,
     };
-  }
-);
+  });
 
