@@ -22,18 +22,22 @@ export interface StoredProjectState {
   connections: KedroConnection[];
 }
 
+let _localStorageAvailable: boolean | null = null;
+
 /**
- * Check if localStorage is available
+ * Check if localStorage is available (result cached after first call)
  */
 export const isLocalStorageAvailable = (): boolean => {
+  if (_localStorageAvailable !== null) return _localStorageAvailable;
   try {
     const testKey = '__localStorage_test__';
     localStorage.setItem(testKey, testKey);
     localStorage.removeItem(testKey);
-    return true;
+    _localStorageAvailable = true;
   } catch {
-    return false;
+    _localStorageAvailable = false;
   }
+  return _localStorageAvailable;
 };
 
 /**
