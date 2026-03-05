@@ -43,3 +43,6 @@ export {
   setDatasetData,
   type DndType,
 } from './dnd';
+
+// Python language constants
+export { PYTHON_KEYWORDS } from './python';

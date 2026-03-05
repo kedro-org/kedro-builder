@@ -3,7 +3,7 @@
  */
 
 import type { KedroNode, KedroDataset, KedroConnection } from '../../types/kedro';
-import { PYTHON_KEYWORDS } from '../../utils/validation';
+import { PYTHON_KEYWORDS } from '../../constants/python';
 
 /**
  * Convert string to snake_case for Python naming conventions

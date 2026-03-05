@@ -4,19 +4,13 @@
  */
 
 import type { InputValidationResult } from './types';
+import { PYTHON_KEYWORDS } from '../../constants/python';
+
+export { PYTHON_KEYWORDS };
 
 // Regex patterns for name validation
 const NODE_NAME_PATTERN = /^[a-zA-Z][a-zA-Z0-9_\s]*$/;
 const DATASET_NAME_PATTERN = /^[a-z][a-z0-9_]*$/;
-
-// Reserved Python keywords that cannot be used as names
-export const PYTHON_KEYWORDS = new Set([
-  'False', 'None', 'True', 'and', 'as', 'assert', 'async', 'await',
-  'break', 'class', 'continue', 'def', 'del', 'elif', 'else', 'except',
-  'finally', 'for', 'from', 'global', 'if', 'import', 'in', 'is',
-  'lambda', 'nonlocal', 'not', 'or', 'pass', 'raise', 'return', 'try',
-  'while', 'with', 'yield',
-]);
 
 /**
  * Check if a name is a reserved Python keyword
