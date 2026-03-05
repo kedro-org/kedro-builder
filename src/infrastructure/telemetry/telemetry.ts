@@ -77,18 +77,13 @@ export const getTelemetryConsent = (): boolean => {
 };
 
 /**
- * Set telemetry consent and reload page if consent changes
+ * Set telemetry consent.
+ * Changes take effect immediately — trackEvent checks consent on every call.
  * @param enabled - Whether to enable or disable telemetry
  */
 export const setTelemetryConsent = (enabled: boolean): void => {
   try {
-    const previousConsent = getTelemetryConsent();
     localStorage.setItem(TELEMETRY_KEY, enabled ? 'enabled' : 'disabled');
-
-    // If consent changed, reload page to load/unload Heap
-    if (previousConsent !== enabled) {
-      window.location.reload();
-    }
   } catch (error) {
     console.error('Failed to set telemetry consent:', error);
   }
