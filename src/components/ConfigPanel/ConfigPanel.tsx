@@ -1,5 +1,5 @@
 import { useAppSelector, useAppDispatch } from '../../store/hooks';
-import { store } from '../../store';
+import type { RootState, AppDispatch } from '../../store';
 import { closeConfigPanel, clearPendingComponent } from '../../features/ui/uiSlice';
 import { selectNodeById } from '../../features/nodes/nodesSelectors';
 import { selectDatasetById } from '../../features/datasets/datasetsSelectors';
@@ -10,11 +10,38 @@ import { DatasetConfigForm } from './DatasetConfigForm/DatasetConfigForm';
 import { X } from 'lucide-react';
 import './ConfigPanel.scss';
 
+// Thunk: auto-delete a pending component that was closed without a valid name
+const closeAndCleanPending = () => (dispatch: AppDispatch, getState: () => RootState) => {
+  const state = getState();
+  const pending = state.ui.pendingComponentId;
+  const selected = state.ui.selectedComponent;
+
+  if (pending && selected && pending.id === selected.id) {
+    const componentData =
+      pending.type === 'node'
+        ? selectNodeById(state, pending.id)
+        : selectDatasetById(state, pending.id);
+
+    const hasValidName = componentData?.name && componentData.name.trim().length > 0;
+
+    if (!hasValidName) {
+      if (pending.type === 'node') {
+        dispatch(deleteNode(pending.id));
+      } else {
+        dispatch(deleteDataset(pending.id));
+      }
+    }
+
+    dispatch(clearPendingComponent());
+  }
+
+  dispatch(closeConfigPanel());
+};
+
 export const ConfigPanel = () => {
   const dispatch = useAppDispatch();
   const showPanel = useAppSelector((state) => state.ui.showConfigPanel);
   const selectedComponent = useAppSelector((state) => state.ui.selectedComponent);
-  const pendingComponent = useAppSelector((state) => state.ui.pendingComponentId);
 
   // Get the selected node or dataset
   const selectedNode = useAppSelector((state) =>
@@ -34,32 +61,7 @@ export const ConfigPanel = () => {
   }
 
   const handleClose = () => {
-    // Check if there's a pending component that needs to be deleted
-    if (pendingComponent && pendingComponent.id === selectedComponent.id) {
-      // Get fresh data from store (not from render-time selectors)
-      // This ensures we see any updates made by form submission
-      const currentState = store.getState();
-      const componentData =
-        pendingComponent.type === 'node'
-          ? selectNodeById(currentState, pendingComponent.id)
-          : selectDatasetById(currentState, pendingComponent.id);
-
-      const hasValidName = componentData?.name && componentData.name.trim().length > 0;
-
-      if (!hasValidName) {
-        // Component doesn't have a valid name - delete it
-        if (pendingComponent.type === 'node') {
-          dispatch(deleteNode(pendingComponent.id));
-        } else {
-          dispatch(deleteDataset(pendingComponent.id));
-        }
-      }
-
-      // Clear pending status
-      dispatch(clearPendingComponent());
-    }
-
-    dispatch(closeConfigPanel());
+    dispatch(closeAndCleanPending());
   };
 
   return (
