@@ -52,7 +52,10 @@ code {
 
     --color-text: #{$black-900};
     --color-text-alt: #{$grey-900};
+    --color-text-muted: #{$grey-500};
     --color-text-disabled: #{$grey-500};
+
+    --color-dataset: #{$grey-600};
 
     --color-border-line: #{$grey-300};
     --color-border-subtle: #{$grey-200};
@@ -99,7 +102,10 @@ code {
 
     --color-text: #{$white-0};
     --color-text-alt: #{$grey-300};
+    --color-text-muted: #{$grey-600};
     --color-text-disabled: #{$grey-600};
+
+    --color-dataset: #{$grey-400};
 
     --color-border-line: #{$slate-500};
     --color-border-subtle: #{$slate-600};
