@@ -159,7 +159,9 @@ coverage.xml
 
 # Kedro
 data/**
-!data/.gitkeep
+!data/
+!data/*/
+!data/*/.gitkeep
 logs/**
 !logs/.gitkeep
 .kedro/
