@@ -1,6 +1,7 @@
 import { createSlice } from '@reduxjs/toolkit';
 import type { PayloadAction } from '@reduxjs/toolkit';
 import type { UIState } from '../../types/redux';
+import { TUTORIAL_STEP_COUNT } from '../../constants/ui';
 
 const initialState: UIState = {
   // Tutorial state
@@ -48,7 +49,7 @@ const uiSlice = createSlice({
       state.tutorialStep = action.payload;
     },
     nextTutorialStep: (state) => {
-      if (state.tutorialStep < 7) {
+      if (state.tutorialStep < TUTORIAL_STEP_COUNT) {
         state.tutorialStep += 1;
       }
     },
