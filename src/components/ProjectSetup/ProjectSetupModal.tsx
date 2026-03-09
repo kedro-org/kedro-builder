@@ -52,7 +52,7 @@ export const ProjectSetupModal: React.FC = () => {
       dispatch(createProjectAction({
         name: projectName,
         description: description.trim(),
-        pythonPackage: projectName.replace(/-/g, '_'), // Convert kebab-case to snake_case
+        pythonPackage: projectName.replace(/-/g, '_').toLowerCase(), // Convert kebab-case to snake_case
         pipelineName: '__default__',
       }));
 
