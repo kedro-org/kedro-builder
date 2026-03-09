@@ -39,6 +39,8 @@ export function renderWithProviders(
       } as any,
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       preloadedState: preloadedState as any,
+      middleware: (getDefaultMiddleware) =>
+        getDefaultMiddleware({ serializableCheck: false }),
     }),
     ...renderOptions
   }: ExtendedRenderOptions = {}
