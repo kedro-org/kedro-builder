@@ -1,10 +1,18 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useRef } from 'react';
+import { useReactFlow } from '@xyflow/react';
 import { isNodeId } from '@/domain/IdGenerator';
 
 export interface GhostPreviewState {
   sourceId: string;
   sourceType: 'node' | 'dataset';
   position: { x: number; y: number };
+}
+
+interface CachedBounds {
+  left: number;
+  top: number;
+  right: number;
+  bottom: number;
 }
 
 const PROXIMITY_THRESHOLD = 80; // pixels
@@ -15,56 +23,59 @@ const PROXIMITY_THRESHOLD = 80; // pixels
  */
 export const useGhostPreview = (connectionSource: string | null) => {
   const [ghostPreview, setGhostPreview] = useState<GhostPreviewState | null>(null);
+  const { getNodes, getViewport, flowToScreenPosition } = useReactFlow();
 
-  // Check if cursor is near any existing component
-  const isNearExistingComponent = useCallback((clientX: number, clientY: number): boolean => {
-    const nodeElements = document.querySelectorAll('.react-flow__node');
+  // Cache node screen bounds at drag start — zero DOM queries on mousemove
+  const cachedBoundsRef = useRef<CachedBounds[]>([]);
 
-    for (const nodeElement of nodeElements) {
-      const rect = nodeElement.getBoundingClientRect();
-
-      // Calculate distance from cursor to closest edge of node's bounding box
-      const closestX = Math.max(rect.left, Math.min(clientX, rect.right));
-      const closestY = Math.max(rect.top, Math.min(clientY, rect.bottom));
-      const distanceX = clientX - closestX;
-      const distanceY = clientY - closestY;
-      const distance = Math.sqrt(distanceX * distanceX + distanceY * distanceY);
-
-      if (distance < PROXIMITY_THRESHOLD) {
-        return true;
-      }
+  useEffect(() => {
+    if (!connectionSource) {
+      setGhostPreview(null);
+      cachedBoundsRef.current = [];
+      return;
     }
 
-    return false;
-  }, []);
+    // Snapshot node bounds once at drag start using ReactFlow's in-memory state.
+    // flowToScreenPosition handles pan + zoom + container offset, giving true screen coords.
+    const { zoom } = getViewport();
+    cachedBoundsRef.current = getNodes().map((node) => {
+      const w = (node.measured?.width ?? 0) * zoom;
+      const h = (node.measured?.height ?? 0) * zoom;
+      const screenTopLeft = flowToScreenPosition({ x: node.position.x, y: node.position.y });
+      return {
+        left: screenTopLeft.x,
+        top: screenTopLeft.y,
+        right: screenTopLeft.x + w,
+        bottom: screenTopLeft.y + h,
+      };
+    });
 
-  // Track mouse movement during connection drag
-  useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
-      if (connectionSource) {
-        // Hide ghost preview when cursor is near existing components
-        if (isNearExistingComponent(e.clientX, e.clientY)) {
-          setGhostPreview(null);
-          return;
-        }
+      // O(1) ref read — no DOM query per frame
+      const isNear = cachedBoundsRef.current.some((b) => {
+        const closestX = Math.max(b.left, Math.min(e.clientX, b.right));
+        const closestY = Math.max(b.top, Math.min(e.clientY, b.bottom));
+        const dx = e.clientX - closestX;
+        const dy = e.clientY - closestY;
+        return Math.sqrt(dx * dx + dy * dy) < PROXIMITY_THRESHOLD;
+      });
 
-        // Show ghost preview at cursor position
-        const sourceType = isNodeId(connectionSource) ? 'node' : 'dataset';
-        setGhostPreview({
-          sourceId: connectionSource,
-          sourceType,
-          position: { x: e.clientX, y: e.clientY },
-        });
+      if (isNear) {
+        setGhostPreview(null);
+        return;
       }
+
+      const sourceType = isNodeId(connectionSource) ? 'node' : 'dataset';
+      setGhostPreview({
+        sourceId: connectionSource,
+        sourceType,
+        position: { x: e.clientX, y: e.clientY },
+      });
     };
 
-    if (connectionSource) {
-      window.addEventListener('mousemove', handleMouseMove);
-      return () => window.removeEventListener('mousemove', handleMouseMove);
-    } else {
-      setGhostPreview(null);
-    }
-  }, [connectionSource, isNearExistingComponent]);
+    window.addEventListener('mousemove', handleMouseMove);
+    return () => window.removeEventListener('mousemove', handleMouseMove);
+  }, [connectionSource, getNodes, getViewport, flowToScreenPosition]);
 
   return ghostPreview;
 };
