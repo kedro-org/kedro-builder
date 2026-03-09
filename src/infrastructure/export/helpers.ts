@@ -82,7 +82,9 @@ export function getFileExtension(datasetType: string): string {
     'text.TextDataset': '.txt',
   };
 
-  return typeMap[datasetType] || '.csv';
+  // Use explicit undefined check so empty string ('') is returned as-is for types that have no
+  // file extension (e.g. SQL datasets), rather than falling through to the '.csv' default.
+  return datasetType in typeMap ? typeMap[datasetType] : '.csv';
 }
 
 /**

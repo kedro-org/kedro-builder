@@ -13,6 +13,7 @@ import { useFilepathBuilder } from './hooks/useFilepathBuilder';
 import { isPythonKeyword } from '@/utils/validation';
 import { useConfirmDialog } from '@/hooks/useConfirmDialog';
 import { dispatchConfigUpdated } from '@/constants';
+import { FILEPATH_EXEMPT_TYPES } from '@/constants/datasetTypes';
 import './DatasetConfigForm.scss';
 
 // Map dataset types to their expected file extensions
@@ -109,7 +110,7 @@ export const DatasetConfigForm: React.FC<DatasetConfigFormProps> = ({ dataset, o
 
   // Check for file extension mismatch
   const extensionMismatch = useMemo(() => {
-    if (!watchFilepath || watchType === 'memory') return null;
+    if (!watchFilepath || FILEPATH_EXEMPT_TYPES.has(watchType)) return null;
 
     const fileExt = getFileExtension(watchFilepath);
     if (!fileExt) return null;
@@ -161,7 +162,7 @@ export const DatasetConfigForm: React.FC<DatasetConfigFormProps> = ({ dataset, o
         changes: {
           name: data.name.trim(),
           type: data.type,
-          filepath: data.type !== 'memory' ? data.filepath?.trim() : undefined,
+          filepath: !FILEPATH_EXEMPT_TYPES.has(data.type) ? data.filepath?.trim() : undefined,
           versioned: data.versioned || false,
         },
       })
@@ -205,7 +206,7 @@ export const DatasetConfigForm: React.FC<DatasetConfigFormProps> = ({ dataset, o
         onChange={(value) => setValue('type', value, { shouldDirty: true })}
       />
 
-      {watchType !== 'memory' && (
+      {!FILEPATH_EXEMPT_TYPES.has(watchType) && (
         <div className="dataset-config-form__section">
           <FilepathBuilder
             baseLocation={baseLocation}
@@ -225,7 +226,7 @@ export const DatasetConfigForm: React.FC<DatasetConfigFormProps> = ({ dataset, o
         </div>
       )}
 
-      {watchType !== 'memory' && (
+      {!FILEPATH_EXEMPT_TYPES.has(watchType) && (
         <div className="dataset-config-form__section">
           <label className="dataset-config-form__checkbox-label">
             <input type="checkbox" className="dataset-config-form__checkbox" {...register('versioned')} />

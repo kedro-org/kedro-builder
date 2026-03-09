@@ -115,9 +115,9 @@ describe('helpers', () => {
     });
 
     it('should handle SQL datasets', () => {
-      // SQL datasets map to empty string in the type map
-      expect(getFileExtension('pandas.SQLTableDataset')).toBe('.csv'); // fallback
-      expect(getFileExtension('pandas.SQLQueryDataset')).toBe('.csv'); // fallback
+      // SQL datasets have no file extension — they use credentials + load_args
+      expect(getFileExtension('pandas.SQLTableDataset')).toBe('');
+      expect(getFileExtension('pandas.SQLQueryDataset')).toBe('');
     });
 
     it('should default to .csv for unknown types', () => {
