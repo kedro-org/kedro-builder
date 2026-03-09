@@ -149,7 +149,7 @@ describe('nodesGenerator', () => {
       expect(result).not.toContain('# WARNING:');
     });
 
-    it('should warn when custom function name does not match node name', () => {
+    it('should rename function when custom function name does not match node name', () => {
       const node: KedroNode = {
         id: 'node-1',
         name: 'expected_name',
@@ -164,9 +164,11 @@ describe('nodesGenerator', () => {
 
       const result = generateNodes([node], [], {}, 'test');
 
-      expect(result).toContain('# WARNING: Function name "wrong_name" in your code does not match node name "expected_name"');
-      expect(result).toContain('# The pipeline expects the function to be named "expected_name"');
-      expect(result).toContain('def wrong_name() -> None:');
+      // Function is renamed so pipeline.py import succeeds
+      expect(result).toContain('def expected_name() -> None:');
+      expect(result).not.toContain('def wrong_name() -> None:');
+      // A note is added explaining the rename
+      expect(result).toContain('# NOTE: Function was renamed from "wrong_name" to "expected_name"');
     });
 
     it('should wrap user code if no function definition provided', () => {
