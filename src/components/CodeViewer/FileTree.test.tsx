@@ -9,7 +9,7 @@ const baseUi = {
   showWalkthrough: false, walkthroughStep: 1, walkthroughCompleted: false,
   showProjectSetup: false, hasActiveProject: true,
   selectedComponent: null, showConfigPanel: false,
-  showCodePreview: false, showValidationPanel: false,
+  showValidationPanel: false,
   canvasZoom: 1, canvasPosition: { x: 0, y: 0 },
   showExportWizard: false, showCodeViewer: false,
   selectedCodeFile: null, pendingComponentId: null,
@@ -20,7 +20,7 @@ describe('FileTree', () => {
     renderWithProviders(<FileTree />, {
       preloadedState: {
         ui: { ...baseUi, hasActiveProject: false },
-        project: { current: null, savedList: [], lastSaved: null },
+        project: { current: null },
         nodes: { byId: {}, allIds: [], selected: [], hovered: null },
         datasets: { byId: {}, allIds: [], selected: [] },
         connections: { byId: {}, allIds: [], selected: [] },
@@ -39,7 +39,6 @@ describe('FileTree', () => {
             id: 'p1', name: 'demo_project', pythonPackage: 'demo_project',
             pipelineName: 'default', description: '', createdAt: 1, updatedAt: 1,
           },
-          savedList: [], lastSaved: null,
         },
         nodes: { byId: {}, allIds: [], selected: [], hovered: null },
         datasets: { byId: {}, allIds: [], selected: [] },

@@ -7,7 +7,6 @@ import datasetsReducer, {
   updateDataset,
   deleteDataset,
   selectDataset,
-  toggleDatasetSelection,
   clearDatasetSelection,
   clearDatasets,
 } from './datasetsSlice';
@@ -127,32 +126,6 @@ describe('datasetsSlice', () => {
       const state = datasetsReducer(stateWithSelection, selectDataset('dataset-2'));
 
       expect(state.selected).toEqual(['dataset-2']);
-    });
-  });
-
-  describe('toggleDatasetSelection', () => {
-    it('should add dataset to selection', () => {
-      const state = datasetsReducer(initialState, toggleDatasetSelection('dataset-1'));
-
-      expect(state.selected).toEqual(['dataset-1']);
-    });
-
-    it('should remove dataset from selection if already selected', () => {
-      const stateWithSelection: DatasetsState = {
-        ...initialState,
-        selected: ['dataset-1'],
-      };
-
-      const state = datasetsReducer(stateWithSelection, toggleDatasetSelection('dataset-1'));
-
-      expect(state.selected).toEqual([]);
-    });
-
-    it('should support multi-select', () => {
-      let state = datasetsReducer(initialState, toggleDatasetSelection('dataset-1'));
-      state = datasetsReducer(state, toggleDatasetSelection('dataset-2'));
-
-      expect(state.selected).toEqual(['dataset-1', 'dataset-2']);
     });
   });
 

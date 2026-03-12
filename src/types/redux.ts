@@ -7,14 +7,11 @@ import {
   type KedroNode,
   type KedroDataset,
   type KedroConnection,
-  type ProjectMetadata,
 } from './kedro';
 import type { ValidationError } from '../utils/validation/types';
 
 export interface ProjectState {
   current: KedroProject | null;
-  savedList: ProjectMetadata[];
-  lastSaved: number | null;
 }
 
 export interface NodesState {
@@ -54,7 +51,6 @@ export interface UIState {
   // UI component state
   selectedComponent: { type: 'node' | 'dataset'; id: string } | null;
   showConfigPanel: boolean;
-  showCodePreview: boolean;
   showValidationPanel: boolean;
   canvasZoom: number;
   canvasPosition: { x: number; y: number };

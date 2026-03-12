@@ -31,7 +31,7 @@ const defaultState = {
     showWalkthrough: false, walkthroughStep: 1, walkthroughCompleted: false,
     showProjectSetup: false, hasActiveProject: true,
     selectedComponent: { type: 'dataset' as const, id: 'ds-1' },
-    showConfigPanel: true, showCodePreview: false, showValidationPanel: false,
+    showConfigPanel: true, showValidationPanel: false,
     canvasZoom: 1, canvasPosition: { x: 0, y: 0 },
     showCodeViewer: false, selectedCodeFile: null,
     showExportWizard: false, pendingComponentId: null,

@@ -15,24 +15,6 @@ export const selectAllDatasets = createSelector(
 export const selectDatasetById = (state: RootState, datasetId: string) =>
   state.datasets.byId[datasetId];
 
-// Get all selected datasets as array
-export const selectSelectedDatasets = createSelector(
-  [selectDatasetsById, selectSelectedDatasetIds],
-  (byId, selectedIds) => selectedIds.map((id) => byId[id]).filter(Boolean)
-);
-
-// Get first selected dataset (for backward compatibility with single-select UI)
-export const selectSelectedDataset = createSelector(
-  [selectDatasetsById, selectSelectedDatasetIds],
-  (byId, selectedIds) => (selectedIds.length > 0 ? byId[selectedIds[0]] : null)
-);
-
-// Check if a specific dataset is selected
-export const selectIsDatasetSelected = createSelector(
-  [selectSelectedDatasetIds, (_state: RootState, datasetId: string) => datasetId],
-  (selectedIds, datasetId) => selectedIds.includes(datasetId)
-);
-
 export const selectDatasetsCount = createSelector(
   [selectDatasetsAllIds],
   (allIds) => allIds.length

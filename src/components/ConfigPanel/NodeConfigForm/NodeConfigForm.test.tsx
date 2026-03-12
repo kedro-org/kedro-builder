@@ -42,7 +42,6 @@ const defaultState = {
     hasActiveProject: true,
     selectedComponent: { type: 'node' as const, id: 'node-1' },
     showConfigPanel: true,
-    showCodePreview: false,
     showValidationPanel: false,
     canvasZoom: 1,
     canvasPosition: { x: 0, y: 0 },

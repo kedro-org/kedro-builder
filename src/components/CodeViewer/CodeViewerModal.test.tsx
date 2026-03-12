@@ -9,7 +9,7 @@ const baseUi = {
   showWalkthrough: false, walkthroughStep: 1, walkthroughCompleted: false,
   showProjectSetup: false, hasActiveProject: true,
   selectedComponent: null, showConfigPanel: false,
-  showCodePreview: false, showValidationPanel: false,
+  showValidationPanel: false,
   canvasZoom: 1, canvasPosition: { x: 0, y: 0 },
   showExportWizard: false, pendingComponentId: null,
 };
@@ -34,7 +34,6 @@ describe('CodeViewerModal', () => {
             id: 'p1', name: 'demo_pipeline', pythonPackage: 'demo_pipeline',
             pipelineName: 'default', description: '', createdAt: 1000, updatedAt: 1000,
           },
-          savedList: [], lastSaved: null,
         },
         nodes: { byId: {}, allIds: [], selected: [], hovered: null },
         datasets: { byId: {}, allIds: [], selected: [] },

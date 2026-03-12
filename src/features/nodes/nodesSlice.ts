@@ -103,9 +103,6 @@ const nodesSlice = createSlice({
     clearSelection: (state) => {
       state.selected = [];
     },
-    hoverNode: (state, action: PayloadAction<string | null>) => {
-      state.hovered = action.payload;
-    },
     clearNodes: (state) => {
       state.byId = {};
       state.allIds = [];
@@ -125,7 +122,6 @@ export const {
   toggleNodeSelection,
   selectNodes,
   clearSelection,
-  hoverNode,
   clearNodes,
 } = nodesSlice.actions;
 

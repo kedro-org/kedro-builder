@@ -17,7 +17,6 @@ const preloadedState = {
       id: 'p1', name: 'my_project', pythonPackage: 'my_project',
       pipelineName: 'default', description: 'A test', createdAt: 1, updatedAt: 1,
     },
-    savedList: [], lastSaved: null,
   },
   nodes: { byId: {}, allIds: ['n1'], selected: [], hovered: null },
   datasets: { byId: {}, allIds: ['d1', 'd2'], selected: [] },

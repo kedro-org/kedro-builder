@@ -8,7 +8,7 @@ const baseUi = {
   showTutorial: false, tutorialStep: 1, tutorialCompleted: false,
   showWalkthrough: false, walkthroughStep: 1, walkthroughCompleted: false,
   showProjectSetup: false, selectedComponent: null, showConfigPanel: false,
-  showCodePreview: false, showValidationPanel: false,
+  showValidationPanel: false,
   canvasZoom: 1, canvasPosition: { x: 0, y: 0 },
   showCodeViewer: false, selectedCodeFile: null,
   showExportWizard: false, pendingComponentId: null,

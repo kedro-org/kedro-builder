@@ -21,7 +21,6 @@ describe('uiSlice', () => {
     hasActiveProject: false,
     selectedComponent: null,
     showConfigPanel: false,
-    showCodePreview: false,
     showValidationPanel: false,
     canvasZoom: 1,
     canvasPosition: { x: 0, y: 0 },

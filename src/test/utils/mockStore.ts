@@ -67,7 +67,6 @@ export function createMockState(overrides?: Partial<RootState>): Partial<RootSta
       hasActiveProject: false,
       selectedComponent: null,
       showConfigPanel: false,
-      showCodePreview: false,
       showValidationPanel: false,
       canvasZoom: 1,
       canvasPosition: { x: 0, y: 0 },
@@ -78,8 +77,6 @@ export function createMockState(overrides?: Partial<RootState>): Partial<RootSta
     },
     project: {
       current: null,
-      savedList: [],
-      lastSaved: null,
     },
     validation: {
       errors: [],
@@ -144,7 +141,6 @@ export function createTestState(
       hasActiveProject: hasProject,
       selectedComponent: null,
       showConfigPanel: false,
-      showCodePreview: false,
       showValidationPanel: false,
       canvasZoom: 1,
       canvasPosition: { x: 0, y: 0 },
@@ -166,8 +162,6 @@ export function createTestState(
             ...projectOverrides,
           }
         : null,
-      savedList: [],
-      lastSaved: null,
     },
     validation: {
       errors: [],

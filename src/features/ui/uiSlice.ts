@@ -21,7 +21,6 @@ const initialState: UIState = {
   // UI component state
   selectedComponent: null,
   showConfigPanel: false,
-  showCodePreview: false,
   showValidationPanel: false,
   canvasZoom: 1,
   canvasPosition: { x: 0, y: 0 },
@@ -44,9 +43,6 @@ const uiSlice = createSlice({
     // Tutorial actions
     setShowTutorial: (state, action: PayloadAction<boolean>) => {
       state.showTutorial = action.payload;
-    },
-    setTutorialStep: (state, action: PayloadAction<number>) => {
-      state.tutorialStep = action.payload;
     },
     nextTutorialStep: (state) => {
       if (state.tutorialStep < TUTORIAL_STEP_COUNT) {
@@ -75,9 +71,6 @@ const uiSlice = createSlice({
       state.showWalkthrough = true;
       state.walkthroughStep = 1;
     },
-    setWalkthroughStep: (state, action: PayloadAction<number>) => {
-      state.walkthroughStep = action.payload;
-    },
     nextWalkthroughStep: (state) => {
       if (state.walkthroughStep < 4) {
         state.walkthroughStep += 1;
@@ -96,10 +89,6 @@ const uiSlice = createSlice({
     skipWalkthrough: (state) => {
       state.showWalkthrough = false;
       state.walkthroughCompleted = true;
-    },
-    reopenWalkthrough: (state) => {
-      state.showWalkthrough = true;
-      state.walkthroughStep = 1;
     },
     // Project setup actions
     openProjectSetup: (state) => {
@@ -121,12 +110,6 @@ const uiSlice = createSlice({
     closeConfigPanel: (state) => {
       state.showConfigPanel = false;
       state.selectedComponent = null;
-    },
-    toggleCodePreview: (state) => {
-      state.showCodePreview = !state.showCodePreview;
-    },
-    setShowCodePreview: (state, action: PayloadAction<boolean>) => {
-      state.showCodePreview = action.payload;
     },
     setShowValidationPanel: (state, action: PayloadAction<boolean>) => {
       state.showValidationPanel = action.payload;
@@ -174,19 +157,16 @@ const uiSlice = createSlice({
 export const {
   // Tutorial actions
   setShowTutorial,
-  setTutorialStep,
   nextTutorialStep,
   prevTutorialStep,
   completeTutorial,
   openTutorial,
   // Walkthrough actions
   startWalkthrough,
-  setWalkthroughStep,
   nextWalkthroughStep,
   prevWalkthroughStep,
   completeWalkthrough,
   skipWalkthrough,
-  reopenWalkthrough,
   // Project setup actions
   openProjectSetup,
   closeProjectSetup,
@@ -194,8 +174,6 @@ export const {
   // UI component actions
   openConfigPanel,
   closeConfigPanel,
-  toggleCodePreview,
-  setShowCodePreview,
   setShowValidationPanel,
   setCanvasZoom,
   setCanvasPosition,

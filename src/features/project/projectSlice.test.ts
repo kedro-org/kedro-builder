@@ -12,8 +12,6 @@ import type { ProjectState } from '../../types/redux';
 describe('projectSlice', () => {
   const initialState: ProjectState = {
     current: null,
-    savedList: [],
-    lastSaved: null,
   };
 
   it('createProject should auto-generate id, createdAt, and updatedAt', () => {
@@ -61,7 +59,7 @@ describe('projectSlice', () => {
     expect(state.current!.updatedAt).toBeGreaterThan(1000);
   });
 
-  it('clearProject should reset current and lastSaved', () => {
+  it('clearProject should reset current to null', () => {
     const populated: ProjectState = {
       current: {
         id: 'project-1',
@@ -72,15 +70,10 @@ describe('projectSlice', () => {
         createdAt: 1000,
         updatedAt: 1000,
       },
-      savedList: [{ id: 'project-1', name: 'test', updatedAt: 1000, storageType: 'localStorage' }],
-      lastSaved: 2000,
     };
 
     const state = projectReducer(populated, clearProject());
 
     expect(state.current).toBeNull();
-    expect(state.lastSaved).toBeNull();
-    // savedList should NOT be cleared (user may want to load another project)
-    expect(state.savedList).toHaveLength(1);
   });
 });
