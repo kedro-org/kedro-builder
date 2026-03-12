@@ -108,7 +108,7 @@ export function detectCycles(graph: Map<string, Set<string>>): CycleResult[] {
       const recStack = new Set<string>();
       const path: string[] = [];
 
-      if (detectCycleDFS(nodeId, graph, visited, recStack, path)) {
+      if (dfsWalk(nodeId, graph, visited, recStack, path)) {
         // Found a cycle - check if we've already recorded it
         const cycleKey = path.slice().sort().join('-');
         if (!processed.has(cycleKey)) {
@@ -126,35 +126,35 @@ export function detectCycles(graph: Map<string, Set<string>>): CycleResult[] {
 }
 
 /**
- * DFS helper for cycle detection.
- * Recursively traverses the graph to find cycles in the recursion stack.
+ * Shared DFS helper for cycle detection.
+ * When `path` is provided, tracks the traversal path for cycle reporting.
+ * When `path` is null, performs a lightweight boolean-only check.
  */
-function detectCycleDFS(
+function dfsWalk(
   node: string,
   graph: Map<string, Set<string>>,
   visited: Set<string>,
   recStack: Set<string>,
-  path: string[]
+  path: string[] | null
 ): boolean {
   visited.add(node);
   recStack.add(node);
-  path.push(node);
+  if (path) path.push(node);
 
   const neighbors = graph.get(node) || new Set();
   for (const neighbor of neighbors) {
     if (!visited.has(neighbor)) {
-      if (detectCycleDFS(neighbor, graph, visited, recStack, path)) {
+      if (dfsWalk(neighbor, graph, visited, recStack, path)) {
         return true;
       }
     } else if (recStack.has(neighbor)) {
-      // Found cycle - add neighbor to complete the cycle in path
-      path.push(neighbor);
+      if (path) path.push(neighbor);
       return true;
     }
   }
 
   recStack.delete(node);
-  path.pop();
+  if (path) path.pop();
   return false;
 }
 
@@ -253,26 +253,9 @@ function hasCycleInGraph(graph: Map<string, Set<string>>): boolean {
   const visited = new Set<string>();
   const recStack = new Set<string>();
 
-  function dfs(node: string): boolean {
-    visited.add(node);
-    recStack.add(node);
-
-    const neighbors = graph.get(node) || new Set();
-    for (const neighbor of neighbors) {
-      if (!visited.has(neighbor)) {
-        if (dfs(neighbor)) return true;
-      } else if (recStack.has(neighbor)) {
-        return true;
-      }
-    }
-
-    recStack.delete(node);
-    return false;
-  }
-
   for (const nodeId of graph.keys()) {
     if (!visited.has(nodeId)) {
-      if (dfs(nodeId)) return true;
+      if (dfsWalk(nodeId, graph, visited, recStack, null)) return true;
     }
   }
 
