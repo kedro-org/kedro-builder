@@ -1,10 +1,7 @@
 import { useEffect } from 'react';
 import { useAppDispatch } from '@/store/hooks';
-import {
-  setShowTutorial,
-  startWalkthrough,
-  setHasActiveProject,
-} from '@/features/ui/uiSlice';
+import { setHasActiveProject } from '@/features/ui/uiSlice';
+import { setShowTutorial, startWalkthrough } from '@/features/onboarding/onboardingSlice';
 import { loadProject } from '@/features/project/projectSlice';
 import { addNode, clearNodes } from '@/features/nodes/nodesSlice';
 import { addDataset, clearDatasets } from '@/features/datasets/datasetsSlice';

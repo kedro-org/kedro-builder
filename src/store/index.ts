@@ -3,6 +3,7 @@ import projectReducer from '../features/project/projectSlice';
 import nodesReducer from '../features/nodes/nodesSlice';
 import datasetsReducer from '../features/datasets/datasetsSlice';
 import connectionsReducer from '../features/connections/connectionsSlice';
+import onboardingReducer from '../features/onboarding/onboardingSlice';
 import uiReducer from '../features/ui/uiSlice';
 import validationReducer from '../features/validation/validationSlice';
 import themeReducer from '../features/theme/themeSlice';
@@ -14,6 +15,7 @@ export const store = configureStore({
     nodes: nodesReducer,
     datasets: datasetsReducer,
     connections: connectionsReducer,
+    onboarding: onboardingReducer,
     ui: uiReducer,
     validation: validationReducer,
     theme: themeReducer,

@@ -3,7 +3,7 @@ import type { RootState } from '../../types/redux';
 import { selectTheme } from '../../features/theme/themeSelectors';
 import { STORAGE_KEYS, safeSetItem, type StorageKey } from '../../constants';
 import { setTheme, toggleTheme } from '../../features/theme/themeSlice';
-import { completeTutorial, completeWalkthrough, skipWalkthrough } from '../../features/ui/uiSlice';
+import { completeTutorial, completeWalkthrough, skipWalkthrough } from '../../features/onboarding/onboardingSlice';
 import { logger } from '../../utils/logger';
 
 /**

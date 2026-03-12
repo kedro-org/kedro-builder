@@ -26,9 +26,11 @@ const defaultState = {
     allIds: ['ds-1', 'ds-2'],
     selected: [],
   },
-  ui: {
+  onboarding: {
     showTutorial: false, tutorialStep: 1, tutorialCompleted: false,
     showWalkthrough: false, walkthroughStep: 1, walkthroughCompleted: false,
+  },
+  ui: {
     showProjectSetup: false, hasActiveProject: true,
     selectedComponent: { type: 'dataset' as const, id: 'ds-1' },
     showConfigPanel: true, showValidationPanel: false,

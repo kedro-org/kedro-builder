@@ -20,7 +20,7 @@ import './App.scss';
 
 function App() {
   const theme = useAppSelector(selectTheme);
-  const showWalkthrough = useAppSelector((state) => state.ui.showWalkthrough);
+  const showWalkthrough = useAppSelector((state) => state.onboarding.showWalkthrough);
   const showProjectSetup = useAppSelector((state) => state.ui.showProjectSetup);
   const showExportWizard = useAppSelector((state) => state.ui.showExportWizard);
   const showConfigPanel = useAppSelector((state) => state.ui.showConfigPanel);

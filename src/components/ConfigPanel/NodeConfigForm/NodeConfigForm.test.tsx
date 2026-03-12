@@ -31,13 +31,11 @@ const defaultState = {
     selected: [],
     hovered: null,
   },
+  onboarding: {
+    showTutorial: false, tutorialStep: 1, tutorialCompleted: false,
+    showWalkthrough: false, walkthroughStep: 1, walkthroughCompleted: false,
+  },
   ui: {
-    showTutorial: false,
-    tutorialStep: 1,
-    tutorialCompleted: false,
-    showWalkthrough: false,
-    walkthroughStep: 1,
-    walkthroughCompleted: false,
     showProjectSetup: false,
     hasActiveProject: true,
     selectedComponent: { type: 'node' as const, id: 'node-1' },

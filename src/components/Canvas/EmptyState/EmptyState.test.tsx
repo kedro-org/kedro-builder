@@ -4,9 +4,12 @@ import { renderWithProviders } from '@/test/utils/testUtils';
 import { EmptyState } from './EmptyState';
 import type { RootState } from '@/store';
 
-const baseUi = {
+const baseOnboarding = {
   showTutorial: false, tutorialStep: 1, tutorialCompleted: false,
   showWalkthrough: false, walkthroughStep: 1, walkthroughCompleted: false,
+};
+
+const baseUi = {
   showProjectSetup: false, selectedComponent: null, showConfigPanel: false,
   showValidationPanel: false,
   canvasZoom: 1, canvasPosition: { x: 0, y: 0 },
@@ -17,7 +20,7 @@ const baseUi = {
 describe('EmptyState', () => {
   it('shows "Create New Project" button when no active project', () => {
     renderWithProviders(<EmptyState />, {
-      preloadedState: { ui: { ...baseUi, hasActiveProject: false } } as Partial<RootState>,
+      preloadedState: { onboarding: baseOnboarding, ui: { ...baseUi, hasActiveProject: false } } as Partial<RootState>,
     });
 
     expect(screen.getByText('Create New Project')).toBeInTheDocument();
@@ -26,7 +29,7 @@ describe('EmptyState', () => {
 
   it('shows Dataset + Function Node buttons when project is active', () => {
     renderWithProviders(<EmptyState />, {
-      preloadedState: { ui: { ...baseUi, hasActiveProject: true } } as Partial<RootState>,
+      preloadedState: { onboarding: baseOnboarding, ui: { ...baseUi, hasActiveProject: true } } as Partial<RootState>,
     });
 
     expect(screen.getByText('Dataset')).toBeInTheDocument();

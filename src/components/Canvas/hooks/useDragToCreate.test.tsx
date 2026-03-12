@@ -12,6 +12,7 @@ import { configureStore } from '@reduxjs/toolkit';
 import nodesReducer from '@/features/nodes/nodesSlice';
 import datasetsReducer from '@/features/datasets/datasetsSlice';
 import connectionsReducer from '@/features/connections/connectionsSlice';
+import onboardingReducer from '@/features/onboarding/onboardingSlice';
 import uiReducer from '@/features/ui/uiSlice';
 import projectReducer from '@/features/project/projectSlice';
 import validationReducer from '@/features/validation/validationSlice';
@@ -37,6 +38,7 @@ function makeStore() {
       nodes: nodesReducer,
       datasets: datasetsReducer,
       connections: connectionsReducer,
+      onboarding: onboardingReducer,
       ui: uiReducer,
       project: projectReducer,
       validation: validationReducer,

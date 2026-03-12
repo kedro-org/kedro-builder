@@ -33,7 +33,7 @@ export interface ConnectionsState {
   selected: string[];  // Added for multi-select edges
 }
 
-export interface UIState {
+export interface OnboardingState {
   // Tutorial state
   showTutorial: boolean;
   tutorialStep: number;
@@ -43,7 +43,9 @@ export interface UIState {
   showWalkthrough: boolean;
   walkthroughStep: number;
   walkthroughCompleted: boolean;
+}
 
+export interface UIState {
   // Project setup state
   showProjectSetup: boolean;
   hasActiveProject: boolean;
@@ -84,6 +86,7 @@ export interface RootState {
   nodes: NodesState;
   datasets: DatasetsState;
   connections: ConnectionsState;
+  onboarding: OnboardingState;
   ui: UIState;
   validation: ValidationState;
   theme: ThemeState;

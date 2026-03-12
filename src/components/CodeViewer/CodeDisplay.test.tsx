@@ -13,8 +13,6 @@ vi.mock('highlight.js/lib/core', () => ({
 }));
 
 const baseUi = {
-  showTutorial: false, tutorialStep: 1, tutorialCompleted: false,
-  showWalkthrough: false, walkthroughStep: 1, walkthroughCompleted: false,
   showProjectSetup: false, hasActiveProject: true,
   selectedComponent: null, showConfigPanel: false,
   showValidationPanel: false,

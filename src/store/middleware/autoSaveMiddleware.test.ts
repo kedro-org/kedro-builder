@@ -7,6 +7,7 @@ import projectReducer from '../../features/project/projectSlice';
 import nodesReducer, { addNode } from '../../features/nodes/nodesSlice';
 import datasetsReducer, { addDataset, deleteDatasets } from '../../features/datasets/datasetsSlice';
 import connectionsReducer from '../../features/connections/connectionsSlice';
+import onboardingReducer from '../../features/onboarding/onboardingSlice';
 import uiReducer, { openConfigPanel } from '../../features/ui/uiSlice';
 import validationReducer from '../../features/validation/validationSlice';
 import themeReducer from '../../features/theme/themeSlice';
@@ -29,6 +30,7 @@ const createTestStore = () =>
       nodes: nodesReducer,
       datasets: datasetsReducer,
       connections: connectionsReducer,
+      onboarding: onboardingReducer,
       ui: uiReducer,
       validation: validationReducer,
       theme: themeReducer,

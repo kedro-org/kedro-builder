@@ -20,10 +20,12 @@ describe('ConfigPanel', () => {
   it('returns null when panel is closed', () => {
     const { container } = renderWithProviders(<ConfigPanel />, {
       preloadedState: {
-        ui: {
-          showConfigPanel: false, selectedComponent: null,
+        onboarding: {
           showTutorial: false, tutorialStep: 1, tutorialCompleted: false,
           showWalkthrough: false, walkthroughStep: 1, walkthroughCompleted: false,
+        },
+        ui: {
+          showConfigPanel: false, selectedComponent: null,
           showProjectSetup: false, hasActiveProject: true,
           showValidationPanel: false,
           canvasZoom: 1, canvasPosition: { x: 0, y: 0 },
@@ -40,11 +42,13 @@ describe('ConfigPanel', () => {
     renderWithProviders(<ConfigPanel />, {
       preloadedState: {
         nodes: { byId: { 'node-1': mockNode }, allIds: ['node-1'], selected: [], hovered: null },
+        onboarding: {
+          showTutorial: false, tutorialStep: 1, tutorialCompleted: false,
+          showWalkthrough: false, walkthroughStep: 1, walkthroughCompleted: false,
+        },
         ui: {
           showConfigPanel: true,
           selectedComponent: { type: 'node', id: 'node-1' },
-          showTutorial: false, tutorialStep: 1, tutorialCompleted: false,
-          showWalkthrough: false, walkthroughStep: 1, walkthroughCompleted: false,
           showProjectSetup: false, hasActiveProject: true,
           showValidationPanel: false,
           canvasZoom: 1, canvasPosition: { x: 0, y: 0 },

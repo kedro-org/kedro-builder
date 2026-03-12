@@ -4,9 +4,12 @@ import { renderWithProviders } from '@/test/utils/testUtils';
 import { ValidationPanel } from './ValidationPanel';
 import type { RootState } from '@/store';
 
-const baseUi = {
+const baseOnboarding = {
   showTutorial: false, tutorialStep: 1, tutorialCompleted: false,
   showWalkthrough: false, walkthroughStep: 1, walkthroughCompleted: false,
+};
+
+const baseUi = {
   showProjectSetup: false, hasActiveProject: true,
   selectedComponent: null, showConfigPanel: false,
   canvasZoom: 1, canvasPosition: { x: 0, y: 0 },
@@ -18,6 +21,7 @@ describe('ValidationPanel', () => {
   it('returns null when panel is hidden', () => {
     const { container } = renderWithProviders(<ValidationPanel />, {
       preloadedState: {
+        onboarding: baseOnboarding,
         ui: { ...baseUi, showValidationPanel: false },
         validation: { errors: [], warnings: [], isValid: true, lastChecked: null },
       } as Partial<RootState>,

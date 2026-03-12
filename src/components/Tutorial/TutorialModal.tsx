@@ -1,14 +1,14 @@
 import { useEffect } from 'react';
 import { X, ArrowLeft } from 'lucide-react';
 import { useAppDispatch, useAppSelector } from '../../store/hooks';
-import { completeTutorial, nextTutorialStep, prevTutorialStep } from '../../features/ui/uiSlice';
+import { completeTutorial, nextTutorialStep, prevTutorialStep } from '../../features/onboarding/onboardingSlice';
 import { tutorialSteps } from './tutorialContent';
 import './TutorialModal.scss';
 
 export const TutorialModal = () => {
   const dispatch = useAppDispatch();
-  const showTutorial = useAppSelector((state) => state.ui.showTutorial);
-  const currentStep = useAppSelector((state) => state.ui.tutorialStep);
+  const showTutorial = useAppSelector((state) => state.onboarding.showTutorial);
+  const currentStep = useAppSelector((state) => state.onboarding.tutorialStep);
 
   const step = tutorialSteps[currentStep - 1];
   const Icon = step && typeof step.icon !== 'string' ? step.icon : null;
