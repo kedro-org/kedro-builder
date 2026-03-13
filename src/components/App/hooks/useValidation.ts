@@ -7,8 +7,8 @@ import {
   closeExportWizard,
 } from '@/features/ui/uiSlice';
 import { setValidationResults } from '@/features/validation/validationSlice';
-import { validatePipeline } from '@/utils/validation';
-import type { ValidationResult } from '@/utils/validation';
+import { validatePipeline } from '@/validation';
+import type { ValidationResult } from '@/validation';
 import { generateKedroProject, downloadProject } from '@/infrastructure/export';
 import { logger } from '@/utils/logger';
 import { trackEvent } from '@/infrastructure/telemetry';

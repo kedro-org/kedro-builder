@@ -4,7 +4,7 @@
  */
 
 import type { InputValidationResult } from './types';
-import { PYTHON_KEYWORDS } from '../../constants/python';
+import { PYTHON_KEYWORDS } from '../constants/python';
 
 export { PYTHON_KEYWORDS };
 

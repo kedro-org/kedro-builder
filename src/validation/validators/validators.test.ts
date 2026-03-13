@@ -2,8 +2,8 @@
  * @vitest-environment node
  */
 import { describe, it, expect, beforeEach } from 'vitest';
-import type { KedroNode, KedroDataset, KedroConnection } from '../../../types/kedro';
-import { createTestState } from '../../../test/utils/mockStore';
+import type { KedroNode, KedroDataset, KedroConnection } from '../../types/kedro';
+import { createTestState } from '../../test/utils/mockStore';
 import {
   ValidatorRegistry,
   CircularDependencyValidator,

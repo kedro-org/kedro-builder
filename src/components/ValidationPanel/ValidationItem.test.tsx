@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { screen } from '@testing-library/react';
 import { renderWithProviders } from '@/test/utils/testUtils';
 import { ValidationItem } from './ValidationItem';
-import type { ValidationError } from '@/utils/validation/types';
+import type { ValidationError } from '@/validation/types';
 import type { RootState } from '@/store';
 
 const mockNode = {

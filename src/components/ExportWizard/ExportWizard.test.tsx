@@ -2,7 +2,7 @@ import { describe, it, expect, vi } from 'vitest';
 import { screen } from '@testing-library/react';
 import { renderWithProviders } from '@/test/utils/testUtils';
 import { ExportWizard } from './ExportWizard';
-import type { ValidationResult } from '@/utils/validation';
+import type { ValidationResult } from '@/validation';
 import type { RootState } from '@/store';
 
 const cleanValidation: ValidationResult = {

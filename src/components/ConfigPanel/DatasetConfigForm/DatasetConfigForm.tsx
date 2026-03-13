@@ -10,7 +10,7 @@ import { FilepathBuilder } from '../../UI/FilepathBuilder/FilepathBuilder';
 import { ConfirmDialog } from '../../UI/ConfirmDialog';
 import { DatasetTypeSelect } from './DatasetTypeSelect';
 import { useFilepathBuilder } from './hooks/useFilepathBuilder';
-import { isPythonKeyword } from '@/utils/validation';
+import { isPythonKeyword } from '@/validation';
 import { useConfirmDialog } from '@/hooks/useConfirmDialog';
 import { dispatchConfigUpdated } from '@/constants';
 import { FILEPATH_EXEMPT_TYPES } from '@/constants/datasetTypes';

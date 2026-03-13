@@ -6,7 +6,7 @@
 import type { RootState } from '@/store';
 import type { ValidationError } from '../types';
 import type { Validator } from './Validator';
-import { UNNAMED_NODE_DEFAULT, UNNAMED_DATASET_DEFAULT } from '../../../constants/ui';
+import { UNNAMED_NODE_DEFAULT, UNNAMED_DATASET_DEFAULT } from '../../constants/ui';
 
 export class EmptyNameValidator implements Validator {
   readonly id = 'empty-name';

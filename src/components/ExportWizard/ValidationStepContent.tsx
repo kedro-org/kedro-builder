@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import type { ValidationResult } from '../../utils/validation';
+import type { ValidationResult } from '../../validation';
 import { CheckCircle, XCircle, AlertTriangle } from 'lucide-react';
 import { ValidationItem } from '../ValidationPanel/ValidationItem';
 

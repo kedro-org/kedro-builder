@@ -1,7 +1,7 @@
 import { createSlice } from '@reduxjs/toolkit';
 import type { PayloadAction } from '@reduxjs/toolkit';
 import type { ValidationState } from '../../types/redux';
-import type { ValidationResult } from '../../utils/validation';
+import type { ValidationResult } from '../../validation';
 
 const initialState: ValidationState = {
   errors: [],

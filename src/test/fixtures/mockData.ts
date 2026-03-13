@@ -5,7 +5,7 @@ import type {
   DatasetType,
   DataLayer,
 } from '../../types/kedro';
-import type { ValidationError } from '../../utils/validation/types';
+import type { ValidationError } from '../../validation/types';
 
 // Mock Nodes
 export const mockNode1: KedroNode = {

@@ -8,7 +8,7 @@ import {
   type KedroDataset,
   type KedroConnection,
 } from './kedro';
-import type { ValidationError } from '../utils/validation/types';
+import type { ValidationError } from '../validation/types';
 
 export interface ProjectState {
   current: KedroProject | null;

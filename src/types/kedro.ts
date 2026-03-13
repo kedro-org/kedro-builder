@@ -125,7 +125,7 @@ export interface KedroConnection {
   [key: string]: unknown;
 }
 
-// ValidationError is defined in utils/validation/types.ts (single canonical source)
+// ValidationError is defined in validation/types.ts (single canonical source)
 
 export interface ProjectMetadata {
   id: string;

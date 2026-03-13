@@ -12,7 +12,7 @@ import { addConnection } from '../features/connections/connectionsSlice';
 import { generatePipeline } from '../infrastructure/export/pipelineGenerator';
 import { generateCatalog } from '../infrastructure/export/catalogGenerator';
 import { generateNodes } from '../infrastructure/export/nodesGenerator';
-import { validatePipeline } from '../utils/validation/pipelineValidation';
+import { validatePipeline } from '../validation/pipelineValidation';
 import type { RootState } from '../store';
 
 describe('Pipeline: create → connect → export', () => {

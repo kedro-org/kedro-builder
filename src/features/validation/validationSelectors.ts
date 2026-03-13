@@ -1,6 +1,6 @@
 import { createSelector } from '@reduxjs/toolkit';
 import type { RootState } from '../../store';
-import type { ValidationError } from '../../utils/validation';
+import type { ValidationError } from '../../validation';
 
 // Plain selectors — no memoization needed for simple property access
 const selectValidationErrors = (state: RootState) => state.validation.errors;

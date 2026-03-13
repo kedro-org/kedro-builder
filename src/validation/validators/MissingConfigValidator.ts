@@ -6,7 +6,7 @@
 import type { RootState } from '@/store';
 import type { ValidationError } from '../types';
 import type { Validator } from './Validator';
-import { FILEPATH_EXEMPT_TYPES } from '../../../constants/datasetTypes';
+import { FILEPATH_EXEMPT_TYPES } from '../../constants/datasetTypes';
 
 export class MissingConfigValidator implements Validator {
   readonly id = 'missing-config';

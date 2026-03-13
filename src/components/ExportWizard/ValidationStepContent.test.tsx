@@ -3,7 +3,7 @@ import { screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { renderWithProviders } from '@/test/utils/testUtils';
 import { ValidationStepContent } from './ValidationStepContent';
-import type { ValidationResult } from '@/utils/validation';
+import type { ValidationResult } from '@/validation';
 import type { RootState } from '@/store';
 
 const preloadedState = {

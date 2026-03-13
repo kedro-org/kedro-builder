@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import type { RootState } from '../../store';
-import type { ValidationResult } from '../../utils/validation';
+import type { ValidationResult } from '../../validation';
 import { X, GripHorizontal } from 'lucide-react';
 import { StepIndicator } from './StepIndicator';
 import { ValidationStepContent } from './ValidationStepContent';
