@@ -19,7 +19,7 @@ vi.mock('../../infrastructure/localStorage', async (importOriginal) => {
   const actual = await importOriginal<typeof import('../../infrastructure/localStorage')>();
   return {
     ...actual,
-    saveProjectToLocalStorage: vi.fn().mockReturnValue(true),
+    saveProjectToLocalStorage: vi.fn().mockReturnValue({ success: true }),
   };
 });
 

@@ -5,10 +5,28 @@
 import type { Middleware } from '@reduxjs/toolkit';
 import type { RootState } from '../../types/redux';
 import { saveProjectToLocalStorage } from '../../infrastructure/localStorage';
+import type { SaveError } from '../../infrastructure/localStorage';
 import { logger } from '../../utils/logger';
 import { TIMING } from '../../constants/timing';
+import toast from 'react-hot-toast';
 
 let saveTimeout: NodeJS.Timeout | null = null;
+let storageUnavailableNotified = false;
+
+const SAVE_ERROR_MESSAGES: Record<SaveError, string> = {
+  storage_unavailable: 'Local storage is unavailable. Your changes will not be saved automatically.',
+  quota_exceeded: 'Storage limit reached. Your project is too large to save locally. Consider exporting it.',
+  save_failed: 'Failed to save project. Please try again.',
+};
+
+const notifySaveError = (error: SaveError): void => {
+  // Only show storage_unavailable once per session
+  if (error === 'storage_unavailable') {
+    if (storageUnavailableNotified) return;
+    storageUnavailableNotified = true;
+  }
+  toast.error(SAVE_ERROR_MESSAGES[error], { duration: 5000, position: 'bottom-right' });
+};
 
 /**
  * Actions that trigger auto-save
@@ -58,8 +76,12 @@ export const autoSaveMiddleware: Middleware<object, RootState> = (store) => (nex
 
     saveTimeout = setTimeout(() => {
       const state = store.getState();
-      saveProjectToLocalStorage(state);
-      logger.save('Project auto-saved to localStorage');
+      const saveResult = saveProjectToLocalStorage(state);
+      if (saveResult.success) {
+        logger.save('Project auto-saved to localStorage');
+      } else {
+        notifySaveError(saveResult.error!);
+      }
     }, TIMING.AUTO_SAVE_DEBOUNCE);
   }
 

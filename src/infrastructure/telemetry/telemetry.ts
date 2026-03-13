@@ -30,14 +30,18 @@ declare global {
   }
 }
 
-import { STORAGE_KEYS } from '../../constants';
+import { STORAGE_KEYS, safeGetItem, safeSetItem, safeRemoveItem } from '../../constants';
+import { logger } from '../../utils/logger';
 
-// Re-export for backwards compatibility
-export const TELEMETRY_KEY = STORAGE_KEYS.TELEMETRY;
-export const TELEMETRY_CONSENT_SHOWN_KEY = STORAGE_KEYS.TELEMETRY_CONSENT_SHOWN;
-
-// List of property keys that should NEVER be sent to analytics
-// This prevents accidental PII leakage
+/**
+ * Property keys blocked from analytics to prevent PII leakage.
+ *
+ * These are intentionally broad — we'd rather lose a non-PII analytic property
+ * than accidentally send user-generated content to a third-party service.
+ * This mirrors the approach used in kedro-viz. Keys like 'name', 'id', and
+ * 'value' are blocked because in this app they typically hold user-authored
+ * project/node/dataset identifiers.
+ */
 const BLOCKED_PROPERTY_KEYS = [
   'name',
   'projectName',
@@ -58,19 +62,24 @@ const BLOCKED_PROPERTY_KEYS = [
   'userId',
 ];
 
+// Cached consent value — invalidated only by setTelemetryConsent / resetTelemetry
+let _cachedConsent: boolean | null = null;
+
 /**
  * Get current telemetry consent status
  * OPT-OUT MODEL: Returns true by default (enabled), false only if explicitly disabled
  * @returns true if telemetry is enabled (default), false if user opted out
  */
 export const getTelemetryConsent = (): boolean => {
+  if (_cachedConsent !== null) return _cachedConsent;
   try {
-    const consent = localStorage.getItem(TELEMETRY_KEY);
+    const consent = safeGetItem(STORAGE_KEYS.TELEMETRY);
     // Return false only if explicitly disabled (opt-out)
     // Return true if null/undefined (first visit) or 'enabled'
-    return consent !== 'disabled';
+    _cachedConsent = consent !== 'disabled';
+    return _cachedConsent;
   } catch (error) {
-    console.warn('Failed to read telemetry consent:', error);
+    logger.warn('Failed to read telemetry consent:', error);
     // Default to enabled even on error (opt-out model)
     return true;
   }
@@ -78,15 +87,12 @@ export const getTelemetryConsent = (): boolean => {
 
 /**
  * Set telemetry consent.
- * Changes take effect immediately — trackEvent checks consent on every call.
+ * Changes take effect immediately — trackEvent checks the cached value.
  * @param enabled - Whether to enable or disable telemetry
  */
 export const setTelemetryConsent = (enabled: boolean): void => {
-  try {
-    localStorage.setItem(TELEMETRY_KEY, enabled ? 'enabled' : 'disabled');
-  } catch (error) {
-    console.error('Failed to set telemetry consent:', error);
-  }
+  safeSetItem(STORAGE_KEYS.TELEMETRY, enabled ? 'enabled' : 'disabled');
+  _cachedConsent = enabled;
 };
 
 /**
@@ -94,22 +100,14 @@ export const setTelemetryConsent = (enabled: boolean): void => {
  * @returns true if consent banner has been shown before
  */
 export const hasSeenConsentBanner = (): boolean => {
-  try {
-    return localStorage.getItem(TELEMETRY_CONSENT_SHOWN_KEY) === 'true';
-  } catch {
-    return false;
-  }
+  return safeGetItem(STORAGE_KEYS.TELEMETRY_CONSENT_SHOWN) === 'true';
 };
 
 /**
  * Mark consent banner as shown
  */
 export const markConsentBannerShown = (): void => {
-  try {
-    localStorage.setItem(TELEMETRY_CONSENT_SHOWN_KEY, 'true');
-  } catch (error) {
-    console.warn('Failed to mark consent banner as shown:', error);
-  }
+  safeSetItem(STORAGE_KEYS.TELEMETRY_CONSENT_SHOWN, 'true');
 };
 
 /**
@@ -125,7 +123,7 @@ const sanitizeProperties = (props?: Record<string, unknown>): TelemetryPropertie
   for (const [key, value] of Object.entries(props)) {
     // Block any keys that might contain PII
     if (BLOCKED_PROPERTY_KEYS.includes(key)) {
-      console.warn(`Telemetry: Blocked property key "${key}" to prevent PII leakage`);
+      logger.warn(`Telemetry: Blocked property key "${key}" to prevent PII leakage`);
       continue;
     }
 
@@ -133,7 +131,7 @@ const sanitizeProperties = (props?: Record<string, unknown>): TelemetryPropertie
     if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') {
       sanitized[key] = value as TelemetryPropertyValue;
     } else {
-      console.warn(`Telemetry: Blocked non-primitive value for key "${key}"`);
+      logger.warn(`Telemetry: Blocked non-primitive value for key "${key}"`);
     }
   }
 
@@ -159,7 +157,7 @@ export const trackEvent = (eventName: string, properties?: Record<string, unknow
 
   // Check if Heap is loaded
   if (!window.heap || typeof window.heap.track !== 'function') {
-    console.warn('Heap is not loaded. Event not tracked:', eventName);
+    logger.warn('Heap is not loaded. Event not tracked:', eventName);
     return;
   }
 
@@ -169,7 +167,7 @@ export const trackEvent = (eventName: string, properties?: Record<string, unknow
   try {
     window.heap.track(eventName, sanitizedProps);
   } catch (error) {
-    console.error('Failed to track event:', eventName, error);
+    logger.error('Failed to track event:', eventName, error);
   }
 };
 
@@ -196,7 +194,7 @@ export const setGlobalEventProperties = (properties: Record<string, unknown>): v
     try {
       window.heap.addEventProperties(sanitizedProps);
     } catch (error) {
-      console.error('Failed to set global event properties:', error);
+      logger.error('Failed to set global event properties:', error);
     }
   }
 };
@@ -207,13 +205,14 @@ export const setGlobalEventProperties = (properties: Record<string, unknown>): v
  */
 export const resetTelemetry = (): void => {
   try {
-    localStorage.removeItem(TELEMETRY_KEY);
-    localStorage.removeItem(TELEMETRY_CONSENT_SHOWN_KEY);
+    safeRemoveItem(STORAGE_KEYS.TELEMETRY);
+    safeRemoveItem(STORAGE_KEYS.TELEMETRY_CONSENT_SHOWN);
+    _cachedConsent = null;
 
     if (window.heap && typeof window.heap.resetIdentity === 'function') {
       window.heap.resetIdentity();
     }
   } catch (error) {
-    console.error('Failed to reset telemetry:', error);
+    logger.error('Failed to reset telemetry:', error);
   }
 };

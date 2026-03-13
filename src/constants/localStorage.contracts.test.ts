@@ -14,7 +14,6 @@
 
 import { describe, it, expect } from 'vitest';
 import { STORAGE_KEYS } from '.';
-import { TELEMETRY_KEY, TELEMETRY_CONSENT_SHOWN_KEY } from '../infrastructure/telemetry';
 
 describe('localStorage Contracts', () => {
   describe('Key Format Invariants', () => {
@@ -46,16 +45,6 @@ describe('localStorage Contracts', () => {
     it('telemetry consent shown key is "kedro-builder-telemetry-consent-shown"', () => {
       expect(STORAGE_KEYS.TELEMETRY_CONSENT_SHOWN).toBe('kedro-builder-telemetry-consent-shown');
       expect(STORAGE_KEYS.TELEMETRY_CONSENT_SHOWN).toMatch(/^kedro-builder-/);
-    });
-  });
-
-  describe('Telemetry module re-exports match STORAGE_KEYS', () => {
-    it('TELEMETRY_KEY is an alias for STORAGE_KEYS.TELEMETRY', () => {
-      expect(TELEMETRY_KEY).toBe(STORAGE_KEYS.TELEMETRY);
-    });
-
-    it('TELEMETRY_CONSENT_SHOWN_KEY is an alias for STORAGE_KEYS.TELEMETRY_CONSENT_SHOWN', () => {
-      expect(TELEMETRY_CONSENT_SHOWN_KEY).toBe(STORAGE_KEYS.TELEMETRY_CONSENT_SHOWN);
     });
   });
 
