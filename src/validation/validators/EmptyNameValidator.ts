@@ -4,7 +4,7 @@
  */
 
 import type { RootState } from '@/store';
-import type { ValidationError } from '../types';
+import { type ValidationError, ValidationCode } from '../types';
 import type { Validator } from './Validator';
 import { UNNAMED_NODE_DEFAULT, UNNAMED_DATASET_DEFAULT } from '../../constants/ui';
 
@@ -24,6 +24,7 @@ export class EmptyNameValidator implements Validator {
         if (!name || name === UNNAMED_NODE_DEFAULT) {
           errors.push({
             id: `error-empty-node-name-${nodeId}`,
+            code: ValidationCode.EMPTY_NAME,
             severity: 'error',
             componentId: nodeId,
             componentType: 'node',
@@ -42,6 +43,7 @@ export class EmptyNameValidator implements Validator {
         if (!name || name === UNNAMED_DATASET_DEFAULT) {
           errors.push({
             id: `error-empty-dataset-name-${datasetId}`,
+            code: ValidationCode.EMPTY_NAME,
             severity: 'error',
             componentId: datasetId,
             componentType: 'dataset',

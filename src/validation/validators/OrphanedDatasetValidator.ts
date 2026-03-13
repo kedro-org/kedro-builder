@@ -4,7 +4,7 @@
  */
 
 import type { RootState } from '@/store';
-import type { ValidationError } from '../types';
+import { type ValidationError, ValidationCode } from '../types';
 import type { Validator } from './Validator';
 import { findOrphanedDatasets } from '@/domain/PipelineGraph';
 import { getConnectionsArray } from './helpers';
@@ -23,6 +23,7 @@ export class OrphanedDatasetValidator implements Validator {
       const dataset = state.datasets.byId[datasetId];
       warnings.push({
         id: `warning-orphan-dataset-${datasetId}`,
+        code: ValidationCode.ORPHANED_DATASET,
         severity: 'warning',
         componentId: datasetId,
         componentType: 'dataset',

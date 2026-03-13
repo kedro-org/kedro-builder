@@ -64,6 +64,7 @@ describe('CustomNode', () => {
         errors: [
           {
             id: 'err-1',
+            code: 'empty-name' as const,
             severity: 'error' as const,
             componentId: 'node-1',
             componentType: 'node' as const,

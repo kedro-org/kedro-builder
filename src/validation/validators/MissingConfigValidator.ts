@@ -4,7 +4,7 @@
  */
 
 import type { RootState } from '@/store';
-import type { ValidationError } from '../types';
+import { type ValidationError, ValidationCode } from '../types';
 import type { Validator } from './Validator';
 import { FILEPATH_EXEMPT_TYPES } from '../../constants/datasetTypes';
 
@@ -32,6 +32,7 @@ export class MissingConfigValidator implements Validator {
         if (issues.length > 0) {
           warnings.push({
             id: `warning-missing-config-${datasetId}`,
+            code: ValidationCode.MISSING_CONFIG,
             severity: 'warning',
             componentId: datasetId,
             componentType: 'dataset',

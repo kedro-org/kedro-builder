@@ -27,10 +27,10 @@ describe('ValidationStepContent', () => {
   it('disables Continue when there are errors and shows error count', async () => {
     const result: ValidationResult = {
       errors: [
-        { id: 'e1', severity: 'error', message: 'Missing code', componentId: 'n1', componentType: 'node', suggestion: 'Add code' },
+        { id: 'e1', code: 'missing-code', severity: 'error', message: 'Missing code', componentId: 'n1', componentType: 'node', suggestion: 'Add code' },
       ],
       warnings: [
-        { id: 'w1', severity: 'warning', message: 'Orphaned ds', componentId: 'd1', componentType: 'dataset', suggestion: 'Connect it' },
+        { id: 'w1', code: 'orphaned-dataset', severity: 'warning', message: 'Orphaned ds', componentId: 'd1', componentType: 'dataset', suggestion: 'Connect it' },
       ],
       isValid: false,
     };

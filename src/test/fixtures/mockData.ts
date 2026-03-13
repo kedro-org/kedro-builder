@@ -213,6 +213,7 @@ export const mockConnection8: KedroConnection = {
 // Mock Validation Errors
 export const mockValidationError1: ValidationError = {
   id: 'error-1',
+  code: 'invalid-name',
   severity: 'error',
   componentId: 'node-1',
   componentType: 'node',
@@ -223,6 +224,7 @@ export const mockValidationError1: ValidationError = {
 
 export const mockValidationWarning1: ValidationError = {
   id: 'warning-1',
+  code: 'orphaned-dataset',
   severity: 'warning',
   componentId: 'dataset-1',
   componentType: 'dataset',

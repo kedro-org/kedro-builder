@@ -38,11 +38,11 @@ describe('ValidationPanel', () => {
         datasets: { byId: {}, allIds: [], selected: [] },
         validation: {
           errors: [
-            { id: 'e1', severity: 'error' as const, componentId: 'n1', componentType: 'node' as const, message: 'Bad' },
-            { id: 'e2', severity: 'error' as const, componentId: 'n2', componentType: 'node' as const, message: 'Bad2' },
+            { id: 'e1', code: 'empty-name' as const, severity: 'error' as const, componentId: 'n1', componentType: 'node' as const, message: 'Bad' },
+            { id: 'e2', code: 'invalid-name' as const, severity: 'error' as const, componentId: 'n2', componentType: 'node' as const, message: 'Bad2' },
           ],
           warnings: [
-            { id: 'w1', severity: 'warning' as const, componentId: 'd1', componentType: 'dataset' as const, message: 'Meh' },
+            { id: 'w1', code: 'orphaned-dataset' as const, severity: 'warning' as const, componentId: 'd1', componentType: 'dataset' as const, message: 'Meh' },
           ],
           isValid: false,
           lastChecked: Date.now(),

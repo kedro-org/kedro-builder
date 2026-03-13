@@ -4,7 +4,7 @@
  */
 
 import type { RootState } from '@/store';
-import type { ValidationError } from '../types';
+import { type ValidationError, ValidationCode } from '../types';
 import type { Validator } from './Validator';
 
 export class MissingCodeValidator implements Validator {
@@ -22,6 +22,7 @@ export class MissingCodeValidator implements Validator {
         if (!code) {
           warnings.push({
             id: `warning-no-code-${nodeId}`,
+            code: ValidationCode.MISSING_CODE,
             severity: 'warning',
             componentId: nodeId,
             componentType: 'node',

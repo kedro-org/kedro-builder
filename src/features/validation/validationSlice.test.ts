@@ -10,8 +10,8 @@ import type { ValidationState } from '../../types/redux';
 describe('validationSlice', () => {
   it('clearValidation should reset to pristine state', () => {
     const dirty: ValidationState = {
-      errors: [{ id: 'e1', severity: 'error', componentId: 'n1', componentType: 'node', message: 'err' }],
-      warnings: [{ id: 'w1', severity: 'warning', componentId: 'd1', componentType: 'dataset', message: 'warn' }],
+      errors: [{ id: 'e1', code: 'empty-name', severity: 'error', componentId: 'n1', componentType: 'node', message: 'err' }],
+      warnings: [{ id: 'w1', code: 'orphaned-dataset', severity: 'warning', componentId: 'd1', componentType: 'dataset', message: 'warn' }],
       isValid: false,
       lastChecked: 99999,
     };

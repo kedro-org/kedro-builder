@@ -7,7 +7,7 @@ import {
   closeExportWizard,
 } from '@/features/ui/uiSlice';
 import { setValidationResults } from '@/features/validation/validationSlice';
-import { validatePipeline } from '@/validation';
+import { validatePipeline, ValidationCode } from '@/validation';
 import type { ValidationResult } from '@/validation';
 import { generateKedroProject, downloadProject } from '@/infrastructure/export';
 import { logger } from '@/utils/logger';
@@ -101,10 +101,10 @@ export const useValidation = ({ showExportWizard }: UseValidationProps) => {
     // Check if there are any errors
     if (!validationResult.isValid) {
       // Find specific error types for better user feedback
-      const cycleError = validationResult.errors.find(e => e.message.includes('Circular dependency'));
-      const duplicateError = validationResult.errors.find(e => e.message.includes('Duplicate'));
-      const invalidNameError = validationResult.errors.find(e => e.message.includes('Invalid'));
-      const emptyNameError = validationResult.errors.find(e => e.message.includes('no name'));
+      const cycleError = validationResult.errors.find(e => e.code === ValidationCode.CIRCULAR_DEPENDENCY);
+      const duplicateError = validationResult.errors.find(e => e.code === ValidationCode.DUPLICATE_NAME);
+      const invalidNameError = validationResult.errors.find(e => e.code === ValidationCode.INVALID_NAME);
+      const emptyNameError = validationResult.errors.find(e => e.code === ValidationCode.EMPTY_NAME);
 
       // Show specific error message based on error type
       let errorMessage = 'Cannot view code: Please fix validation errors first';

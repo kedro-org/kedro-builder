@@ -88,6 +88,7 @@ describe('DatasetNode', () => {
         errors: [
           {
             id: 'err-1',
+            code: 'missing-config' as const,
             severity: 'error' as const,
             componentId: 'ds-1',
             componentType: 'dataset' as const,

@@ -4,7 +4,7 @@
  */
 
 import type { RootState } from '@/store';
-import type { ValidationError } from '../types';
+import { type ValidationError, ValidationCode } from '../types';
 import type { Validator } from './Validator';
 import { buildDependencyGraph, detectCycles } from '@/domain/PipelineGraph';
 import { getConnectionsArray } from './helpers';
@@ -29,6 +29,7 @@ export class CircularDependencyValidator implements Validator {
 
         errors.push({
           id: `error-circular-${nodeId}`,
+          code: ValidationCode.CIRCULAR_DEPENDENCY,
           severity: 'error',
           componentId: nodeId,
           componentType: 'pipeline',

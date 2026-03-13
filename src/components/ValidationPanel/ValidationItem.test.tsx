@@ -12,6 +12,7 @@ const mockNode = {
 
 const errorIssue: ValidationError = {
   id: 'err-1',
+  code: 'empty-name',
   severity: 'error',
   componentId: 'node-1',
   componentType: 'node',
