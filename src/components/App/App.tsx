@@ -7,7 +7,6 @@ import { ProjectSetupModal } from '../ProjectSetup/ProjectSetupModal';
 import { ValidationPanel } from '../ValidationPanel/ValidationPanel';
 import { ExportWizard } from '../ExportWizard/ExportWizard';
 import { CodeViewerModal } from '../CodeViewer';
-import { TelemetryConsent } from '../TelemetryConsent';
 import { FeedbackButton } from '../Feedback';
 import { ErrorBoundary } from '../UI/ErrorBoundary';
 import { AppHeader } from './AppHeader';
@@ -91,9 +90,6 @@ function App() {
           />
         </ErrorBoundary>
       )}
-
-      {/* Telemetry Consent Banner */}
-      <TelemetryConsent />
 
       {/* Toast notifications */}
       <Toaster />

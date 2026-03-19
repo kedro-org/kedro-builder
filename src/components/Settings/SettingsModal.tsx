@@ -1,9 +1,7 @@
-import { useState, useEffect } from 'react';
-import { X, Moon, Sun, BarChart3 } from 'lucide-react';
+import { X, Moon, Sun } from 'lucide-react';
 import { useAppDispatch, useAppSelector } from '../../store/hooks';
 import { toggleTheme } from '../../features/theme/themeSlice';
 import { selectTheme } from '../../features/theme/themeSelectors';
-import { getTelemetryConsent, setTelemetryConsent } from '../../infrastructure/telemetry';
 import './SettingsModal.scss';
 
 interface SettingsModalProps {
@@ -16,28 +14,14 @@ interface SettingsModalProps {
  *
  * Centralized settings panel for:
  * - Theme selection (light/dark)
- * - Analytics/telemetry preferences
  *
- * Changes to telemetry settings will reload the page to load/unload Heap.
  */
 export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose }) => {
   const dispatch = useAppDispatch();
   const theme = useAppSelector(selectTheme);
-  const [analyticsEnabled, setAnalyticsEnabled] = useState(false);
-
-  useEffect(() => {
-    // Load current telemetry consent status
-    setAnalyticsEnabled(getTelemetryConsent());
-  }, [isOpen]);
 
   const handleThemeToggle = () => {
     dispatch(toggleTheme());
-  };
-
-  const handleAnalyticsToggle = () => {
-    const newValue = !analyticsEnabled;
-    setAnalyticsEnabled(newValue);
-    setTelemetryConsent(newValue); // This will reload the page
   };
 
   const handleOverlayClick = (e: React.MouseEvent) => {
@@ -92,41 +76,6 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
               </button>
             </div>
           </section>
-
-          {/* Analytics Section */}
-          <section className="settings-section">
-            <div className="settings-section__header">
-              <div className="settings-section__icon">
-                <BarChart3 size={20} />
-              </div>
-              <div className="settings-section__info">
-                <h3 className="settings-section__title">Analytics</h3>
-                <p className="settings-section__description" data-heap-redact-text>
-                  Help us improve Kedro Builder by sharing anonymous usage data. We only track
-                  behavioral data like clicks and counts - never your project names, node names,
-                  or any other personal information.
-                </p>
-              </div>
-            </div>
-            <div className="settings-section__control">
-              <label className="settings-switch">
-                <input
-                  type="checkbox"
-                  checked={analyticsEnabled}
-                  onChange={handleAnalyticsToggle}
-                  data-heap-redact-attributes
-                />
-                <span className="settings-switch__slider" />
-              </label>
-            </div>
-          </section>
-
-          {/* Info Note */}
-          <div className="settings-modal__note" data-heap-redact-text>
-            <p>
-              Note: Changing analytics settings will reload the page to apply changes.
-            </p>
-          </div>
         </div>
       </div>
     </div>
