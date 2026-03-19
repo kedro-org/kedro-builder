@@ -56,7 +56,7 @@ Think of the app as having **four layers** stacked on top of each other:
   ┌─────────────────────────────────────────┐
   │   UI Layer (what the user sees/clicks)  │  React Components
   ├─────────────────────────────────────────┤
-  │   State Layer (the "brain")             │  Redux Store (7 slices)
+  │   State Layer (the "brain")             │  Redux Store (8 slices)
   ├─────────────────────────────────────────┤
   │   Logic Layer (validation + generation) │  Validators + Code Generators
   ├─────────────────────────────────────────┤
@@ -91,9 +91,9 @@ kedro-builder/
 
 The only folder you'll spend 99% of your time in is `src/`. Let's zoom into it.
 
-### Inside `src/` -- The 9 Rooms of the Building
+### Inside `src/` -- The 10 Rooms of the Building
 
-Think of `src/` as a building with 9 rooms, each with a specific purpose:
+Think of `src/` as a building with 10 rooms, each with a specific purpose:
 
 ```
 src/
@@ -103,7 +103,7 @@ src/
 │                         #    (Canvas, panels, forms, buttons)
 │
 ├── features/             # ROOM 2: The BRAIN (Redux state slices)
-│                         #    (nodes, datasets, connections, UI state)
+│                         #    (nodes, datasets, connections, onboarding, UI state)
 │
 ├── store/                # ROOM 3: The SWITCHBOARD (Redux store setup)
 │                         #    (store config, middleware, typed hooks)
@@ -117,13 +117,16 @@ src/
 ├── infrastructure/       # ROOM 6: EXTERNAL CONNECTIONS
 │                         #    (localStorage, ZIP export, telemetry)
 │
-├── utils/                # ROOM 7: HELPER TOOLS
-│                         #    (validation rules, file tree builder, logger)
+├── validation/           # ROOM 7: PIPELINE VALIDATION ENGINE
+│                         #    (8 validator classes, ValidatorRegistry)
 │
-├── types/                # ROOM 8: TYPE DEFINITIONS
+├── utils/                # ROOM 8: HELPER TOOLS
+│                         #    (input validation, file tree builder, logger)
+│
+├── types/                # ROOM 9: TYPE DEFINITIONS
 │                         #    (what a Node is, what a Dataset is, IDs)
 │
-├── constants/            # ROOM 9: FIXED VALUES
+├── constants/            # ROOM 10: FIXED VALUES
 │                         #    (timing, layout sizes, dataset type list)
 │
 ├── styles/               # Global SCSS styles
@@ -139,6 +142,7 @@ This isn't random. The folders are organized by **responsibility**, following a 
 | `types/` | "What SHAPE does the data have?" | Nothing (leaf) |
 | `constants/` | "What VALUES never change?" | `types/` |
 | `domain/` | "What are the BUSINESS RULES?" | `types/` only |
+| `validation/` | "Is the pipeline VALID?" | `types/`, `domain/` |
 | `utils/` | "What HELPER FUNCTIONS do we need?" | `types/`, `domain/` |
 | `features/` | "How is STATE organized?" | `types/` |
 | `store/` | "How is the state WIRED together?" | `features/` |
@@ -161,17 +165,17 @@ components/
 │   ├── DatasetNode/           # Green boxes (dataset nodes)
 │   ├── CustomEdge/            # Lines connecting them
 │   ├── GhostNode/             # Preview when dragging
-│   └── hooks/                 # 10 hooks for canvas behavior
+│   └── hooks/                 # 14 hooks for canvas behavior
 ├── ConfigPanel/      # Right-side panel to edit a node/dataset
 ├── CodeViewer/       # Preview generated Python/YAML code
 ├── ExportWizard/     # The export dialog
-├── Header/           # Top bar with project name
-├── NodePalette/      # Left sidebar -- drag items FROM here
+├── Palette/          # Left sidebar -- drag items FROM here
 ├── ProjectSetup/     # "New Project" modal
-├── Toolbar/          # Zoom, undo, layout buttons
 ├── Tutorial/         # First-time user tutorial
 ├── Walkthrough/      # Interactive step-by-step guide
 ├── ValidationPanel/  # Shows errors/warnings
+├── Settings/         # Settings modal
+├── Feedback/         # Feedback button + modal
 └── UI/               # Reusable primitives (Button, Input, etc.)
 ```
 
@@ -184,6 +188,7 @@ When you need to find something, ask yourself:
 - **"It's a reusable function/hook"** --> `hooks/` or `utils/`
 - **"It's about saving or exporting"** --> `infrastructure/`
 - **"It's pure logic, no UI"** --> `domain/`
+- **"It's a validation rule"** --> `validation/`
 - **"It's a fixed value or list"** --> `constants/`
 
 ---
@@ -325,6 +330,7 @@ export const store = configureStore({
     nodes: nodesReducer,
     datasets: datasetsReducer,
     connections: connectionsReducer,
+    onboarding: onboardingReducer,
     ui: uiReducer,
     validation: validationReducer,
     theme: themeReducer,
@@ -338,15 +344,16 @@ export const store = configureStore({
 });
 ```
 
-This creates **one global object** with 7 sections (slices). At any point in time, the entire app state looks like this:
+This creates **one global object** with 8 sections (slices). At any point in time, the entire app state looks like this:
 
 ```
 store = {
-  project:     { current: {...}, savedList: [...], lastSaved: ... }
+  project:     { current: {...} }
   nodes:       { byId: {...}, allIds: [...], selected: [...], hovered: null }
   datasets:    { byId: {...}, allIds: [...], selected: [...] }
   connections: { byId: {...}, allIds: [...], selected: [...] }
-  ui:          { showTutorial: false, showConfigPanel: true, ... }
+  onboarding:  { showTutorial: false, tutorialStep: 1, showWalkthrough: false, ... }
+  ui:          { showConfigPanel: true, showExportWizard: false, ... }
   validation:  { errors: [...], warnings: [...], isValid: true, ... }
   theme:       { theme: 'light' }
 }
@@ -560,14 +567,15 @@ Auto-save middleware notices a node action → saves to localStorage
 Any component using useAppSelector(selectAllNodes) re-renders
 ```
 
-### Quick Summary: The 7 Slices
+### Quick Summary: The 8 Slices
 
 | Slice | What it holds | Key actions |
 |---|---|---|
-| **project** | Project name, description, saved list | `createProject`, `resetProject` |
+| **project** | Project name, description | `createProject`, `resetProject` |
 | **nodes** | All Kedro function nodes (normalized) | `addNode`, `updateNode`, `deleteNode` |
 | **datasets** | All Kedro datasets (normalized) | `addDataset`, `updateDataset`, `deleteDataset` |
 | **connections** | All edges between nodes/datasets (normalized) | `addConnection`, `deleteConnection` |
+| **onboarding** | Tutorial/walkthrough state | `setShowTutorial`, `completeTutorial`, `startWalkthrough` |
 | **ui** | Which panels are open, what's selected | `openConfigPanel`, `showExportWizard` |
 | **validation** | Errors, warnings, isValid flag | `setValidationResults`, `clearValidation` |
 | **theme** | Light or dark mode | `toggleTheme`, `setTheme` |
@@ -751,7 +759,7 @@ export const CustomEdge = memo<EdgeProps>(({ ... }) => { ... });
 
 ### The Scenario: User Drags a "CSV Dataset" From the Palette Onto the Canvas
 
-#### Step 1: The Drag Starts (NodePalette)
+#### Step 1: The Drag Starts (Palette)
 
 The browser's native Drag & Drop API stores the type:
 
@@ -1537,7 +1545,7 @@ export const useAppInitialization = () => {
 │                                                                         │
 │  ┌─────────────── UI LAYER (React Components) ────────────────────┐    │
 │  │                                                                 │    │
-│  │  Header  │  NodePalette  │  PipelineCanvas  │  ConfigPanel     │    │
+│  │  Header  │  Palette      │  PipelineCanvas  │  ConfigPanel     │    │
 │  │  Toolbar │  Tutorial     │  (ReactFlow)     │  CodeViewer      │    │
 │  │          │  Walkthrough  │  CustomNode       │  ExportWizard    │    │
 │  │          │               │  DatasetNode      │  ValidationPanel │    │
@@ -1568,7 +1576,7 @@ export const useAppInitialization = () => {
 │                                                                         │
 │  ┌──────────── LOGIC LAYER (Pure Functions) ──────────────────────┐    │
 │  │                                                                 │    │
-│  │  domain/           │ utils/validation/    │ infrastructure/     │    │
+│  │  domain/           │ validation/          │ infrastructure/     │    │
 │  │  ├── IdGenerator   │ ├── 8 Validators    │ export/             │    │
 │  │  └── PipelineGraph │ ├── inputValidation │ ├── catalogGen      │    │
 │  │      (cycles,      │ └── ValidatorRegistry│ ├── pipelineGen    │    │
@@ -1592,7 +1600,7 @@ export const useAppInitialization = () => {
 |---|---|---|
 | **Normalized state** (`byId` + `allIds`) | nodes, datasets, connections slices | O(1) lookups, easy serialization |
 | **Branded types** | `NodeId`, `DatasetId`, `ConnectionId` | Prevent mixing ID types at compile time |
-| **Strategy pattern** | 8 validators in `utils/validation/validators/` | Each rule is independent, testable, pluggable |
+| **Strategy pattern** | 8 validators in `validation/validators/` | Each rule is independent, testable, pluggable |
 | **Builder pattern** | `KedroProjectBuilder` | Step-by-step ZIP construction with fluent API |
 | **Middleware** | autoSave, preferences | Keep reducers pure, manage side effects |
 | **Memoized selectors** | `createSelector` in all `*Selectors.ts` files | Prevent unnecessary re-renders |
@@ -1603,44 +1611,32 @@ export const useAppInitialization = () => {
 
 ### Part C: Known Issues You'll Inherit
 
-#### P0 -- Must Fix
-
-**1. Missing `__main__.py` in generated project**
-- `pyprojectGenerator.ts` generates `[project.scripts]` that references `__main__:main`
-- But `KedroProjectBuilder` never generates the `__main__.py` file
-- Users can't `pip install -e .` the generated project
-- **Fix**: Either generate `__main__.py` in `staticFilesGenerator.ts`, or remove the `[project.scripts]` entry
-
 #### P1 -- Should Fix
 
-**2. `memo()` defeated by array replacement (performance)**
+**1. `memo()` defeated by array replacement (performance)**
 - `useCanvasState.ts` replaces the entire `nodes` and `edges` arrays on every Redux change via `useLayoutEffect`
 - This gives every node a new object reference, so `memo()` can't skip re-renders
 - With 50+ nodes, dragging one node re-renders ALL nodes
-- **Fix**: Documented in ADR-002 -- switch to ReactFlow's "controlled mode" with selective updates
-
-**3. highlight.js CSS loaded from CDN**
-- `CodeDisplay.tsx` loads CSS from `cdnjs.cloudflare.com` at runtime
-- No SRI hash, version mismatch, fails offline
-- **Fix**: Bundle the CSS locally via import
-
-**4. `store.getState()` anti-pattern**
-- `useConnectionHandlers.ts` line 153 directly accesses the store
-- Bypasses React's subscription model
-- **Fix**: Replace with `useAppSelector` or pass data through hook parameters
+- **Fix**: Switch to ReactFlow's "controlled mode" with selective updates
 
 #### P2 -- Should Add
 
-**5. Zero component tests** -- All 340 tests are for slices, hooks, generators, and validators. No React component is tested.
+**2. No multi-tab support** -- If you open the app in two tabs, the last tab to write wins. No conflict detection.
 
-**6. No multi-tab support** -- If you open the app in two tabs, the last tab to write wins. No conflict detection.
+#### Previously Fixed (for reference)
+
+The following issues were identified during code review and have been resolved:
+- **`__main__.py`** -- Now generated by `staticFilesGenerator.ts`
+- **highlight.js CSS from CDN** -- Now locally bundled in `public/hljs/`
+- **`store.getState()` anti-pattern** -- Replaced with a thunk in `ConfigPanel`
+- **Zero component tests** -- 23 component test files added (375 tests total across 47 files)
 
 ### Part D: The Files You'll Touch Most
 
 | If you need to... | You'll edit... |
 |---|---|
 | Add a new node/dataset property | `types/kedro.ts`, the relevant slice, ConfigPanel form |
-| Add a new validation rule | Create a class in `validators/`, register it in `validators/index.ts` |
+| Add a new validation rule | Create a class in `validation/validators/`, register it in `validation/validators/index.ts` |
 | Change how generated code looks | The relevant generator in `infrastructure/export/` |
 | Fix a canvas behavior | One of the 10 hooks in `components/Canvas/hooks/` |
 | Add a new UI panel | New component in `components/`, wire it in `App.tsx` and `uiSlice.ts` |
@@ -1652,8 +1648,8 @@ export const useAppInitialization = () => {
 ```bash
 npm run dev            # Start the app (localhost:5173)
 npm run build          # Build for production (check for errors)
-npm run test           # Run all 340 tests
-npm run test:coverage  # See what's tested (target: 70%+)
+npm run test           # Run all 375 tests
+npm run test:coverage  # Coverage report (thresholds: 60/50/60/60)
 npm run lint           # Check for code issues
 ```
 
@@ -1680,10 +1676,10 @@ User Action → dispatch(action) → Reducer → New State → Component Re-rend
 | # | Lesson | Key Takeaway |
 |---|---|---|
 | 1 | The Big Picture | 4-layer app: UI → State → Logic → Infrastructure |
-| 2 | Folder Structure | 9 folders in `src/`, each with a single responsibility |
+| 2 | Folder Structure | 10 folders in `src/`, each with a single responsibility |
 | 3 | Tech Stack | React 19, Redux Toolkit, ReactFlow, JSZip. No backend. |
-| 4 | State Management | 7 Redux slices, normalized state, actions in/state out |
-| 5 | The Canvas | ReactFlow with 3 custom components, 4 handler hooks |
+| 4 | State Management | 8 Redux slices, normalized state, actions in/state out |
+| 5 | The Canvas | ReactFlow with 3 custom components, 14 canvas hooks |
 | 6 | Data Flow | Traced a full user action from drag-to-drop through every layer |
 | 7 | Code Generation | Builder pattern, 7 generators, pure string interpolation |
 | 8 | Validation | Strategy pattern, 8 validators, on-demand execution |

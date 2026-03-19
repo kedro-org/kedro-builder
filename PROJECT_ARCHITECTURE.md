@@ -28,14 +28,14 @@ Enable Kedro newcomers and data practitioners to build production-ready pipeline
 | Layer | Tools & Versions | Notes |
 | --- | --- | --- |
 | Runtime | React `19.1.1`, TypeScript `~5.9.3`, Vite `5.4.8` | Strict TS, fast dev feedback |
-| State | Redux Toolkit `^2.9.0`, React-Redux | Normalized graph slices + UI slices |
+| State | Redux Toolkit `^2.9.0`, React-Redux | 8 normalized slices + canvas selectors |
 | Canvas | `@xyflow/react` (ReactFlow) `^12.8.6` | Custom nodes, edges, selection tooling |
 | UI | Radix UI primitives, Lucide icons, SCSS | BEM conventions with CSS custom properties for theming |
 | Forms | React Hook Form `^7.65.0` | Efficient form state for config panels |
 | Syntax Highlighting | highlight.js (locally bundled CSS) | Theme-aware code preview; no CDN dependency |
 | Export | JSZip `^3.10.1`, TypeScript string templates | Pure TS templates; downloads via browser APIs |
 | Feedback | react-hot-toast | Validation/export notifications |
-| Testing | Vitest `^4.0.5`, Testing Library | Unit, contract, and integration tests |
+| Testing | Vitest `^4.0.18`, Testing Library | Unit, contract, component, and integration tests |
 
 Node.js `18.20.1` and npm `10+` are recommended for parity with local dev scripts.
 
@@ -304,10 +304,10 @@ Kedro Builder uses **Redux Toolkit** with a **normalized state structure** for e
 
 ## Validation & Export Implementation
 
-- **Pipeline Validation (`src/utils/validation/`)**
+- **Pipeline Validation (`src/validation/`)**
   Modular validator classes following the Strategy pattern. Each validator (CircularDependency, DuplicateName, EmptyName, InvalidName, OrphanedNode, OrphanedDataset, MissingCode, MissingConfig) implements a common `Validator` interface. The `ValidatorRegistry` exposes three methods: `register`, `getAll`, and `validateAll`. Shared helpers like `getConnectionsArray` are extracted to `validators/helpers.ts`. The `PipelineGraph` domain service handles DFS-based cycle detection by converting dataset connections into node-to-node edges.
 
-- **Input Validation (`src/utils/validation/inputValidation.ts`)**
+- **Input Validation (`src/validation/inputValidation.ts`)**
   Real-time validation for node/dataset names. Node names allow letters, numbers, underscores, and spaces (`/^[a-zA-Z][a-zA-Z0-9_\s]*$/`). Dataset names require strict snake_case (`/^[a-z][a-z0-9_]*$/`). Both check for Python keyword collisions, length limits, and duplicate names.
 
 - **Export Flow (`src/components/App/hooks/useValidation.ts`)**
@@ -344,7 +344,7 @@ kedro-builder/
 │   │   └── telemetry/           # Heap analytics (uses centralized STORAGE_KEYS)
 │   ├── components/
 │   │   ├── App/                 # Shell, layout, validation hooks
-│   │   ├── Canvas/              # ReactFlow integration, overlays, 9 canvas hooks
+│   │   ├── Canvas/              # ReactFlow integration, overlays, 14 canvas hooks
 │   │   ├── CodeViewer/          # File tree + syntax-highlighted preview (local highlight.js)
 │   │   ├── ConfigPanel/         # Node & dataset configuration forms
 │   │   ├── ExportWizard/        # Validation step + metadata confirmation
@@ -354,7 +354,6 @@ kedro-builder/
 │   │   ├── Walkthrough/         # Contextual walkthrough overlay
 │   │   ├── Settings/            # Settings modal
 │   │   ├── Feedback/            # Feedback button + modal
-│   │   ├── TelemetryConsent/    # Analytics consent banner
 │   │   ├── UI/                  # Buttons, inputs, theme toggle, ErrorBoundary
 │   │   └── ValidationPanel/     # Issue list surfaced from validation slice
 │   ├── features/                # Redux slices per domain
@@ -362,24 +361,23 @@ kedro-builder/
 │   │   ├── connections/
 │   │   ├── datasets/
 │   │   ├── nodes/
+│   │   ├── onboarding/          # Tutorial + walkthrough state (split from uiSlice)
 │   │   ├── project/
 │   │   ├── theme/
 │   │   ├── ui/                  # UI slice + selectors
 │   │   └── validation/          # Validation slice + indexed selectors
+│   ├── validation/              # Pipeline validation engine
+│   │   ├── validators/          # Individual validators + shared helpers (Strategy pattern)
+│   │   ├── inputValidation.ts   # Real-time input validation
+│   │   ├── pipelineValidation.ts # ValidatorRegistry wrapper
+│   │   └── types.ts             # Canonical ValidationError type
 │   ├── hooks/                   # Custom React hooks
 │   │   ├── useConfirmDialog.ts  # Reusable confirm dialog state
 │   │   ├── useClearSelections.ts # Clear all selections
 │   │   ├── useSelectAndOpenConfig.ts # Select + open config panel
 │   │   └── useTelemetry.ts      # Telemetry tracking hook
-│   │   # Canvas-specific hooks in components/Canvas/hooks/:
-│   │   #   useDeleteItems.ts    # Shared delete logic for nodes/datasets/edges
 │   ├── store/                   # Store configuration, typed hooks, middleware
 │   ├── utils/
-│   │   ├── validation/          # Validator classes (Strategy pattern)
-│   │   │   ├── validators/      # Individual validators + shared helpers
-│   │   │   ├── inputValidation.ts  # Real-time input validation
-│   │   │   ├── pipelineValidation.ts  # ValidatorRegistry wrapper
-│   │   │   └── types.ts         # Canonical ValidationError type
 │   │   ├── fileTreeGenerator.ts # Code viewer file tree (FileTreeInput interface)
 │   │   ├── logger.ts            # Centralized logger (WARN in prod, DEBUG in dev)
 │   │   └── filepath.ts
@@ -475,7 +473,7 @@ export const selectCanvasData = createSelector(
 );
 ```
 
-### Input Validation (src/utils/validation/inputValidation.ts)
+### Input Validation (src/validation/inputValidation.ts)
 ```typescript
 // Node names: allow letters, numbers, underscores, spaces (more permissive)
 const NODE_NAME_PATTERN = /^[a-zA-Z][a-zA-Z0-9_\s]*$/;
@@ -506,15 +504,19 @@ export function validateDatasetName(name: string, existingNames?: Set<string>): 
 
 ## Testing Strategy
 
-**340 tests** across 18 test files, **64%+ coverage** (all refactored code 95-100%).
+**375 tests** across 47 test files, **64%+ coverage** (all refactored code 95-100%).
 
 - **Unit Tests (Vitest + Testing Library)**
-  - Custom hooks tests (`hooks/hooks.test.tsx` — 12 tests)
-  - Domain logic tests (`domain/PipelineGraph.test.ts` — 27 tests)
-  - Validator class tests (`validators/validators.test.ts` — 41 tests)
-  - Export generator tests (`catalogGenerator.test.ts` — 33, `nodesGenerator.test.ts` — 19, `pipelineGenerator.test.ts` — 10, `helpers.test.ts` — 41)
-  - Utility tests (`filepath.test.ts` — 23 tests, `fileTreeGenerator.test.ts` — 21 tests)
-  - Slice reducer tests covering node/dataset/connection mutations (14 each)
+  - Custom hooks tests (`hooks/hooks.test.tsx`)
+  - Domain logic tests (`domain/PipelineGraph.test.ts`)
+  - Validator class tests (`validation/validation.test.ts`)
+  - Export generator tests (`catalogGenerator.test.ts`, `nodesGenerator.test.ts`, `pipelineGenerator.test.ts`, `helpers.test.ts`)
+  - Utility tests (`filepath.test.ts`, `fileTreeGenerator.test.ts`)
+  - Slice reducer tests covering node/dataset/connection/onboarding mutations
+
+- **Component Tests**
+  - 23 component test files covering UI primitives, Canvas system, and app shell
+  - Tests for CustomNode, DatasetNode, ConfigPanel, CodeViewer, ExportWizard, ValidationPanel, etc.
 
 - **Integration Tests**
   - Pipeline create → connect → export flow
@@ -529,15 +531,7 @@ export function validateDatasetName(name: string, existingNames?: Set<string>): 
   - Mock store utilities (`src/test/utils/mockStore.ts`)
   - Test fixtures (`src/test/fixtures/`)
   - Custom render wrapper with Redux provider (`src/test/utils/testUtils.tsx`)
+  - Coverage thresholds enforced: statements 60%, branches 50%, functions 60%, lines 60%
 
-- **Coverage Areas**
-  - Domain logic (ID generation, graph operations)
-  - Validation rules (all 8 validator classes)
-  - Code generation (all Kedro file generators)
-  - Redux slice reducers
-  - Custom hooks (100% coverage)
 
----
-
-**Built with AI assistance.**
 

@@ -40,12 +40,11 @@ Kedro Builder is a visual, drag-and-drop web application that enables data teams
 
 | Metric | Value |
 |--------|-------|
-| Source files | ~147 |
-| Lines of code | ~12.7K |
-| Test files | 18 |
-| Tests | 340 (100% passing) |
+| Source files | ~143 |
+| Test files | 47 |
+| Tests | 375 (100% passing) |
 | Coverage | ~64% |
-| Bundle size | ~257 KB gzipped |
+| Coverage thresholds | statements 60%, branches 50%, functions 60%, lines 60% |
 
 ---
 
@@ -124,17 +123,19 @@ src/
 ├── constants/          # Application constants (Phase 2)
 ├── domain/             # Pure business logic - no framework deps (Phase 3)
 ├── store/              # Redux store configuration (Phase 4)
-├── features/           # Redux slices - 7 feature modules (Phase 4)
+├── features/           # Redux slices - 8 slices + canvas selectors (Phase 4)
 │   ├── project/        │   ├── nodes/
 │   ├── datasets/       │   ├── connections/
-│   ├── ui/             │   ├── validation/
-│   ├── theme/          │   └── canvas/ (selectors only)
+│   ├── onboarding/     │   ├── ui/
+│   ├── validation/     │   ├── theme/
+│   └── canvas/ (selectors only)
+├── validation/         # Pipeline validation engine (Phases 6-7)
+│   └── validators/     # 8 pluggable validators + ValidatorRegistry
 ├── infrastructure/     # External integrations (Phases 5 & 11)
 │   ├── localStorage/   # Persistence with Zod validation
 │   ├── telemetry/      # Heap Analytics with PII blocking
 │   └── export/         # Kedro project code generation (13 files)
-├── utils/              # Utilities & validation engine (Phases 6-7)
-│   └── validation/     # 8 pluggable validators + ValidatorRegistry
+├── utils/              # Input validation, file tree, logger (Phases 6-7)
 ├── hooks/              # App-level React hooks (Phase 7)
 ├── components/         # React UI components (Phases 8-12)
 │   ├── App/            # Root app shell
@@ -170,7 +171,7 @@ All magic values: canvas defaults, storage keys, dataset types, timing constants
 Pure business logic + tests: ID generation (`crypto.randomUUID()`), graph cycle detection, orphan detection.
 
 ### [Phase 4: Redux Store & Slices](https://github.com/kedro-org/kedro-builder/issues/25) (20 files, ~2 hours)
-State management + tests: 7 feature slices, normalized state, auto-save middleware, selectors.
+State management + tests: 8 feature slices + canvas selectors, normalized state, auto-save middleware.
 
 ### [Phase 5: Persistence & Telemetry](https://github.com/kedro-org/kedro-builder/issues/26) (5 files, ~1 hour)
 External integrations: localStorage with Zod validation, Heap Analytics with PII blocking.
@@ -218,7 +219,7 @@ Test setup, mock utilities, contract tests, and coverage gap assessment.
 npm install          # Install dependencies
 npm run dev          # Start dev server (http://localhost:5173)
 npm run build        # Production build
-npm run test         # Run all 340 tests
+npm run test         # Run all 375 tests
 npm run test:ui      # Vitest UI dashboard
 npm run test:coverage # Coverage report
 npm run lint         # ESLint check
