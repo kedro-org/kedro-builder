@@ -5,15 +5,15 @@
  *
  * Individual validator behavior (circular deps, duplicates, empty names,
  * invalid names, orphans, missing code/config) is exhaustively tested in:
- *   src/utils/validation/validators/validators.test.ts
+ *   src/validation/validators/validators.test.ts
  *
  * This file only verifies that the public entry-point wires everything
  * together correctly: return shape, error/warning separation, and perf.
  */
 import { describe, it, expect } from 'vitest';
-import { validatePipeline } from './validation';
-import type { KedroNode, KedroDataset, KedroConnection } from '../types/kedro';
-import { createTestState } from '../test/utils/mockStore';
+import { validatePipeline } from '.';
+import type { KedroNode, KedroDataset, KedroConnection } from '@/types/kedro';
+import { createTestState } from '@/test/utils/mockStore';
 
 describe('validatePipeline (public API)', () => {
   it('should return valid result for empty pipeline', () => {

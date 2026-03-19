@@ -2,7 +2,7 @@ import { describe, it, expect, vi } from 'vitest';
 import { screen } from '@testing-library/react';
 import { renderWithProviders } from '@/test/utils/testUtils';
 import { CustomNode } from './CustomNode';
-import type { RootState } from '@/types/redux';
+import type { RootState } from '@/store';
 
 // Mock @xyflow/react -- we're testing our rendering logic, not ReactFlow internals
 vi.mock('@xyflow/react', () => ({
@@ -64,6 +64,7 @@ describe('CustomNode', () => {
         errors: [
           {
             id: 'err-1',
+            code: 'empty-name' as const,
             severity: 'error' as const,
             componentId: 'node-1',
             componentType: 'node' as const,

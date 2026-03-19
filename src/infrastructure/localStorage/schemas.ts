@@ -11,14 +11,8 @@ const PositionSchema = z.object({
   y: z.number(),
 });
 
-// Node type enum
-const NodeTypeSchema = z.enum([
-  'data_ingestion',
-  'data_processing',
-  'model_training',
-  'model_evaluation',
-  'custom',
-]);
+// Node type - open string to allow any user-defined category
+const NodeTypeSchema = z.string();
 
 // Dataset type enum (comprehensive list)
 const DatasetTypeSchema = z.enum([
@@ -138,35 +132,13 @@ export const StoredProjectStateSchema = z.object({
 export type ValidatedStoredProjectState = z.infer<typeof StoredProjectStateSchema>;
 
 /**
- * Safely parse localStorage data with detailed error reporting
+ * Safely parse localStorage data with Zod validation.
+ * Returns the full SafeParseResult so callers can access both
+ * validated data and error details from a single parse.
+ *
  * @param data - Raw data from localStorage (already JSON.parsed)
- * @returns Parsed data or null with error details logged
+ * @returns Zod SafeParseResult with .success, .data, or .error
  */
-export function parseStoredProjectState(data: unknown): ValidatedStoredProjectState | null {
-  const result = StoredProjectStateSchema.safeParse(data);
-
-  if (result.success) {
-    return result.data;
-  }
-
-  // Return null - error details will be logged by caller
-  return null;
-}
-
-/**
- * Get validation errors in a readable format
- * @param data - Raw data to validate
- * @returns Array of error messages or empty array if valid
- */
-export function getValidationErrors(data: unknown): string[] {
-  const result = StoredProjectStateSchema.safeParse(data);
-
-  if (result.success) {
-    return [];
-  }
-
-  return result.error.issues.map((issue) => {
-    const path = issue.path.join('.');
-    return `${path}: ${issue.message}`;
-  });
+export function parseStoredProjectState(data: unknown) {
+  return StoredProjectStateSchema.safeParse(data);
 }

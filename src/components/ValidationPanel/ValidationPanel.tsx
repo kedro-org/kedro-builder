@@ -1,6 +1,6 @@
 import React from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import type { RootState } from '../../types/redux';
+import type { RootState } from '../../store';
 import { setShowValidationPanel } from '../../features/ui/uiSlice';
 import { clearValidation } from '../../features/validation/validationSlice';
 import { X, AlertCircle, AlertTriangle } from 'lucide-react';

@@ -2,8 +2,8 @@ import { describe, it, expect } from 'vitest';
 import { screen } from '@testing-library/react';
 import { renderWithProviders } from '@/test/utils/testUtils';
 import { ValidationItem } from './ValidationItem';
-import type { ValidationError } from '@/utils/validation/types';
-import type { RootState } from '@/types/redux';
+import type { ValidationError } from '@/validation/types';
+import type { RootState } from '@/store';
 
 const mockNode = {
   id: 'node-1', name: 'clean_data', type: 'data_processing' as const,
@@ -12,6 +12,7 @@ const mockNode = {
 
 const errorIssue: ValidationError = {
   id: 'err-1',
+  code: 'empty-name',
   severity: 'error',
   componentId: 'node-1',
   componentType: 'node',

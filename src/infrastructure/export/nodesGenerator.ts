@@ -101,11 +101,15 @@ function generateCustomFunction(
   // Validate that function name in code matches node name
   const extractedFuncName = extractFunctionName(userCode);
   if (extractedFuncName && extractedFuncName !== funcName) {
-    // Add a comment warning about the mismatch
-    const warning = `# WARNING: Function name "${extractedFuncName}" in your code does not match node name "${funcName}".\n# The pipeline expects the function to be named "${funcName}". Please update your code.\n\n`;
-
-    // Return the user's code as-is but with a warning
-    return warning + userCode;
+    // Rename the function so pipeline.py's import succeeds.
+    // Returning the original name would cause an ImportError on kedro run.
+    const escapedName = extractedFuncName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const renamedCode = userCode.replace(
+      new RegExp(`def\\s+${escapedName}\\s*\\(`),
+      `def ${funcName}(`
+    );
+    const note = `# NOTE: Function was renamed from "${extractedFuncName}" to "${funcName}" to match the node name.\n\n`;
+    return note + renamedCode;
   }
 
   // If user provided complete function definition, use it as-is

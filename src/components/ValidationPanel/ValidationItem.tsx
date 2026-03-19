@@ -1,7 +1,7 @@
 import React from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import type { RootState } from '../../types/redux';
-import type { ValidationError } from '../../utils/validation';
+import type { RootState } from '../../store';
+import type { ValidationError } from '../../validation';
 import { selectNode } from '../../features/nodes/nodesSlice';
 import { selectDataset } from '../../features/datasets/datasetsSlice';
 import { openConfigPanel } from '../../features/ui/uiSlice';

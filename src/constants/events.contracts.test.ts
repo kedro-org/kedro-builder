@@ -15,7 +15,7 @@ import {
   dispatchConfigUpdated,
   onFocusNode,
   onConfigUpdated,
-} from '../../constants/events';
+} from './events';
 
 describe('Window Event Contracts', () => {
   it('APP_EVENTS values are locked', () => {

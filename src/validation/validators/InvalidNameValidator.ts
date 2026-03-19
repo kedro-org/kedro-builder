@@ -3,9 +3,10 @@
  * Checks for invalid characters in node and dataset names
  */
 
-import type { RootState } from '@/types/redux';
-import type { ValidationError } from '../types';
+import type { RootState } from '@/store';
+import { type ValidationError, ValidationCode } from '../types';
 import type { Validator } from './Validator';
+import { NODE_NAME_PATTERN, DATASET_NAME_PATTERN } from '../inputValidation';
 
 export class InvalidNameValidator implements Validator {
   readonly id = 'invalid-name';
@@ -20,9 +21,10 @@ export class InvalidNameValidator implements Validator {
       const node = state.nodes.byId[nodeId];
       if (node && node.name) {
         const trimmed = node.name.trim();
-        if (!/^[a-zA-Z][a-zA-Z0-9_\s]*$/.test(trimmed)) {
+        if (!NODE_NAME_PATTERN.test(trimmed)) {
           errors.push({
             id: `error-invalid-node-name-${nodeId}`,
+            code: ValidationCode.INVALID_NAME,
             severity: 'error',
             componentId: nodeId,
             componentType: 'node',
@@ -38,9 +40,10 @@ export class InvalidNameValidator implements Validator {
       const dataset = state.datasets.byId[datasetId];
       if (dataset && dataset.name) {
         const trimmed = dataset.name.trim();
-        if (!/^[a-z][a-z0-9_]*$/.test(trimmed)) {
+        if (!DATASET_NAME_PATTERN.test(trimmed)) {
           errors.push({
             id: `error-invalid-dataset-name-${datasetId}`,
+            code: ValidationCode.INVALID_NAME,
             severity: 'error',
             componentId: datasetId,
             componentType: 'dataset',

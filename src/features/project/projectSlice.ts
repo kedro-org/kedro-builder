@@ -1,12 +1,10 @@
 import { createSlice } from '@reduxjs/toolkit';
 import type { PayloadAction } from '@reduxjs/toolkit';
 import type { ProjectState } from '../../types/redux';
-import type { KedroProject, ProjectMetadata } from '../../types/kedro';
+import type { KedroProject } from '../../types/kedro';
 
 const initialState: ProjectState = {
   current: null,
-  savedList: [],
-  lastSaved: null,
 };
 
 const projectSlice = createSlice({
@@ -34,15 +32,8 @@ const projectSlice = createSlice({
         };
       }
     },
-    setSavedList: (state, action: PayloadAction<ProjectMetadata[]>) => {
-      state.savedList = action.payload;
-    },
-    setLastSaved: (state, action: PayloadAction<number>) => {
-      state.lastSaved = action.payload;
-    },
     clearProject: (state) => {
       state.current = null;
-      state.lastSaved = null;
     },
   },
 });
@@ -51,8 +42,6 @@ export const {
   createProject,
   loadProject,
   updateProject,
-  setSavedList,
-  setLastSaved,
   clearProject,
 } = projectSlice.actions;
 

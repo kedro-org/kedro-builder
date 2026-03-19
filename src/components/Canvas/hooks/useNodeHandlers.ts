@@ -21,7 +21,7 @@ import { useDeleteItems } from './useDeleteItems';
 import { logger } from '@/utils/logger';
 import { trackEvent } from '@/infrastructure/telemetry';
 import { DND_TYPES } from '@/constants';
-import type { NodeType, DatasetType } from '@/types/kedro';
+import type { DatasetType } from '@/types/kedro';
 
 // Type for node delete confirmation state
 export interface NodeDeleteConfirmation {
@@ -155,7 +155,7 @@ export const useNodeHandlers = ({ onNodesChange, setIsDraggingOver, isDraggingOv
           addNode({
             id: newNodeId,
             name: '',
-            type: nodeType as NodeType,
+            type: nodeType,
             inputs: [],
             outputs: [],
             position,

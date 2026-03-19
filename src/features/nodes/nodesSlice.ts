@@ -1,7 +1,7 @@
 import { createSlice } from '@reduxjs/toolkit';
 import type { PayloadAction } from '@reduxjs/toolkit';
 import type { NodesState } from '../../types/redux';
-import type { KedroNode, NodeType } from '../../types/kedro';
+import type { KedroNode } from '../../types/kedro';
 import { generateId } from '../../domain/IdGenerator';
 
 const initialState: NodesState = {
@@ -23,9 +23,9 @@ const nodesSlice = createSlice({
           state.allIds.push(node.id);
         }
       },
-      prepare: (payload: KedroNode | { type: NodeType; position: { x: number; y: number } }) => {
+      prepare: (payload: KedroNode | { type: string; position: { x: number; y: number } }) => {
         // If it's a full node, use it directly
-        if ('id' in payload) {
+        if ('id' in payload && payload.id) {
           return { payload };
         }
         // Otherwise, create a new node using IdGenerator
@@ -103,9 +103,6 @@ const nodesSlice = createSlice({
     clearSelection: (state) => {
       state.selected = [];
     },
-    hoverNode: (state, action: PayloadAction<string | null>) => {
-      state.hovered = action.payload;
-    },
     clearNodes: (state) => {
       state.byId = {};
       state.allIds = [];
@@ -125,7 +122,6 @@ export const {
   toggleNodeSelection,
   selectNodes,
   clearSelection,
-  hoverNode,
   clearNodes,
 } = nodesSlice.actions;
 

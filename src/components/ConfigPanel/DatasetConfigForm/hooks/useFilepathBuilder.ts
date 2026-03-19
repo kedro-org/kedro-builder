@@ -85,10 +85,14 @@ export const useFilepathBuilder = ({ initialFilepath, datasetName, datasetType, 
     setFileName(newFileName);
   };
 
-  // Update form filepath when parts change
+  // Update form filepath when parts change.
+  // shouldDirty is false on the first run (mount) so the form doesn't become
+  // dirty before the user has changed anything.
+  const isMountedRef = useRef(false);
   useEffect(() => {
     const fullPath = buildFilepath(baseLocation, dataLayer, fileName);
-    setValue('filepath', fullPath, { shouldDirty: true });
+    setValue('filepath', fullPath, { shouldDirty: isMountedRef.current });
+    isMountedRef.current = true;
   }, [baseLocation, dataLayer, fileName, setValue]);
 
   return {

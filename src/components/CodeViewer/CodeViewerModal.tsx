@@ -2,7 +2,7 @@ import { useAppSelector, useAppDispatch } from '../../store/hooks';
 import { closeCodeViewer, openExportWizard } from '../../features/ui/uiSlice';
 import { setValidationResults } from '../../features/validation/validationSlice';
 import { store } from '../../store';
-import { validatePipeline } from '../../utils/validation';
+import { validatePipeline } from '../../validation';
 import { FileTree } from './FileTree';
 import { CodeDisplay } from './CodeDisplay';
 import { X, Download } from 'lucide-react';

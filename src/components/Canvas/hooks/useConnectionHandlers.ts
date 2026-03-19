@@ -111,8 +111,13 @@ export const useConnectionHandlers = ({
 
     // Only allow: node → dataset OR dataset → node
     // Block: node → node OR dataset → dataset
-    return (isSourceNode && isTargetDataset) || (isSourceDataset && isTargetNode);
-  }, []);
+    if (!((isSourceNode && isTargetDataset) || (isSourceDataset && isTargetNode))) return false;
+
+    // Reject connections that would create a cycle — gives accurate visual feedback during drag
+    if (wouldCreateCycle(connection.source, connection.target, existingConnections, nodeIds)) return false;
+
+    return true;
+  }, [existingConnections, nodeIds]);
 
   // Handle node mouse enter - show connection validity
   const handleNodeMouseEnter = useCallback(

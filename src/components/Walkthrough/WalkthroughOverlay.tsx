@@ -6,7 +6,7 @@ import {
   prevWalkthroughStep,
   completeWalkthrough,
   skipWalkthrough,
-} from '../../features/ui/uiSlice';
+} from '../../features/onboarding/onboardingSlice';
 import { walkthroughSteps } from './walkthroughContent';
 import { useWalkthroughPosition } from './hooks/useWalkthroughPosition';
 import { WalkthroughCard } from './WalkthroughCard';
@@ -14,7 +14,7 @@ import './WalkthroughOverlay.scss';
 
 export const WalkthroughOverlay: React.FC = () => {
   const dispatch = useDispatch();
-  const currentStep = useSelector((state: RootState) => state.ui.walkthroughStep);
+  const currentStep = useSelector((state: RootState) => state.onboarding.walkthroughStep);
 
   const step = walkthroughSteps[currentStep - 1];
   const isLastStep = currentStep === walkthroughSteps.length;

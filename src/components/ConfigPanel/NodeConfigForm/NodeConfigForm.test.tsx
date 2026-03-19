@@ -1,5 +1,5 @@
-import { describe, it, expect, vi } from 'vitest';
-import { screen, fireEvent, waitFor } from '@testing-library/react';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { renderWithProviders } from '@/test/utils/testUtils';
 import { NodeConfigForm } from './NodeConfigForm';
@@ -31,18 +31,15 @@ const defaultState = {
     selected: [],
     hovered: null,
   },
+  onboarding: {
+    showTutorial: false, tutorialStep: 1, tutorialCompleted: false,
+    showWalkthrough: false, walkthroughStep: 1, walkthroughCompleted: false,
+  },
   ui: {
-    showTutorial: false,
-    tutorialStep: 1,
-    tutorialCompleted: false,
-    showWalkthrough: false,
-    walkthroughStep: 1,
-    walkthroughCompleted: false,
     showProjectSetup: false,
     hasActiveProject: true,
     selectedComponent: { type: 'node' as const, id: 'node-1' },
     showConfigPanel: true,
-    showCodePreview: false,
     showValidationPanel: false,
     canvasZoom: 1,
     canvasPosition: { x: 0, y: 0 },

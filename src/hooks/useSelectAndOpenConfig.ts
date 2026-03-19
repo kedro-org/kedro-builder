@@ -1,6 +1,7 @@
 import { useCallback } from 'react';
 import { useAppDispatch } from '../store/hooks';
 import { selectNode } from '../features/nodes/nodesSlice';
+import { selectDataset } from '../features/datasets/datasetsSlice';
 import { openConfigPanel } from '../features/ui/uiSlice';
 import { TIMING } from '../constants/timing';
 
@@ -19,7 +20,11 @@ export function useSelectAndOpenConfig() {
   const selectAndOpenConfig = useCallback(
     (type: ComponentType, id: string, delay: number = TIMING.UI_UPDATE_DELAY) => {
       setTimeout(() => {
-        dispatch(selectNode(id));
+        if (type === 'node') {
+          dispatch(selectNode(id));
+        } else {
+          dispatch(selectDataset(id));
+        }
         dispatch(openConfigPanel({ type, id }));
       }, delay);
     },

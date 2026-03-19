@@ -3,8 +3,8 @@
  * Checks for duplicate node and dataset names
  */
 
-import type { RootState } from '@/types/redux';
-import type { ValidationError } from '../types';
+import type { RootState } from '@/store';
+import { type ValidationError, ValidationCode } from '../types';
 import type { Validator } from './Validator';
 
 export class DuplicateNameValidator implements Validator {
@@ -43,6 +43,7 @@ export class DuplicateNameValidator implements Validator {
         nodeIds.forEach((nodeId) => {
           errors.push({
             id: `error-duplicate-node-${nodeId}`,
+            code: ValidationCode.DUPLICATE_NAME,
             severity: 'error',
             componentId: nodeId,
             componentType: 'node',
@@ -59,6 +60,7 @@ export class DuplicateNameValidator implements Validator {
         datasetIds.forEach((datasetId) => {
           errors.push({
             id: `error-duplicate-dataset-${datasetId}`,
+            code: ValidationCode.DUPLICATE_NAME,
             severity: 'error',
             componentId: datasetId,
             componentType: 'dataset',

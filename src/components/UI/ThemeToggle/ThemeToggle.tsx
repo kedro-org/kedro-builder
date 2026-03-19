@@ -1,11 +1,12 @@
 import { Moon, Sun } from 'lucide-react';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import { toggleTheme } from '@/features/theme/themeSlice';
+import { selectTheme } from '@/features/theme/themeSelectors';
 import './ThemeToggle.scss';
 
 export const ThemeToggle = () => {
   const dispatch = useAppDispatch();
-  const theme = useAppSelector((state) => state.theme.theme);
+  const theme = useAppSelector(selectTheme);
 
   const handleToggle = () => {
     dispatch(toggleTheme());

@@ -3,8 +3,8 @@ import { screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { renderWithProviders } from '@/test/utils/testUtils';
 import { ValidationStepContent } from './ValidationStepContent';
-import type { ValidationResult } from '@/utils/validation';
-import type { RootState } from '@/types/redux';
+import type { ValidationResult } from '@/validation';
+import type { RootState } from '@/store';
 
 const preloadedState = {
   nodes: { byId: {}, allIds: [], selected: [], hovered: null },
@@ -27,10 +27,10 @@ describe('ValidationStepContent', () => {
   it('disables Continue when there are errors and shows error count', async () => {
     const result: ValidationResult = {
       errors: [
-        { id: 'e1', type: 'error', message: 'Missing code', componentId: 'n1', componentType: 'node', validatorId: 'missing-code', suggestion: 'Add code' },
+        { id: 'e1', code: 'missing-code', severity: 'error', message: 'Missing code', componentId: 'n1', componentType: 'node', suggestion: 'Add code' },
       ],
       warnings: [
-        { id: 'w1', type: 'warning', message: 'Orphaned ds', componentId: 'd1', componentType: 'dataset', validatorId: 'orphaned', suggestion: 'Connect it' },
+        { id: 'w1', code: 'orphaned-dataset', severity: 'warning', message: 'Orphaned ds', componentId: 'd1', componentType: 'dataset', suggestion: 'Connect it' },
       ],
       isValid: false,
     };

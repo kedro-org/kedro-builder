@@ -4,7 +4,7 @@
  */
 
 import JSZip from 'jszip';
-import type { RootState } from '../../types/redux';
+import type { RootState } from '../../store';
 import type { KedroNode, KedroDataset, KedroConnection } from '../../types/kedro';
 import type { ProjectMetadata } from './staticFilesGenerator';
 

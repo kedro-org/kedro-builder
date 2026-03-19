@@ -48,7 +48,8 @@ export const useCanvasKeyboardShortcuts = ({
       }
 
       // Escape key - clear selection and close config panel
-      if (event.key === 'Escape') {
+      // Guard: don't fire while user is typing in an editable field
+      if (event.key === 'Escape' && !isEditableElement) {
         clearAllSelections();
         dispatch(closeConfigPanel());
       }

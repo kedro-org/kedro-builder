@@ -1,10 +1,7 @@
 import { useEffect } from 'react';
 import { useAppDispatch } from '@/store/hooks';
-import {
-  setShowTutorial,
-  startWalkthrough,
-  setHasActiveProject,
-} from '@/features/ui/uiSlice';
+import { setHasActiveProject } from '@/features/ui/uiSlice';
+import { setShowTutorial, startWalkthrough } from '@/features/onboarding/onboardingSlice';
 import { loadProject } from '@/features/project/projectSlice';
 import { addNode, clearNodes } from '@/features/nodes/nodesSlice';
 import { addDataset, clearDatasets } from '@/features/datasets/datasetsSlice';
@@ -12,6 +9,7 @@ import { addConnection, clearConnections } from '@/features/connections/connecti
 import { loadProjectFromLocalStorage } from '@/infrastructure/localStorage';
 import { STORAGE_KEYS, safeGetItem } from '@/constants';
 import { logger } from '@/utils/logger';
+import toast from 'react-hot-toast';
 
 /**
  * Custom hook to initialize app state from localStorage
@@ -25,7 +23,16 @@ export const useAppInitialization = () => {
     const walkthroughCompleted = safeGetItem(STORAGE_KEYS.WALKTHROUGH_COMPLETED);
 
     // Try to load saved project
-    const savedProject = loadProjectFromLocalStorage();
+    const loadResult = loadProjectFromLocalStorage();
+
+    // Notify user of load errors
+    if (loadResult.error === 'storage_unavailable') {
+      toast.error('Local storage is unavailable. Your changes will not be saved automatically.', { duration: 5000, position: 'bottom-right' });
+    } else if (loadResult.error === 'invalid_data') {
+      toast.error('Project data format is invalid. A backup was saved. Starting fresh.', { duration: 4000, position: 'bottom-right' });
+    } else if (loadResult.error === 'corrupted_json') {
+      toast.error('Project data appears to be corrupted. A backup was saved. Starting fresh.', { duration: 4000, position: 'bottom-right' });
+    }
 
     // Determine initial flow state
     if (!tutorialCompleted) {
@@ -34,27 +41,27 @@ export const useAppInitialization = () => {
     } else if (!walkthroughCompleted) {
       // Show walkthrough after tutorial
       dispatch(startWalkthrough());
-    } else if (savedProject) {
+    } else if (loadResult.data) {
       // Clear any existing state first (in case of hot reload during development)
       dispatch(clearNodes());
       dispatch(clearDatasets());
       dispatch(clearConnections());
 
       // Load the saved project into Redux
-      dispatch(loadProject(savedProject.project));
+      dispatch(loadProject(loadResult.data.project));
 
       // Load nodes
-      savedProject.nodes.forEach((node) => {
+      loadResult.data.nodes.forEach((node) => {
         dispatch(addNode(node));
       });
 
       // Load datasets
-      savedProject.datasets.forEach((dataset) => {
+      loadResult.data.datasets.forEach((dataset) => {
         dispatch(addDataset(dataset));
       });
 
       // Load connections
-      savedProject.connections.forEach((connection) => {
+      loadResult.data.connections.forEach((connection) => {
         dispatch(addConnection(connection));
       });
 

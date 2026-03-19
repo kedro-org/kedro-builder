@@ -1,16 +1,22 @@
 /**
  * localStorage utility functions for persisting project state
  * Includes graceful degradation, quota handling, and Zod validation
+ *
+ * NOTE: This module is UI-agnostic — it returns structured results
+ * and never calls toast/UI directly. Callers decide how to notify users.
  */
 
-import type { RootState } from '../../types/redux';
+import type { RootState } from '../../store';
 import type { KedroProject, KedroNode, KedroDataset, KedroConnection } from '../../types/kedro';
 import { STORAGE_KEYS } from '../../constants';
 import { logger } from '../../utils/logger';
-import toast from 'react-hot-toast';
-import { parseStoredProjectState, getValidationErrors } from './schemas';
+import { parseStoredProjectState } from './schemas';
 
 const STORAGE_KEY = STORAGE_KEYS.CURRENT_PROJECT;
+const BACKUP_KEY = `${STORAGE_KEY}__backup`;
+
+// App-scoped key prefixes for getStorageInfo
+const APP_KEY_PREFIXES = ['kedro_builder_', 'kedro-builder-'];
 
 // Approximate max size for localStorage (5MB in most browsers, we use 4MB to be safe)
 const MAX_STORAGE_SIZE_BYTES = 4 * 1024 * 1024;
@@ -22,18 +28,37 @@ export interface StoredProjectState {
   connections: KedroConnection[];
 }
 
+/** Error types returned by save/load functions */
+export type SaveError = 'storage_unavailable' | 'quota_exceeded' | 'save_failed';
+export type LoadError = 'storage_unavailable' | 'invalid_data' | 'corrupted_json' | 'load_failed';
+
+export interface SaveResult {
+  success: boolean;
+  error?: SaveError;
+}
+
+export interface LoadResult {
+  data: StoredProjectState | null;
+  error?: LoadError;
+  validationErrors?: string[];
+}
+
+let _localStorageAvailable: boolean | null = null;
+
 /**
- * Check if localStorage is available
+ * Check if localStorage is available (result cached after first call)
  */
 export const isLocalStorageAvailable = (): boolean => {
+  if (_localStorageAvailable !== null) return _localStorageAvailable;
   try {
     const testKey = '__localStorage_test__';
     localStorage.setItem(testKey, testKey);
     localStorage.removeItem(testKey);
-    return true;
+    _localStorageAvailable = true;
   } catch {
-    return false;
+    _localStorageAvailable = false;
   }
+  return _localStorageAvailable;
 };
 
 /**
@@ -44,51 +69,22 @@ const wouldExceedStorageLimit = (data: string): boolean => {
 };
 
 /**
- * Handle storage quota exceeded error
- */
-const handleQuotaExceeded = (): void => {
-  logger.error('localStorage quota exceeded');
-  toast.error(
-    'Storage limit reached. Your project is too large to save locally. Consider exporting it.',
-    { duration: 5000, position: 'bottom-right' }
-  );
-};
-
-/**
- * Notify user of storage unavailability (shown only once per session)
- */
-let storageUnavailableNotified = false;
-const notifyStorageUnavailable = (): void => {
-  if (!storageUnavailableNotified) {
-    storageUnavailableNotified = true;
-    toast.error(
-      'Local storage is unavailable. Your changes will not be saved automatically.',
-      { duration: 5000, position: 'bottom-right' }
-    );
-  }
-};
-
-/**
  * Save current project state to localStorage
- * @returns true if save was successful, false otherwise
  */
-export const saveProjectToLocalStorage = (state: RootState): boolean => {
-  // Check if localStorage is available
+export const saveProjectToLocalStorage = (state: RootState): SaveResult => {
   if (!isLocalStorageAvailable()) {
-    notifyStorageUnavailable();
-    return false;
+    logger.error('localStorage is unavailable');
+    return { success: false, error: 'storage_unavailable' };
   }
 
   try {
     if (!state.project.current) {
-      // No project to save
-      return true;
+      return { success: true };
     }
 
     const projectData: StoredProjectState = {
       project: {
         ...state.project.current,
-        updatedAt: Date.now(), // Update timestamp on save
       },
       nodes: state.nodes.allIds.map(id => state.nodes.byId[id]),
       datasets: state.datasets.allIds.map(id => state.datasets.byId[id]),
@@ -97,83 +93,89 @@ export const saveProjectToLocalStorage = (state: RootState): boolean => {
 
     const serializedData = JSON.stringify(projectData);
 
-    // Check if data would exceed storage limit
     if (wouldExceedStorageLimit(serializedData)) {
-      handleQuotaExceeded();
-      return false;
+      logger.error('localStorage quota exceeded');
+      return { success: false, error: 'quota_exceeded' };
     }
 
     localStorage.setItem(STORAGE_KEY, serializedData);
-    return true;
+    return { success: true };
   } catch (error) {
-    // Check for quota exceeded error
     if (error instanceof DOMException && (
       error.name === 'QuotaExceededError' ||
       error.name === 'NS_ERROR_DOM_QUOTA_REACHED'
     )) {
-      handleQuotaExceeded();
-    } else {
-      logger.error('Failed to save project to localStorage:', error);
-      toast.error('Failed to save project. Please try again.', {
-        duration: 3000,
-        position: 'bottom-right',
-      });
+      logger.error('localStorage quota exceeded');
+      return { success: false, error: 'quota_exceeded' };
     }
-    return false;
+    logger.error('Failed to save project to localStorage:', error);
+    return { success: false, error: 'save_failed' };
   }
 };
 
 /**
  * Load project state from localStorage
- * Uses Zod schema validation for runtime type safety
- * Returns null if no project exists, validation fails, or loading fails
+ * Uses Zod schema validation for runtime type safety.
+ * On invalid/corrupted data, backs up the raw value before clearing.
  */
-export const loadProjectFromLocalStorage = (): StoredProjectState | null => {
-  // Check if localStorage is available
+export const loadProjectFromLocalStorage = (): LoadResult => {
   if (!isLocalStorageAvailable()) {
-    notifyStorageUnavailable();
-    return null;
+    logger.error('localStorage is unavailable');
+    return { data: null, error: 'storage_unavailable' };
   }
 
+  let stored: string | null = null;
   try {
-    const stored = localStorage.getItem(STORAGE_KEY);
+    stored = localStorage.getItem(STORAGE_KEY);
     if (!stored) {
-      return null;
+      return { data: null };
     }
 
     const rawData = JSON.parse(stored);
 
-    // Validate data structure using Zod schema
-    const validatedData = parseStoredProjectState(rawData);
+    // Single parse — extract both data and errors from SafeParseResult
+    const result = parseStoredProjectState(rawData);
 
-    if (!validatedData) {
-      // Get detailed validation errors for debugging
-      const errors = getValidationErrors(rawData);
-      logger.error('Invalid project data in localStorage:', errors);
-      toast.error('Project data format is invalid. Starting fresh.', {
-        duration: 4000,
-        position: 'bottom-right',
-      });
-      // Clear invalid data
-      clearProjectFromLocalStorage();
-      return null;
+    if (result.success) {
+      return { data: result.data };
     }
 
-    return validatedData;
+    // Validation failed — backup raw data, then clear
+    const validationErrors = result.error.issues.map((issue: { path: PropertyKey[]; message: string }) => {
+      const path = issue.path.join('.');
+      return `${path}: ${issue.message}`;
+    });
+    logger.error('Invalid project data in localStorage:', validationErrors);
+    backupAndClear(stored);
+    return { data: null, error: 'invalid_data', validationErrors };
   } catch (error) {
     if (error instanceof SyntaxError) {
       logger.error('Corrupted project data in localStorage:', error);
-      toast.error('Project data appears to be corrupted. Starting fresh.', {
-        duration: 4000,
-        position: 'bottom-right',
-      });
-      // Clear corrupted data
-      clearProjectFromLocalStorage();
-    } else {
-      logger.error('Failed to load project from localStorage:', error);
+      // Backup the raw string we already read, then clear
+      if (stored) {
+        backupAndClear(stored);
+      } else {
+        clearProjectFromLocalStorage();
+      }
+      return { data: null, error: 'corrupted_json' };
     }
-    return null;
+    logger.error('Failed to load project from localStorage:', error);
+    return { data: null, error: 'load_failed' };
   }
+};
+
+/**
+ * Backup raw data to a separate key before clearing the main key.
+ * Allows manual recovery of data that failed validation.
+ */
+const backupAndClear = (rawData: string): void => {
+  try {
+    localStorage.setItem(BACKUP_KEY, rawData);
+    logger.warn(`Backed up invalid project data to "${BACKUP_KEY}"`);
+  } catch {
+    logger.error('Failed to backup invalid project data');
+  }
+  clearProjectFromLocalStorage();
 };
 
 /**
@@ -208,18 +210,25 @@ export const hasStoredProject = (): boolean => {
 };
 
 /**
- * Get storage usage information (for debugging)
+ * Get storage usage information scoped to kedro-builder keys only.
+ * Does not include third-party data stored on the same origin.
  */
 export const getStorageInfo = (): { size: string; itemCount: number } => {
   try {
-    const json = JSON.stringify(localStorage);
-    const sizeInKB = (new Blob([json]).size / 1024).toFixed(2);
-    const itemCount = localStorage.length;
+    let totalSize = 0;
+    let itemCount = 0;
 
-    return {
-      size: `${sizeInKB} KB`,
-      itemCount,
-    };
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (key && APP_KEY_PREFIXES.some(prefix => key.startsWith(prefix))) {
+        const value = localStorage.getItem(key) ?? '';
+        totalSize += new Blob([key, value]).size;
+        itemCount++;
+      }
+    }
+
+    const sizeInKB = (totalSize / 1024).toFixed(2);
+    return { size: `${sizeInKB} KB`, itemCount };
   } catch (error) {
     logger.error('Failed to get storage info:', error);
     return { size: 'Unknown', itemCount: 0 };

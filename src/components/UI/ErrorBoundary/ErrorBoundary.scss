@@ -1,12 +1,14 @@
+@use '../../../styles/variables' as *;
+
 .error-boundary {
   display: flex;
   align-items: center;
   justify-content: center;
   min-height: 200px;
-  padding: var(--spacing-lg);
-  background-color: var(--color-surface);
-  border-radius: var(--border-radius);
-  border: 1px solid var(--color-border);
+  padding: 1.5rem;
+  background-color: var(--color-bg-2);
+  border-radius: 8px;
+  border: 1px solid var(--color-border-line);
 
   &__content {
     display: flex;
@@ -18,32 +20,32 @@
 
   &__icon {
     color: var(--color-warning);
-    margin-bottom: var(--spacing-md);
+    margin-bottom: 1rem;
   }
 
   &__title {
-    font-size: var(--font-size-lg);
+    font-size: 1.125rem;
     font-weight: 600;
     color: var(--color-text);
-    margin: 0 0 var(--spacing-sm) 0;
+    margin: 0 0 0.75rem 0;
   }
 
   &__message {
-    font-size: var(--font-size-sm);
-    color: var(--color-text-secondary);
-    margin: 0 0 var(--spacing-md) 0;
+    font-size: 0.875rem;
+    color: var(--color-text-alt);
+    margin: 0 0 1rem 0;
   }
 
   &__details {
     width: 100%;
-    margin-bottom: var(--spacing-md);
+    margin-bottom: 1rem;
     text-align: left;
 
     summary {
       cursor: pointer;
-      font-size: var(--font-size-xs);
-      color: var(--color-text-secondary);
-      padding: var(--spacing-xs);
+      font-size: 0.75rem;
+      color: var(--color-text-alt);
+      padding: 0.5rem;
 
       &:hover {
         color: var(--color-text);
@@ -52,21 +54,21 @@
   }
 
   &__error-text {
-    font-family: var(--font-mono);
-    font-size: var(--font-size-xs);
-    background-color: var(--color-surface-elevated);
-    padding: var(--spacing-sm);
-    border-radius: var(--border-radius-sm);
+    font-family: $font-monospace;
+    font-size: 0.75rem;
+    background-color: var(--color-bg-3);
+    padding: 0.75rem;
+    border-radius: 4px;
     overflow-x: auto;
     white-space: pre-wrap;
     word-break: break-word;
-    margin: var(--spacing-xs) 0 0 0;
+    margin: 0.5rem 0 0 0;
     color: var(--color-error);
   }
 
   &__retry-button {
     display: flex;
     align-items: center;
-    gap: var(--spacing-xs);
+    gap: 0.5rem;
   }
 }

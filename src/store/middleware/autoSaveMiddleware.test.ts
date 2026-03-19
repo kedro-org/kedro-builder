@@ -3,10 +3,11 @@
  */
 import { configureStore } from '@reduxjs/toolkit';
 import { beforeEach, afterEach, describe, expect, it, vi } from 'vitest';
-import projectReducer, { createProject } from '../../features/project/projectSlice';
+import projectReducer from '../../features/project/projectSlice';
 import nodesReducer, { addNode } from '../../features/nodes/nodesSlice';
-import datasetsReducer, { addDataset } from '../../features/datasets/datasetsSlice';
-import connectionsReducer, { addConnection } from '../../features/connections/connectionsSlice';
+import datasetsReducer, { addDataset, deleteDatasets } from '../../features/datasets/datasetsSlice';
+import connectionsReducer from '../../features/connections/connectionsSlice';
+import onboardingReducer from '../../features/onboarding/onboardingSlice';
 import uiReducer, { openConfigPanel } from '../../features/ui/uiSlice';
 import validationReducer from '../../features/validation/validationSlice';
 import themeReducer from '../../features/theme/themeSlice';
@@ -18,7 +19,7 @@ vi.mock('../../infrastructure/localStorage', async (importOriginal) => {
   const actual = await importOriginal<typeof import('../../infrastructure/localStorage')>();
   return {
     ...actual,
-    saveProjectToLocalStorage: vi.fn().mockReturnValue(true),
+    saveProjectToLocalStorage: vi.fn().mockReturnValue({ success: true }),
   };
 });
 
@@ -29,6 +30,7 @@ const createTestStore = () =>
       nodes: nodesReducer,
       datasets: datasetsReducer,
       connections: connectionsReducer,
+      onboarding: onboardingReducer,
       ui: uiReducer,
       validation: validationReducer,
       theme: themeReducer,
@@ -77,6 +79,24 @@ describe('autoSaveMiddleware', () => {
     vi.advanceTimersByTime(1000);
 
     expect(saveSpy).not.toHaveBeenCalled();
+  });
+
+  it('triggers save on bulk dataset deletion (deleteDatasets)', () => {
+    const store = createTestStore();
+    const saveSpy = vi.mocked(localStorageModule.saveProjectToLocalStorage);
+
+    // Add two datasets first
+    store.dispatch(addDataset({ id: 'ds-1', name: 'a', type: 'csv', position: { x: 0, y: 0 } }));
+    store.dispatch(addDataset({ id: 'ds-2', name: 'b', type: 'csv', position: { x: 0, y: 0 } }));
+    vi.advanceTimersByTime(500);
+    vi.clearAllMocks();
+
+    // Bulk delete both
+    store.dispatch(deleteDatasets(['ds-1', 'ds-2']));
+
+    expect(saveSpy).not.toHaveBeenCalled();
+    vi.advanceTimersByTime(500);
+    expect(saveSpy).toHaveBeenCalledTimes(1);
   });
 
   it('debounces rapid actions into a single save', () => {

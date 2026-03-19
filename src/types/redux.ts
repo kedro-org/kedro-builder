@@ -7,14 +7,11 @@ import {
   type KedroNode,
   type KedroDataset,
   type KedroConnection,
-  type ProjectMetadata,
 } from './kedro';
-import type { ValidationError } from '../utils/validation/types';
+import type { ValidationError } from '../validation/types';
 
 export interface ProjectState {
   current: KedroProject | null;
-  savedList: ProjectMetadata[];
-  lastSaved: number | null;
 }
 
 export interface NodesState {
@@ -36,7 +33,7 @@ export interface ConnectionsState {
   selected: string[];  // Added for multi-select edges
 }
 
-export interface UIState {
+export interface OnboardingState {
   // Tutorial state
   showTutorial: boolean;
   tutorialStep: number;
@@ -46,7 +43,9 @@ export interface UIState {
   showWalkthrough: boolean;
   walkthroughStep: number;
   walkthroughCompleted: boolean;
+}
 
+export interface UIState {
   // Project setup state
   showProjectSetup: boolean;
   hasActiveProject: boolean;
@@ -54,7 +53,6 @@ export interface UIState {
   // UI component state
   selectedComponent: { type: 'node' | 'dataset'; id: string } | null;
   showConfigPanel: boolean;
-  showCodePreview: boolean;
   showValidationPanel: boolean;
   canvasZoom: number;
   canvasPosition: { x: number; y: number };
@@ -81,12 +79,16 @@ export interface ThemeState {
   theme: 'light' | 'dark';
 }
 
+// Kept here (not re-exported from store) to avoid a circular import in middleware files
+// that are themselves imported by store/index.ts.
 export interface RootState {
   project: ProjectState;
   nodes: NodesState;
   datasets: DatasetsState;
   connections: ConnectionsState;
+  onboarding: OnboardingState;
   ui: UIState;
   validation: ValidationState;
   theme: ThemeState;
 }
+

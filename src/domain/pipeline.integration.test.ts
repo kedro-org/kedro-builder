@@ -5,15 +5,15 @@
  * verifying that pieces work correctly together.
  */
 import { describe, it, expect } from 'vitest';
-import { createMockStore } from '../utils/mockStore';
-import { addNode } from '../../features/nodes/nodesSlice';
-import { addDataset } from '../../features/datasets/datasetsSlice';
-import { addConnection } from '../../features/connections/connectionsSlice';
-import { generatePipeline } from '../../infrastructure/export/pipelineGenerator';
-import { generateCatalog } from '../../infrastructure/export/catalogGenerator';
-import { generateNodes } from '../../infrastructure/export/nodesGenerator';
-import { validatePipeline } from '../../utils/validation/pipelineValidation';
-import type { RootState } from '../../types/redux';
+import { createMockStore } from '../test/utils/mockStore';
+import { addNode } from '../features/nodes/nodesSlice';
+import { addDataset } from '../features/datasets/datasetsSlice';
+import { addConnection } from '../features/connections/connectionsSlice';
+import { generatePipeline } from '../infrastructure/export/pipelineGenerator';
+import { generateCatalog } from '../infrastructure/export/catalogGenerator';
+import { generateNodes } from '../infrastructure/export/nodesGenerator';
+import { validatePipeline } from '../validation/pipelineValidation';
+import type { RootState } from '../store';
 
 describe('Pipeline: create → connect → export', () => {
   it('generates correct pipeline.py, catalog.yml, and nodes.py from store state', () => {
