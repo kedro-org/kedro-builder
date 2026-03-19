@@ -157,7 +157,6 @@ export const trackEvent = (eventName: string, properties?: Record<string, unknow
 
   // Check if Heap is loaded
   if (!window.heap || typeof window.heap.track !== 'function') {
-    logger.warn('Heap is not loaded. Event not tracked:', eventName);
     return;
   }
 
