@@ -4,6 +4,7 @@ import type { KedroNode, KedroDataset, KedroConnection } from '../../types/kedro
 import nodesReducer from '../../features/nodes/nodesSlice';
 import datasetsReducer from '../../features/datasets/datasetsSlice';
 import connectionsReducer from '../../features/connections/connectionsSlice';
+import onboardingReducer from '../../features/onboarding/onboardingSlice';
 import uiReducer from '../../features/ui/uiSlice';
 import projectReducer from '../../features/project/projectSlice';
 import validationReducer from '../../features/validation/validationSlice';
@@ -20,6 +21,7 @@ export function createMockStore(preloadedState?: Partial<RootState>) {
       nodes: nodesReducer,
       datasets: datasetsReducer,
       connections: connectionsReducer,
+      onboarding: onboardingReducer,
       ui: uiReducer,
       project: projectReducer,
       validation: validationReducer,
@@ -56,18 +58,19 @@ export function createMockState(overrides?: Partial<RootState>): Partial<RootSta
       allIds: [],
       selected: [],
     },
-    ui: {
+    onboarding: {
       showTutorial: false,
-      tutorialStep: 0,
+      tutorialStep: 1,
       tutorialCompleted: false,
       showWalkthrough: false,
-      walkthroughStep: 0,
+      walkthroughStep: 1,
       walkthroughCompleted: false,
+    },
+    ui: {
       showProjectSetup: false,
       hasActiveProject: false,
       selectedComponent: null,
       showConfigPanel: false,
-      showCodePreview: false,
       showValidationPanel: false,
       canvasZoom: 1,
       canvasPosition: { x: 0, y: 0 },
@@ -78,8 +81,6 @@ export function createMockState(overrides?: Partial<RootState>): Partial<RootSta
     },
     project: {
       current: null,
-      savedList: [],
-      lastSaved: null,
     },
     validation: {
       errors: [],
@@ -133,18 +134,19 @@ export function createTestState(
       allIds: connections.map((c) => c.id),
       selected: [],
     },
-    ui: {
+    onboarding: {
       showTutorial: false,
-      tutorialStep: 0,
+      tutorialStep: 1,
       tutorialCompleted: false,
       showWalkthrough: false,
-      walkthroughStep: 0,
+      walkthroughStep: 1,
       walkthroughCompleted: false,
+    },
+    ui: {
       showProjectSetup: false,
       hasActiveProject: hasProject,
       selectedComponent: null,
       showConfigPanel: false,
-      showCodePreview: false,
       showValidationPanel: false,
       canvasZoom: 1,
       canvasPosition: { x: 0, y: 0 },
@@ -166,8 +168,6 @@ export function createTestState(
             ...projectOverrides,
           }
         : null,
-      savedList: [],
-      lastSaved: null,
     },
     validation: {
       errors: [],

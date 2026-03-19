@@ -4,19 +4,13 @@
  */
 
 import type { InputValidationResult } from './types';
+import { PYTHON_KEYWORDS } from '../constants/python';
 
-// Regex patterns for name validation
-const NODE_NAME_PATTERN = /^[a-zA-Z][a-zA-Z0-9_\s]*$/;
-const DATASET_NAME_PATTERN = /^[a-z][a-z0-9_]*$/;
+export { PYTHON_KEYWORDS };
 
-// Reserved Python keywords that cannot be used as names
-export const PYTHON_KEYWORDS = new Set([
-  'False', 'None', 'True', 'and', 'as', 'assert', 'async', 'await',
-  'break', 'class', 'continue', 'def', 'del', 'elif', 'else', 'except',
-  'finally', 'for', 'from', 'global', 'if', 'import', 'in', 'is',
-  'lambda', 'nonlocal', 'not', 'or', 'pass', 'raise', 'return', 'try',
-  'while', 'with', 'yield',
-]);
+// Regex patterns for name validation (exported so validators can reuse them)
+export const NODE_NAME_PATTERN = /^[a-zA-Z][a-zA-Z0-9_\s]*$/;
+export const DATASET_NAME_PATTERN = /^[a-z][a-z0-9_]*$/;
 
 /**
  * Check if a name is a reserved Python keyword
@@ -135,7 +129,7 @@ export function validateDatasetName(name: string, existingNames?: Set<string>): 
  * Converts to snake_case and removes invalid characters
  */
 export function sanitizeForPython(name: string): string {
-  return name
+  const result = name
     .trim()
     .toLowerCase()
     .replace(/\s+/g, '_')           // Replace spaces with underscores
@@ -143,4 +137,5 @@ export function sanitizeForPython(name: string): string {
     .replace(/^[0-9]+/, '')         // Remove leading numbers
     .replace(/_+/g, '_')            // Replace multiple underscores with single
     .replace(/^_|_$/g, '');         // Remove leading/trailing underscores
+  return result || 'unnamed_function';
 }

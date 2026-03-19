@@ -18,8 +18,8 @@ export const EmptyState: React.FC<EmptyStateProps> = ({ isDragging = false }) =>
   const clearAllSelections = useClearSelections();
   const selectAndOpenConfig = useSelectAndOpenConfig();
   const hasActiveProject = useAppSelector((state) => state.ui.hasActiveProject);
-  const showTutorial = useAppSelector((state) => state.ui.showTutorial);
-  const showWalkthrough = useAppSelector((state) => state.ui.showWalkthrough);
+  const showTutorial = useAppSelector((state) => state.onboarding.showTutorial);
+  const showWalkthrough = useAppSelector((state) => state.onboarding.showWalkthrough);
   const hasPendingComponent = useAppSelector((state) => state.ui.pendingComponentId !== null);
 
   const handleAddDataset = () => {

@@ -6,7 +6,7 @@
  * We replace it with a functioning in-memory Storage so the safe* helpers are tested for real.
  */
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { safeSetItem, safeGetItem, safeRemoveItem, STORAGE_KEYS } from './storage';
+import { safeSetItem, safeGetItem, safeRemoveItem, STORAGE_KEYS } from '../constants/storage';
 
 describe('localStorage safe helpers (real Storage)', () => {
   const savedStorage = global.localStorage;

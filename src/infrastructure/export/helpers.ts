@@ -3,7 +3,7 @@
  */
 
 import type { KedroNode, KedroDataset, KedroConnection } from '../../types/kedro';
-import { PYTHON_KEYWORDS } from '../../utils/validation';
+import { PYTHON_KEYWORDS } from '../../constants/python';
 
 /**
  * Convert string to snake_case for Python naming conventions
@@ -82,7 +82,9 @@ export function getFileExtension(datasetType: string): string {
     'text.TextDataset': '.txt',
   };
 
-  return typeMap[datasetType] || '.csv';
+  // Use explicit undefined check so empty string ('') is returned as-is for types that have no
+  // file extension (e.g. SQL datasets), rather than falling through to the '.csv' default.
+  return datasetType in typeMap ? typeMap[datasetType] : '.csv';
 }
 
 /**

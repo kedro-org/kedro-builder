@@ -6,6 +6,15 @@ import type { KedroDataset } from '../../types/kedro';
 import { DATASET_TYPE_MAPPING } from '../../constants/datasetTypes';
 import { inferDataLayer, getFileExtension, escapeYamlString, toSnakeCase } from './helpers';
 
+// Dataset types that use no filepath at all
+const NO_FILEPATH_TYPES = new Set([
+  'MemoryDataset',
+  'pandas.SQLTableDataset', // uses credentials + load_args.table_name instead
+]);
+
+// SQLQueryDataset uses inline sql + credentials (filepath to a .sql file is supported but uncommon)
+const SQL_QUERY_TYPE = 'pandas.SQLQueryDataset';
+
 /**
  * Generate Kedro catalog.yml file content from dataset definitions.
  * Creates a YAML data catalog with type, filepath, layer, and versioning config.
@@ -58,14 +67,20 @@ function generateCatalogEntry(dataset: KedroDataset): string {
   let entry = `${datasetName}:
   type: ${kedroType}`;
 
-  // Add filepath for non-memory datasets
-  if (kedroType !== 'MemoryDataset') {
+  if (kedroType === SQL_QUERY_TYPE) {
+    // SQLQueryDataset uses inline sql + credentials — the recommended pattern per Kedro docs
+    entry += `\n  sql: "SELECT * FROM your_table"  # Replace with your SQL query`;
+    entry += `\n  credentials: db_credentials  # Configure in conf/local/credentials.yml`;
+  } else if (!NO_FILEPATH_TYPES.has(kedroType)) {
+    // Standard file-based dataset — add data filepath
     entry += `\n  filepath: ${escapeYamlString(filepath)}`;
-
-    // Add comment if filepath was auto-generated (dummy)
     if (!hasUserFilepath) {
       entry += '  # Auto-generated – update with your actual data location';
     }
+  } else if (kedroType === 'pandas.SQLTableDataset') {
+    // SQLTableDataset has no filepath — table_name is a top-level constructor argument
+    entry += `\n  credentials: db_credentials  # Configure in conf/local/credentials.yml`;
+    entry += `\n  table_name: your_table_name  # Replace with actual table name`;
   }
 
   // Add layer if specified
@@ -74,7 +89,7 @@ function generateCatalogEntry(dataset: KedroDataset): string {
   }
 
   // Add versioning if enabled (time-travel and audit trails)
-  if (dataset.versioned && kedroType !== 'MemoryDataset') {
+  if (dataset.versioned && !NO_FILEPATH_TYPES.has(kedroType)) {
     entry += `\n  versioned: true`;
   }
 

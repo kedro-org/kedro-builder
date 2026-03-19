@@ -3,8 +3,8 @@
  * Checks for nodes with no connections
  */
 
-import type { RootState } from '@/types/redux';
-import type { ValidationError } from '../types';
+import type { RootState } from '@/store';
+import { type ValidationError, ValidationCode } from '../types';
 import type { Validator } from './Validator';
 import { findOrphanedNodes } from '@/domain/PipelineGraph';
 import { getConnectionsArray } from './helpers';
@@ -23,6 +23,7 @@ export class OrphanedNodeValidator implements Validator {
       const node = state.nodes.byId[nodeId];
       warnings.push({
         id: `warning-orphan-node-${nodeId}`,
+        code: ValidationCode.ORPHANED_NODE,
         severity: 'warning',
         componentId: nodeId,
         componentType: 'node',

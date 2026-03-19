@@ -5,7 +5,7 @@ import './BulkActionsToolbar.scss';
 
 interface BulkActionsToolbarProps {
   selectedCount: number;
-  selectedType: 'nodes' | 'edges' | 'mixed';
+  selectedType: 'nodes' | 'edges' | 'mixed' | 'none';
   onDelete: () => void;
   onDuplicate?: () => void;
   onClear: () => void;

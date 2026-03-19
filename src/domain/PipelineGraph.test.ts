@@ -9,6 +9,7 @@ import {
   findOrphanedDatasets,
   getConnectedNodes,
   getConnectedDatasets,
+  wouldCreateCycle,
 } from './PipelineGraph';
 import type { KedroConnection } from '../types/kedro';
 
@@ -97,6 +98,11 @@ describe('PipelineGraph', () => {
   });
 
   describe('detectCycles', () => {
+    it('should return empty array for empty graph', () => {
+      const graph = new Map<string, Set<string>>();
+      expect(detectCycles(graph)).toHaveLength(0);
+    });
+
     it('should return empty array for acyclic graph', () => {
       const graph = new Map<string, Set<string>>([
         ['node-1', new Set(['node-2'])],
@@ -167,6 +173,32 @@ describe('PipelineGraph', () => {
       const cycles = detectCycles(graph);
       expect(cycles.length).toBeGreaterThan(0);
       expect(cycles[0].hasCycle).toBe(true);
+    });
+  });
+
+  describe('wouldCreateCycle', () => {
+    it('returns false for empty graph', () => {
+      expect(wouldCreateCycle('node-1', 'dataset-1', [], [])).toBe(false);
+    });
+
+    it('returns false when new connection does not create a cycle', () => {
+      // node-1 → dataset-1 → node-2 already exists; extending node-2 → dataset-2 is fine
+      const existing: KedroConnection[] = [
+        { id: 'c1', source: 'node-1', target: 'dataset-1', sourceHandle: '', targetHandle: '' },
+        { id: 'c2', source: 'dataset-1', target: 'node-2', sourceHandle: '', targetHandle: '' },
+      ];
+      expect(wouldCreateCycle('node-2', 'dataset-2', existing, ['node-1', 'node-2'])).toBe(false);
+    });
+
+    it('returns true when new connection closes a cycle', () => {
+      // node-1 → dataset-1 → node-2 → dataset-2 exists
+      // adding dataset-2 → node-1 closes the loop: node-1 → node-2 → node-1
+      const existing: KedroConnection[] = [
+        { id: 'c1', source: 'node-1', target: 'dataset-1', sourceHandle: '', targetHandle: '' },
+        { id: 'c2', source: 'dataset-1', target: 'node-2', sourceHandle: '', targetHandle: '' },
+        { id: 'c3', source: 'node-2', target: 'dataset-2', sourceHandle: '', targetHandle: '' },
+      ];
+      expect(wouldCreateCycle('dataset-2', 'node-1', existing, ['node-1', 'node-2'])).toBe(true);
     });
   });
 

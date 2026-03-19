@@ -86,7 +86,8 @@
     }
   }
 
-  &--sql {
+  &--sql_table,
+  &--sql_query {
     .dataset-card__icon {
       color: #3498db;
     }

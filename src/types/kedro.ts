@@ -3,12 +3,7 @@
  * These types represent the domain model for Kedro pipelines
  */
 
-export type NodeType =
-  | 'data_ingestion'
-  | 'data_processing'
-  | 'model_training'
-  | 'model_evaluation'
-  | 'custom';
+export type NodeType = string;
 
 export type DatasetType =
   // Pandas datasets
@@ -130,11 +125,11 @@ export interface KedroConnection {
   [key: string]: unknown;
 }
 
-// ValidationError is defined in utils/validation/types.ts (single canonical source)
+// ValidationError is defined in validation/types.ts (single canonical source)
 
 export interface ProjectMetadata {
   id: string;
   name: string;
   updatedAt: number;
-  storageType: 'localStorage' | 'indexedDB';
+  storageType: 'localStorage';
 }

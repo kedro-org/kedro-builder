@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useAppSelector, useAppDispatch } from '../../store/hooks';
-import { openTutorial, openProjectSetup } from '../../features/ui/uiSlice';
+import { openProjectSetup } from '../../features/ui/uiSlice';
+import { openTutorial } from '../../features/onboarding/onboardingSlice';
 import { SettingsModal } from '../Settings';
 import { Code, Download, Edit2, Settings } from 'lucide-react';
 

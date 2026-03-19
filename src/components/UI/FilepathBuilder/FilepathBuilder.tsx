@@ -1,4 +1,5 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
+import { parseFilepath } from '../../../utils/filepath';
 import './FilepathBuilder.scss';
 
 interface FilepathBuilderProps {
@@ -77,18 +78,27 @@ export const FilepathBuilder: React.FC<FilepathBuilderProps> = ({
 
   // Local state for full path to make it editable
   const [fullPath, setFullPath] = useState(generateFullPath());
+  // Tracks whether the user is actively editing the full-path field.
+  // While true, segment changes from props must not overwrite the typed value.
+  const isEditingFullPath = useRef(false);
 
-  // Sync full path when segments change
+  // Sync full path when segments change (skip while user is typing in the full-path field)
   useEffect(() => {
-    setFullPath(generateFullPath());
+    if (!isEditingFullPath.current) {
+      setFullPath(generateFullPath());
+    }
     // generateFullPath uses baseLocation, dataLayer, fileName which are already in deps
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [baseLocation, dataLayer, fileName]);
 
-  // Handle full path edit
+  // Handle full path edit: update local display, parse back to segments, notify parent
   const handleFullPathChange = (value: string) => {
     setFullPath(value);
     onFullPathChange?.(value);
+    const parts = parseFilepath(value);
+    onBaseLocationChange(parts.baseLocation);
+    onDataLayerChange(parts.dataLayer);
+    onFileNameChange(parts.fileName);
   };
 
   return (
@@ -148,6 +158,8 @@ export const FilepathBuilder: React.FC<FilepathBuilderProps> = ({
           type="text"
           className="filepath-builder__fullpath-input"
           value={fullPath}
+          onFocus={() => { isEditingFullPath.current = true; }}
+          onBlur={() => { isEditingFullPath.current = false; }}
           onChange={(e) => handleFullPathChange(e.target.value)}
           placeholder={exampleFullPath}
         />

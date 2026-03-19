@@ -381,8 +381,11 @@ describe('catalogGenerator', () => {
       const result = generateCatalog([dataset]);
 
       expect(result).toContain('type: pandas.SQLTableDataset');
-      // SQL datasets get filepath in auto-generated path
-      expect(result).toContain('filepath: data/01_raw/sql_data');
+      expect(result).not.toContain('filepath:');
+      expect(result).toContain('credentials: db_credentials');
+      // table_name is a top-level constructor argument, not nested under load_args
+      expect(result).toContain('  table_name: your_table_name');
+      expect(result).not.toContain('load_args:');
     });
 
     it('should handle SQL Query dataset type', () => {
@@ -396,6 +399,10 @@ describe('catalogGenerator', () => {
       const result = generateCatalog([dataset]);
 
       expect(result).toContain('type: pandas.SQLQueryDataset');
+      // SQLQueryDataset uses inline sql + credentials — the recommended Kedro pattern
+      expect(result).toContain('sql: "SELECT * FROM your_table"');
+      expect(result).toContain('credentials: db_credentials');
+      expect(result).not.toContain('filepath:');
     });
 
     it('should escape filepath with special YAML characters', () => {

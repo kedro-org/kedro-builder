@@ -139,7 +139,7 @@ describe('useSelectAndOpenConfig', () => {
 
     act(() => { vi.advanceTimersByTime(10); });
 
-    expect(store.getState().nodes.selected).toEqual(['dataset-1']);
+    expect(store.getState().datasets.selected).toEqual(['dataset-1']);
     expect(store.getState().ui.showConfigPanel).toBe(true);
     expect(store.getState().ui.selectedComponent).toEqual({
       type: 'dataset',

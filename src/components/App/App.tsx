@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { useAppSelector } from '../../store/hooks';
+import { selectTheme } from '../../features/theme/themeSelectors';
 import { TutorialModal } from '../Tutorial/TutorialModal';
 import { WalkthroughOverlay } from '../Walkthrough/WalkthroughOverlay';
 import { ProjectSetupModal } from '../ProjectSetup/ProjectSetupModal';
@@ -17,8 +18,8 @@ import { Toaster } from 'react-hot-toast';
 import './App.scss';
 
 function App() {
-  const theme = useAppSelector((state) => state.theme.theme);
-  const showWalkthrough = useAppSelector((state) => state.ui.showWalkthrough);
+  const theme = useAppSelector(selectTheme);
+  const showWalkthrough = useAppSelector((state) => state.onboarding.showWalkthrough);
   const showProjectSetup = useAppSelector((state) => state.ui.showProjectSetup);
   const showExportWizard = useAppSelector((state) => state.ui.showExportWizard);
   const showConfigPanel = useAppSelector((state) => state.ui.showConfigPanel);
@@ -89,9 +90,6 @@ function App() {
           />
         </ErrorBoundary>
       )}
-
-      {/* Telemetry Consent Banner temporary remove for internal testing */}
-      {/* <TelemetryConsent /> */}
 
       {/* Toast notifications */}
       <Toaster />

@@ -76,19 +76,6 @@ const datasetsSlice = createSlice({
       // Single selection - replace all
       state.selected = [action.payload];
     },
-    toggleDatasetSelection: (state, action: PayloadAction<string>) => {
-      // Multi-select toggle
-      const id = action.payload;
-      if (state.selected.includes(id)) {
-        state.selected = state.selected.filter((datasetId) => datasetId !== id);
-      } else {
-        state.selected.push(id);
-      }
-    },
-    selectDatasets: (state, action: PayloadAction<string[]>) => {
-      // Set multiple selected
-      state.selected = action.payload;
-    },
     clearDatasetSelection: (state) => {
       state.selected = [];
     },
@@ -107,8 +94,6 @@ export const {
   deleteDataset,
   deleteDatasets,
   selectDataset,
-  toggleDatasetSelection,
-  selectDatasets,
   clearDatasetSelection,
   clearDatasets,
 } = datasetsSlice.actions;
