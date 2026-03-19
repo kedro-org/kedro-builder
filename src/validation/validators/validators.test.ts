@@ -2,8 +2,8 @@
  * @vitest-environment node
  */
 import { describe, it, expect, beforeEach } from 'vitest';
-import type { KedroNode, KedroDataset, KedroConnection } from '../../../types/kedro';
-import { createTestState } from '../../../test/utils/mockStore';
+import type { KedroNode, KedroDataset, KedroConnection } from '../../types/kedro';
+import { createTestState } from '../../test/utils/mockStore';
 import {
   ValidatorRegistry,
   CircularDependencyValidator,
@@ -51,8 +51,8 @@ describe('ValidatorRegistry', () => {
 
     const results = registry.validateAll(createTestState(nodes));
     expect(results).toHaveLength(2);
-    expect(results.some((r) => r.message.includes('has no name'))).toBe(true);
-    expect(results.some((r) => r.message.includes('Invalid node name'))).toBe(true);
+    expect(results.some((r) => r.code === 'empty-name')).toBe(true);
+    expect(results.some((r) => r.code === 'invalid-name')).toBe(true);
   });
 
   it('should return empty array when all validators pass', () => {

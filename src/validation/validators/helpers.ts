@@ -2,7 +2,7 @@
  * Shared helpers for validator classes
  */
 
-import type { RootState } from '@/types/redux';
+import type { RootState } from '@/store';
 import type { KedroConnection } from '@/types/kedro';
 
 /**

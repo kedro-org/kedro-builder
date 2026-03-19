@@ -13,6 +13,7 @@ export type {
   ValidationError,
   ValidationResult,
 } from './types';
+export { ValidationCode } from './types';
 
 // Input validation (real-time form validation)
 export {

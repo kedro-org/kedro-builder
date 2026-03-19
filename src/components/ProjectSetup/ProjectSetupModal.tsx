@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import type { RootState } from '../../types/redux';
+import type { RootState } from '../../store';
 import { createProject as createProjectAction, clearProject } from '../../features/project/projectSlice';
 import { closeProjectSetup, setHasActiveProject } from '../../features/ui/uiSlice';
 import { clearNodes } from '../../features/nodes/nodesSlice';
@@ -52,7 +52,7 @@ export const ProjectSetupModal: React.FC = () => {
       dispatch(createProjectAction({
         name: projectName,
         description: description.trim(),
-        pythonPackage: projectName.replace(/-/g, '_'), // Convert kebab-case to snake_case
+        pythonPackage: projectName.replace(/-/g, '_').toLowerCase(), // Convert kebab-case to snake_case
         pipelineName: '__default__',
       }));
 

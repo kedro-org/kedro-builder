@@ -19,7 +19,7 @@ import {
   isDatasetId,
   isConnectionId,
   parseIdType,
-} from '../../domain/IdGenerator';
+} from './IdGenerator';
 
 describe('ID Format Contracts', () => {
   describe('Node ID Format', () => {

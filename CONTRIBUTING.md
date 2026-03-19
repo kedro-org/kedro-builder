@@ -23,24 +23,22 @@ The app will be available at `http://localhost:5173`.
 | Command | Description |
 |---------|-------------|
 | `npm run dev` | Start development server with HMR |
-| `npm run build` | Production build (type-checks first) |
+| `npm run build` | Production build (tsc -b + Vite) |
 | `npm run preview` | Preview production build locally |
-| `npm run test` | Run tests with Vitest |
-| `npm run test:watch` | Run tests in watch mode |
+| `npm run test` | Run tests with Vitest (watch mode by default) |
+| `npm run test:ui` | Vitest UI dashboard |
 | `npm run test:coverage` | Run tests with coverage report |
 | `npm run lint` | Run ESLint |
-| `npm run lint:fix` | Run ESLint with auto-fix |
-| `npm run typecheck` | Run TypeScript type checking |
 
 Before submitting a PR, run:
 ```bash
-npm run build && npm run test
+npm run build && npx vitest run
 ```
 
 ## Code Standards
 
 ### File Naming
-- **Components**: PascalCase (`TaskNode.tsx`, `NodePalette.tsx`)
+- **Components**: PascalCase (`CustomNode.tsx`, `DatasetNode.tsx`)
 - **Hooks**: camelCase with `use` prefix (`useNodeSelection.ts`, `useAutoLayout.ts`)
 - **Utilities**: camelCase (`formatNode.ts`, `generateId.ts`)
 - **Types**: PascalCase (`NodeTypes.ts`, `PipelineTypes.ts`)
@@ -76,28 +74,27 @@ import { validateConnection } from './utils';
 src/
 ├── components/          # React components
 │   ├── UI/             # Primitives (Button, Input, ErrorBoundary, ThemeToggle)
-│   ├── Canvas/         # ReactFlow canvas, custom nodes/edges, canvas hooks
+│   ├── Canvas/         # ReactFlow canvas, custom nodes/edges, 14 canvas hooks
 │   ├── App/            # App shell, layout, validation hooks
 │   ├── ConfigPanel/    # Node & dataset configuration forms
 │   ├── CodeViewer/     # File tree + syntax-highlighted code preview
 │   ├── ExportWizard/   # Validation step + metadata confirmation
-│   └── Palette/        # Drag sources for nodes/datasets
+│   ├── Palette/        # Drag sources for nodes/datasets
+│   └── ...             # Tutorial, Walkthrough, Settings, Feedback, etc.
 ├── features/           # Redux slices + selectors
-│   ├── nodes/
-│   ├── datasets/
-│   ├── connections/
-│   ├── project/
-│   ├── validation/
-│   ├── ui/
-│   ├── theme/
+│   ├── nodes/          │   ├── datasets/
+│   ├── connections/    │   ├── project/
+│   ├── onboarding/     │   ├── validation/
+│   ├── ui/             │   ├── theme/
 │   └── canvas/         # Combined canvas selectors
+├── validation/         # Pipeline validation engine (8 validators)
 ├── store/              # Redux store setup, hooks, middleware
 ├── domain/             # Pure business logic (IdGenerator, PipelineGraph)
 ├── infrastructure/     # External concerns (export, localStorage, telemetry)
 ├── hooks/              # Shared custom React hooks
 ├── types/              # Shared TypeScript types (including branded IDs)
 ├── constants/          # Application constants (timing, storage keys, layout)
-└── utils/              # Validation rules and utility functions
+└── utils/              # Input validation and utility functions
 ```
 
 ## Testing
@@ -105,11 +102,11 @@ src/
 We use **Vitest** and **React Testing Library**.
 
 ```bash
-# Run all tests
+# Run all tests (watch mode by default)
 npm run test
 
-# Watch mode during development
-npm run test:watch
+# Vitest UI dashboard
+npm run test:ui
 
 # Check coverage
 npm run test:coverage
@@ -117,8 +114,8 @@ npm run test:coverage
 
 Place test files alongside the code they test:
 ```
-TaskNode.tsx
-TaskNode.test.tsx
+CustomNode.tsx
+CustomNode.test.tsx
 ```
 
 Focus on:
@@ -141,7 +138,7 @@ Kedro Builder models Kedro data pipelines. Key connection rules:
 - Dataset → Dataset (no direct data-to-data connections)
 - Task → Parameter (parameters are inputs only, not outputs)
 
-See `src/utils/validation/validators/` for validation logic and `src/domain/PipelineGraph.ts` for graph operations.
+See `src/validation/validators/` for validation logic and `src/domain/PipelineGraph.ts` for graph operations.
 
 ## Pull Request Process
 

@@ -1,18 +1,18 @@
-import { memo } from 'react';
+import { memo, useMemo } from 'react';
 import { Handle, Position, type NodeProps } from '@xyflow/react';
 import classNames from 'classnames';
 import type { KedroNode } from '@/types/kedro';
 import { useAppSelector } from '@/store/hooks';
-import { selectNodeValidationStatus } from '@/features/validation/validationSelectors';
+import { makeSelectNodeValidationStatus } from '@/features/validation/validationSelectors';
+import { UNNAMED_NODE_DEFAULT } from '@/constants/ui';
 import './CustomNode.scss';
 
 export const CustomNode = memo<NodeProps>(({ data, selected }) => {
   const nodeData = data as KedroNode;
 
-  // Use memoized selector for O(1) validation lookup instead of O(n) array.some()
-  const { hasError, hasWarning } = useAppSelector((state) =>
-    selectNodeValidationStatus(state, nodeData.id)
-  );
+  // Per-instance memoized selector — each node component gets its own cache entry
+  const selectValidation = useMemo(() => makeSelectNodeValidationStatus(nodeData.id), [nodeData.id]);
+  const { hasError, hasWarning } = useAppSelector(selectValidation);
 
   const nodeClasses = classNames(
     'custom-node',
@@ -45,7 +45,7 @@ export const CustomNode = memo<NodeProps>(({ data, selected }) => {
           </svg>
         </div>
         <h4 className="custom-node__name">
-          {nodeData.name && nodeData.name.trim() !== '' ? nodeData.name : 'Unnamed Node'}
+          {nodeData.name && nodeData.name.trim() !== '' ? nodeData.name : UNNAMED_NODE_DEFAULT}
         </h4>
       </div>
 

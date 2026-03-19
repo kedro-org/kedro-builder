@@ -1,6 +1,7 @@
 import { Sparkles, FunctionSquare, Network, FolderOpen, Database, Info } from 'lucide-react';
 import type { TutorialStep } from '../../types/tutorial';
 import KedroTemplateSvg from '../../assets/kedro-template.svg?url';
+import { TUTORIAL_STEP_COUNT } from '../../constants/ui';
 
 export const tutorialSteps: TutorialStep[] = [
   {
@@ -53,3 +54,10 @@ export const tutorialSteps: TutorialStep[] = [
     icon: KedroTemplateSvg,
   },
 ];
+
+// Dev-time guard: fail fast if someone adds/removes a step but forgets to update TUTORIAL_STEP_COUNT
+if (import.meta.env.DEV && tutorialSteps.length !== TUTORIAL_STEP_COUNT) {
+  throw new Error(
+    `TUTORIAL_STEP_COUNT (${TUTORIAL_STEP_COUNT}) is out of sync with tutorialSteps array (${tutorialSteps.length}). Update constants/ui.ts.`,
+  );
+}

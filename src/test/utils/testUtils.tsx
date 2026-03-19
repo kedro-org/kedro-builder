@@ -8,6 +8,7 @@ import type { RootState } from '../../store';
 import nodesReducer from '../../features/nodes/nodesSlice';
 import datasetsReducer from '../../features/datasets/datasetsSlice';
 import connectionsReducer from '../../features/connections/connectionsSlice';
+import onboardingReducer from '../../features/onboarding/onboardingSlice';
 import uiReducer from '../../features/ui/uiSlice';
 import projectReducer from '../../features/project/projectSlice';
 import validationReducer from '../../features/validation/validationSlice';
@@ -31,6 +32,7 @@ export function renderWithProviders(
         nodes: nodesReducer,
         datasets: datasetsReducer,
         connections: connectionsReducer,
+        onboarding: onboardingReducer,
         ui: uiReducer,
         project: projectReducer,
         validation: validationReducer,
@@ -39,6 +41,8 @@ export function renderWithProviders(
       } as any,
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       preloadedState: preloadedState as any,
+      middleware: (getDefaultMiddleware) =>
+        getDefaultMiddleware({ serializableCheck: false }),
     }),
     ...renderOptions
   }: ExtendedRenderOptions = {}

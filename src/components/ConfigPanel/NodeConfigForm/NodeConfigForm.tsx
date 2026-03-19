@@ -7,7 +7,7 @@ import type { KedroNode } from '@/types/kedro';
 import { Button } from '../../UI/Button/Button';
 import { Input } from '../../UI/Input/Input';
 import { ConfirmDialog } from '../../UI/ConfirmDialog';
-import { isPythonKeyword } from '@/utils/validation';
+import { isPythonKeyword } from '@/validation';
 import { toSnakeCase } from '@/infrastructure/export/helpers';
 import { useConfirmDialog } from '@/hooks/useConfirmDialog';
 import { dispatchConfigUpdated } from '@/constants';

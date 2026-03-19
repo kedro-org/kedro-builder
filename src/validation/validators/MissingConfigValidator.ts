@@ -3,9 +3,10 @@
  * Checks for datasets with missing configuration
  */
 
-import type { RootState } from '@/types/redux';
-import type { ValidationError } from '../types';
+import type { RootState } from '@/store';
+import { type ValidationError, ValidationCode } from '../types';
 import type { Validator } from './Validator';
+import { FILEPATH_EXEMPT_TYPES } from '../../constants/datasetTypes';
 
 export class MissingConfigValidator implements Validator {
   readonly id = 'missing-config';
@@ -24,13 +25,14 @@ export class MissingConfigValidator implements Validator {
           issues.push('type');
         }
 
-        if (dataset.type !== 'memory' && !dataset.filepath?.trim()) {
+        if (!FILEPATH_EXEMPT_TYPES.has(dataset.type ?? '') && !dataset.filepath?.trim()) {
           issues.push('filepath');
         }
 
         if (issues.length > 0) {
           warnings.push({
             id: `warning-missing-config-${datasetId}`,
+            code: ValidationCode.MISSING_CONFIG,
             severity: 'warning',
             componentId: datasetId,
             componentType: 'dataset',

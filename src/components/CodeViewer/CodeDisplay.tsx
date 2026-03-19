@@ -1,5 +1,6 @@
 import { useMemo, useEffect, useRef } from 'react';
 import { useAppSelector } from '../../store/hooks';
+import { selectTheme } from '../../features/theme/themeSelectors';
 import hljs from 'highlight.js/lib/core';
 import python from 'highlight.js/lib/languages/python';
 import yaml from 'highlight.js/lib/languages/yaml';
@@ -26,7 +27,7 @@ export const CodeDisplay: React.FC = () => {
   const datasetsAllIds = useAppSelector((s) => s.datasets.allIds);
   const connectionsById = useAppSelector((s) => s.connections.byId);
   const connectionsAllIds = useAppSelector((s) => s.connections.allIds);
-  const theme = useAppSelector((s) => s.theme.theme);
+  const theme = useAppSelector(selectTheme);
   const selectedFilePath = useAppSelector((s) => s.ui.selectedCodeFile);
   const codeRef = useRef<HTMLElement>(null);
 

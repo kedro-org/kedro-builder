@@ -2,8 +2,8 @@ import { describe, it, expect, vi } from 'vitest';
 import { screen } from '@testing-library/react';
 import { renderWithProviders } from '@/test/utils/testUtils';
 import { ExportWizard } from './ExportWizard';
-import type { ValidationResult } from '@/utils/validation';
-import type { RootState } from '@/types/redux';
+import type { ValidationResult } from '@/validation';
+import type { RootState } from '@/store';
 
 const cleanValidation: ValidationResult = {
   errors: [],
@@ -17,7 +17,6 @@ const preloadedState = {
       id: 'p1', name: 'my_project', pythonPackage: 'my_project',
       pipelineName: 'default', description: 'A test', createdAt: 1, updatedAt: 1,
     },
-    savedList: [], lastSaved: null,
   },
   nodes: { byId: {}, allIds: ['n1'], selected: [], hovered: null },
   datasets: { byId: {}, allIds: ['d1', 'd2'], selected: [] },

@@ -2,14 +2,12 @@ import { describe, it, expect } from 'vitest';
 import { screen } from '@testing-library/react';
 import { renderWithProviders } from '@/test/utils/testUtils';
 import { CodeViewerModal } from './CodeViewerModal';
-import type { RootState } from '@/types/redux';
+import type { RootState } from '@/store';
 
 const baseUi = {
-  showTutorial: false, tutorialStep: 1, tutorialCompleted: false,
-  showWalkthrough: false, walkthroughStep: 1, walkthroughCompleted: false,
   showProjectSetup: false, hasActiveProject: true,
   selectedComponent: null, showConfigPanel: false,
-  showCodePreview: false, showValidationPanel: false,
+  showValidationPanel: false,
   canvasZoom: 1, canvasPosition: { x: 0, y: 0 },
   showExportWizard: false, pendingComponentId: null,
 };
@@ -34,7 +32,6 @@ describe('CodeViewerModal', () => {
             id: 'p1', name: 'demo_pipeline', pythonPackage: 'demo_pipeline',
             pipelineName: 'default', description: '', createdAt: 1000, updatedAt: 1000,
           },
-          savedList: [], lastSaved: null,
         },
         nodes: { byId: {}, allIds: [], selected: [], hovered: null },
         datasets: { byId: {}, allIds: [], selected: [] },

@@ -3,9 +3,10 @@
  * Checks for empty or default names
  */
 
-import type { RootState } from '@/types/redux';
-import type { ValidationError } from '../types';
+import type { RootState } from '@/store';
+import { type ValidationError, ValidationCode } from '../types';
 import type { Validator } from './Validator';
+import { UNNAMED_NODE_DEFAULT, UNNAMED_DATASET_DEFAULT } from '../../constants/ui';
 
 export class EmptyNameValidator implements Validator {
   readonly id = 'empty-name';
@@ -20,9 +21,10 @@ export class EmptyNameValidator implements Validator {
       const node = state.nodes.byId[nodeId];
       if (node) {
         const name = node.name?.trim() || '';
-        if (!name || name === 'Unnamed Node') {
+        if (!name || name === UNNAMED_NODE_DEFAULT) {
           errors.push({
             id: `error-empty-node-name-${nodeId}`,
+            code: ValidationCode.EMPTY_NAME,
             severity: 'error',
             componentId: nodeId,
             componentType: 'node',
@@ -38,9 +40,10 @@ export class EmptyNameValidator implements Validator {
       const dataset = state.datasets.byId[datasetId];
       if (dataset) {
         const name = dataset.name?.trim() || '';
-        if (!name || name === 'Unnamed Dataset') {
+        if (!name || name === UNNAMED_DATASET_DEFAULT) {
           errors.push({
             id: `error-empty-dataset-name-${datasetId}`,
+            code: ValidationCode.EMPTY_NAME,
             severity: 'error',
             componentId: datasetId,
             componentType: 'dataset',

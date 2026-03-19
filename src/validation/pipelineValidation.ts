@@ -5,7 +5,7 @@
  * Each validation concern is implemented as a separate Validator class.
  */
 
-import type { RootState } from '../../types/redux';
+import type { RootState } from '../store';
 import type { ValidationResult } from './types';
 import { getDefaultValidatorRegistry } from './validators';
 

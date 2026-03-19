@@ -3,6 +3,22 @@
  */
 
 /**
+ * Validation error codes — use these instead of matching on message strings
+ */
+export const ValidationCode = {
+  CIRCULAR_DEPENDENCY: 'circular-dependency',
+  DUPLICATE_NAME: 'duplicate-name',
+  INVALID_NAME: 'invalid-name',
+  EMPTY_NAME: 'empty-name',
+  ORPHANED_NODE: 'orphaned-node',
+  ORPHANED_DATASET: 'orphaned-dataset',
+  MISSING_CODE: 'missing-code',
+  MISSING_CONFIG: 'missing-config',
+} as const;
+
+export type ValidationCode = (typeof ValidationCode)[keyof typeof ValidationCode];
+
+/**
  * Result of real-time input validation
  */
 export interface InputValidationResult {
@@ -15,6 +31,7 @@ export interface InputValidationResult {
  */
 export interface ValidationError {
   id: string;
+  code: ValidationCode;
   severity: 'error' | 'warning';
   componentId: string;
   componentType: 'node' | 'dataset' | 'connection' | 'pipeline';
