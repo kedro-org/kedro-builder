@@ -18,6 +18,8 @@ export class MissingCodeValidator implements Validator {
     state.nodes.allIds.forEach((nodeId) => {
       const node = state.nodes.byId[nodeId];
       if (node) {
+        // LLM context nodes don't have function code — skip them
+        if (node.nodeKind === 'llm_context') return;
         const code = node.functionCode?.trim() || '';
         if (!code) {
           warnings.push({

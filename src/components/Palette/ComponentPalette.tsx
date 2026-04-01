@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useAppSelector } from '../../store/hooks';
-import { Database } from 'lucide-react';
+import { Database, Brain } from 'lucide-react';
 import { DND_TYPES } from '../../constants';
 import './ComponentPalette.scss';
 
@@ -28,6 +28,15 @@ export const ComponentPalette = () => {
       return;
     }
     event.dataTransfer.setData(DND_TYPES.DATASET, 'csv');
+    event.dataTransfer.effectAllowed = 'move';
+  };
+
+  const handleLLMContextDragStart = (event: React.DragEvent) => {
+    if (isDragDisabled) {
+      event.preventDefault();
+      return;
+    }
+    event.dataTransfer.setData(DND_TYPES.LLM_CONTEXT, 'llm_context');
     event.dataTransfer.effectAllowed = 'move';
   };
 
@@ -90,6 +99,22 @@ export const ComponentPalette = () => {
             <div className="component-card__content">
               <h4 className="component-card__name">Function Node</h4>
               <p className="component-card__description">Create a python function</p>
+            </div>
+          </div>
+
+          {/* LLM Context Node */}
+          <div
+            className={`component-card component-card--llm-context ${isDragDisabled ? 'component-card--disabled' : ''}`}
+            draggable={!isDragDisabled}
+            onDragStart={handleLLMContextDragStart}
+            title={!hasActiveProject ? 'Create a project first' : ''}
+          >
+            <div className="component-card__icon">
+              <Brain size={20} />
+            </div>
+            <div className="component-card__content">
+              <h4 className="component-card__name">LLM Context <span className="component-card__badge">NEW</span></h4>
+              <p className="component-card__description">Bundle LLM, prompts and tools for GenAI pipelines</p>
             </div>
           </div>
         </div>

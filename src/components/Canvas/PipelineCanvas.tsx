@@ -13,6 +13,7 @@ import { closeConfigPanel } from '../../features/ui/uiSlice';
 
 import { CustomNode } from './CustomNode/CustomNode';
 import { DatasetNode } from './DatasetNode/DatasetNode';
+import { LLMContextNode } from './LLMContextNode/LLMContextNode';
 import { CustomEdge } from './CustomEdge/CustomEdge';
 import { CanvasOverlay } from './CanvasOverlay/CanvasOverlay';
 import { CanvasControls } from './CanvasControls/CanvasControls';
@@ -30,6 +31,7 @@ import './PipelineCanvas.scss';
 const nodeTypes = {
   kedroNode: CustomNode,
   datasetNode: DatasetNode,
+  llmContextNode: LLMContextNode,
 };
 
 const edgeTypes = {

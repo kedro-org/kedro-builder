@@ -44,11 +44,14 @@ logger = logging.getLogger(__name__)
 
 `;
 
-  if (nodes.length === 0) {
+  // LLM context nodes don't have function code — skip them
+  const functionNodes = nodes.filter((n) => n.nodeKind !== 'llm_context');
+
+  if (functionNodes.length === 0) {
     return header + '# No nodes defined\n';
   }
 
-  const functions = nodes.map((node) =>
+  const functions = functionNodes.map((node) =>
     generateNodeFunction(node, connections, datasets)
   );
 

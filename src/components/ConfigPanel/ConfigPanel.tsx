@@ -7,6 +7,7 @@ import { deleteNode } from '../../features/nodes/nodesSlice';
 import { deleteDataset } from '../../features/datasets/datasetsSlice';
 import { NodeConfigForm } from './NodeConfigForm/NodeConfigForm';
 import { DatasetConfigForm } from './DatasetConfigForm/DatasetConfigForm';
+import { LLMContextConfigForm } from './LLMContextConfigForm/LLMContextConfigForm';
 import { X } from 'lucide-react';
 import './ConfigPanel.scss';
 
@@ -68,7 +69,11 @@ export const ConfigPanel = () => {
     <div className="config-panel">
       <div className="config-panel__header">
         <h3 className="config-panel__title">
-          {selectedComponent.type === 'node' ? 'Configure Node' : 'Configure Dataset'}
+          {selectedComponent.type === 'dataset'
+            ? 'Configure Dataset'
+            : selectedNode?.nodeKind === 'llm_context'
+              ? 'Configure LLM Context'
+              : 'Configure Node'}
         </h3>
         <button
           onClick={handleClose}
@@ -80,7 +85,11 @@ export const ConfigPanel = () => {
       </div>
 
       <div className="config-panel__content">
-        {selectedComponent.type === 'node' && selectedNode && (
+        {selectedComponent.type === 'node' && selectedNode && selectedNode.nodeKind === 'llm_context' && (
+          <LLMContextConfigForm node={selectedNode} onClose={handleClose} />
+        )}
+
+        {selectedComponent.type === 'node' && selectedNode && selectedNode.nodeKind !== 'llm_context' && (
           <NodeConfigForm node={selectedNode} onClose={handleClose} />
         )}
 

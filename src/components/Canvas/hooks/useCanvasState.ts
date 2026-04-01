@@ -85,7 +85,7 @@ export const useCanvasState = () => {
     () => {
       const nodes = reduxNodes.map((node) => ({
         id: node.id,
-        type: 'kedroNode' as const,
+        type: (node.nodeKind === 'llm_context' ? 'llmContextNode' : 'kedroNode') as string,
         position: node.position,
         data: node,
         selected: selectedNodeIdsSet.has(node.id),

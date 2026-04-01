@@ -91,15 +91,25 @@ export interface KedroProject {
   updatedAt: number;
 }
 
+export type LLMProvider = 'openai' | 'anthropic' | 'cohere';
+
+export type PromptFormat = 'chat' | 'text';
+
 export interface KedroNode {
   id: string;
   name: string;
+  nodeKind?: 'function' | 'llm_context';
   type: NodeType;
   inputs: string[];
   outputs: string[];
   functionCode?: string;
   parameters?: Record<string, unknown>;
   position: { x: number; y: number };
+  // LLM Context Node fields (only when nodeKind === 'llm_context')
+  llmProvider?: LLMProvider;
+  modelName?: string;
+  temperature?: number;
+  promptNames?: string[];
   [key: string]: unknown;
 }
 

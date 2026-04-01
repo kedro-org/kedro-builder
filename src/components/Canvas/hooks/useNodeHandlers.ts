@@ -136,8 +136,9 @@ export const useNodeHandlers = ({ onNodesChange, setIsDraggingOver, isDraggingOv
       // Check for node drop using centralized DnD constants
       const nodeType = event.dataTransfer.getData(DND_TYPES.NODE);
       const datasetType = event.dataTransfer.getData(DND_TYPES.DATASET);
+      const llmContextType = event.dataTransfer.getData(DND_TYPES.LLM_CONTEXT);
 
-      if (!nodeType && !datasetType) return;
+      if (!nodeType && !datasetType && !llmContextType) return;
 
       // Clear any existing selection before adding new component
       dispatch(clearSelection());
@@ -188,6 +189,30 @@ export const useNodeHandlers = ({ onNodesChange, setIsDraggingOver, isDraggingOv
 
         dispatch(setPendingComponent({ type: 'dataset', id: newDatasetId }));
         selectAndOpenConfig('dataset', newDatasetId);
+      } else if (llmContextType) {
+        const newNodeId = generateId('node');
+        dispatch(
+          addNode({
+            id: newNodeId,
+            name: '',
+            nodeKind: 'llm_context',
+            type: 'llm_context',
+            inputs: [],
+            outputs: [],
+            llmProvider: 'openai',
+            modelName: 'gpt-4o',
+            temperature: 0.0,
+            promptNames: ['system_prompt'],
+            position,
+          })
+        );
+
+        trackEvent('llm_context_node_added', {
+          type: 'llm_context',
+        });
+
+        dispatch(setPendingComponent({ type: 'node', id: newNodeId }));
+        selectAndOpenConfig('node', newNodeId);
       }
     },
     [screenToFlowPosition, dispatch, setIsDraggingOver, selectAndOpenConfig]
@@ -227,7 +252,7 @@ export const useNodeHandlers = ({ onNodesChange, setIsDraggingOver, isDraggingOv
         dispatch(selectNode(node.id));
         logger.debug('Dispatched selectNode for:', node.id);
 
-        if (node.type === 'kedroNode') {
+        if (node.type === 'kedroNode' || node.type === 'llmContextNode') {
           logger.debug('Opening node config panel');
           dispatch(openConfigPanel({ type: 'node', id: node.id }));
         } else if (node.type === 'datasetNode') {

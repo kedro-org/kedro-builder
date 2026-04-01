@@ -37,12 +37,18 @@ export {
   DND_TYPES,
   hasNodeData,
   hasDatasetData,
+  hasLLMContextData,
   getNodeData,
   getDatasetData,
+  getLLMContextData,
   setNodeData,
   setDatasetData,
+  setLLMContextData,
   type DndType,
 } from './dnd';
+
+// LLM constants and helpers
+export * from './llm';
 
 // Python language constants
 export { PYTHON_KEYWORDS } from './python';

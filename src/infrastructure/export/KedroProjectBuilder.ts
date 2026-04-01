@@ -8,7 +8,7 @@ import type { RootState } from '../../store';
 import type { KedroNode, KedroDataset, KedroConnection } from '../../types/kedro';
 import type { ProjectMetadata } from './staticFilesGenerator';
 
-import { generateCatalog } from './catalogGenerator';
+import { generateCatalog, generateGenAIConfig } from './catalogGenerator';
 import { generateNodes } from './nodesGenerator';
 import { generatePipeline } from './pipelineGenerator';
 import {
@@ -109,6 +109,17 @@ export class KedroProjectBuilder {
    */
   withCatalog(): this {
     this.zip.file('conf/base/catalog.yml', generateCatalog(this.datasetsList));
+    return this;
+  }
+
+  /**
+   * Add genai-config.yml for LLM context nodes
+   */
+  withGenAIConfig(): this {
+    const genaiConfig = generateGenAIConfig(this.nodes);
+    if (genaiConfig) {
+      this.zip.file('conf/base/genai-config.yml', genaiConfig);
+    }
     return this;
   }
 
@@ -236,6 +247,7 @@ export class KedroProjectBuilder {
       .withConfiguration()
       .withPackageStructure()
       .withCatalog()
+      .withGenAIConfig()
       .withNodes()
       .withPipeline()
       .withDataDirectories()

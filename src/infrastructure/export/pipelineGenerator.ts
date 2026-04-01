@@ -21,18 +21,35 @@ export function generatePipeline(
   datasets: Record<string, KedroDataset>,
   pipelineName: string
 ): string {
-  // Generate function imports
-  const funcNames = nodes.map((n) => toSnakeCase(n.name));
-  const imports = funcNames.length > 0 ? funcNames.join(', ') : '';
+  // Separate function nodes from LLM context nodes
+  const functionNodes = nodes.filter((n) => n.nodeKind !== 'llm_context');
+  const llmContextNodes = nodes.filter((n) => n.nodeKind === 'llm_context');
 
-  // Generate node definitions
-  const nodeDefinitions = nodes.map((node) =>
-    generateNodeDefinition(node, connections, datasets)
-  );
+  // Generate function imports for regular nodes only
+  const funcNames = functionNodes.map((n) => toSnakeCase(n.name));
+  const funcImports = funcNames.length > 0 ? `from .nodes import ${funcNames.join(', ')}` : '';
+
+  // Determine pipeline imports (node before Pipeline to match Kedro convention)
+  const pipelineImports: string[] = ['node'];
+  if (llmContextNodes.length > 0) pipelineImports.push('llm_context_node');
+  pipelineImports.push('Pipeline');
+
+  // Generate all node definitions (both types)
+  const allDefinitions: string[] = [];
+
+  // LLM context nodes first (they produce context objects consumed by function nodes)
+  llmContextNodes.forEach((node) => {
+    allDefinitions.push(generateLLMContextNodeDefinition(node));
+  });
+
+  // Then function nodes
+  functionNodes.forEach((node) => {
+    allDefinitions.push(generateNodeDefinition(node, connections, datasets));
+  });
 
   const nodesStr =
-    nodeDefinitions.length > 0
-      ? nodeDefinitions.map((n) => `            ${n},`).join('\n')
+    allDefinitions.length > 0
+      ? allDefinitions.map((n) => `            ${n},`).join('\n')
       : '';
 
   return `"""
@@ -43,7 +60,7 @@ This module defines the structure of your pipeline by connecting nodes
 with their input and output datasets.
 """
 
-from kedro.pipeline import node, Pipeline${imports ? '\n' : ''}${imports ? `from .nodes import ${imports}` : ''}
+from kedro.pipeline import ${pipelineImports.join(', ')}${funcImports ? '\n' + funcImports : ''}
 
 
 def create_pipeline(**kwargs) -> Pipeline:
@@ -82,6 +99,25 @@ function generateNodeDefinition(
                 inputs=${inputsStr},
                 outputs=${outputsStr},
                 name="${funcName}_node",
+            )`;
+}
+
+/**
+ * Generate an llm_context_node() call for the pipeline.
+ * LLM context nodes use a different API: name, outputs, llm, prompts (no func/inputs).
+ */
+function generateLLMContextNodeDefinition(node: KedroNode): string {
+  const contextName = toSnakeCase(node.name);
+  const promptsList = (node.promptNames ?? [])
+    .filter((p) => p.trim().length > 0)
+    .map((p) => `"${p}"`)
+    .join(', ');
+
+  return `llm_context_node(
+                name="${contextName}",
+                outputs="${contextName}",
+                llm="llm",
+                prompts=[${promptsList}],
             )`;
 }
 
