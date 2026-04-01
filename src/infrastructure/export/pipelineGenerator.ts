@@ -39,7 +39,7 @@ export function generatePipeline(
 
   // LLM context nodes first (they produce context objects consumed by function nodes)
   llmContextNodes.forEach((node) => {
-    allDefinitions.push(generateLLMContextNodeDefinition(node));
+    allDefinitions.push(generateLLMContextNodeDefinition(node, connections, datasets));
   });
 
   // Then function nodes
@@ -105,9 +105,19 @@ function generateNodeDefinition(
 /**
  * Generate an llm_context_node() call for the pipeline.
  * LLM context nodes use a different API: name, outputs, llm, prompts (no func/inputs).
+ * The outputs value is the connected output dataset's name (falls back to node name).
  */
-function generateLLMContextNodeDefinition(node: KedroNode): string {
+function generateLLMContextNodeDefinition(
+  node: KedroNode,
+  connections: KedroConnection[],
+  datasets: Record<string, KedroDataset>
+): string {
   const contextName = toSnakeCase(node.name);
+
+  // Use connected output dataset name so pipeline wiring is correct
+  const outputDatasets = getNodeOutputDatasets(node, connections, datasets);
+  const outputName = outputDatasets.length > 0 ? outputDatasets[0] : contextName;
+
   const promptsList = (node.promptNames ?? [])
     .filter((p) => p.trim().length > 0)
     .map((p) => `"${p}"`)
@@ -115,7 +125,7 @@ function generateLLMContextNodeDefinition(node: KedroNode): string {
 
   return `llm_context_node(
                 name="${contextName}",
-                outputs="${contextName}",
+                outputs="${outputName}",
                 llm="llm",
                 prompts=[${promptsList}],
             )`;
