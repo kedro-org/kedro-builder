@@ -92,6 +92,10 @@ export class KedroProjectBuilder {
   private datasetsList: KedroDataset[];
   private connections: KedroConnection[];
 
+  // GenAI context (computed once, used by multiple methods)
+  private hasGenAI: boolean;
+  private llmProviders: string[];
+
   constructor(state: RootState, metadata: ProjectMetadata, options: Partial<ProjectBuildOptions> = {}) {
     this.zip = new JSZip();
     this.metadata = metadata;
@@ -102,6 +106,11 @@ export class KedroProjectBuilder {
     this.datasets = state.datasets.byId;
     this.datasetsList = state.datasets.allIds.map((id) => this.datasets[id]);
     this.connections = state.connections.allIds.map((id) => state.connections.byId[id]);
+
+    // Compute GenAI context
+    const llmNodes = this.nodes.filter((n) => n.nodeKind === 'llm_context');
+    this.hasGenAI = llmNodes.length > 0;
+    this.llmProviders = [...new Set(llmNodes.map((n) => n.llmProvider ?? 'openai'))];
   }
 
   /**
@@ -154,7 +163,8 @@ export class KedroProjectBuilder {
    */
   withConfiguration(): this {
     this.zip.file('conf/base/parameters.yml', generateParametersConfig());
-    this.zip.file('conf/local/credentials.yml', generateCredentialsTemplate());
+    const credOptions = this.hasGenAI ? { llmProviders: this.llmProviders } : undefined;
+    this.zip.file('conf/local/credentials.yml', generateCredentialsTemplate(credOptions));
     return this;
   }
 
@@ -163,7 +173,8 @@ export class KedroProjectBuilder {
    */
   withRootFiles(): this {
     const datasetTypes = this.datasetsList.map((d) => d.type).filter(Boolean);
-    this.zip.file('pyproject.toml', generatePyproject(this.metadata, datasetTypes));
+    const genAIOptions = this.hasGenAI ? { providers: this.llmProviders } : undefined;
+    this.zip.file('pyproject.toml', generatePyproject(this.metadata, datasetTypes, genAIOptions));
 
     if (this.options.includeReadme) {
       this.zip.file('README.md', generateReadme(this.metadata));
@@ -189,7 +200,7 @@ export class KedroProjectBuilder {
     // Package root
     this.zip.file(`src/${pythonPackage}/__init__.py`, generateInitPy());
     this.zip.file(`src/${pythonPackage}/__main__.py`, generateMainPy(pythonPackage));
-    this.zip.file(`src/${pythonPackage}/settings.py`, generateSettings());
+    this.zip.file(`src/${pythonPackage}/settings.py`, generateSettings({ hasGenAI: this.hasGenAI }));
     this.zip.file(`src/${pythonPackage}/pipeline_registry.py`, generatePipelineRegistry());
 
     // Pipelines directory

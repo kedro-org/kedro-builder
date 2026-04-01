@@ -79,9 +79,20 @@ const DATASET_TYPE_TO_EXTRA: Record<string, string> = {
 };
 
 /**
+ * GenAI options for pyproject.toml generation
+ */
+export interface GenAIOptions {
+  providers: string[];
+}
+
+/**
  * Generate pyproject.toml content
  */
-export function generatePyproject(metadata: ProjectMetadata, datasetTypes?: string[]): string {
+export function generatePyproject(
+  metadata: ProjectMetadata,
+  datasetTypes?: string[],
+  genAIOptions?: GenAIOptions
+): string {
   const { projectName, pythonPackage } = metadata;
 
   // Generate kedro-datasets dependency with only the required extras
@@ -107,6 +118,31 @@ export function generatePyproject(metadata: ProjectMetadata, datasetTypes?: stri
     ? `"kedro-datasets[${datasetsExtras.join(', ')}]>=3.0"`
     : '"kedro-datasets>=3.0"';
 
+  // Generate GenAI dependencies when LLM context nodes are present
+  const genAIDeps: string[] = [];
+  if (genAIOptions && genAIOptions.providers.length > 0) {
+    genAIDeps.push('"kedro-datasets-experimental>=0.1"');
+    genAIDeps.push('"langchain>=0.3"');
+
+    const providerPackages: Record<string, string> = {
+      openai: '"langchain-openai>=0.2"',
+      anthropic: '"langchain-anthropic>=0.3"',
+      cohere: '"langchain-cohere>=0.3"',
+    };
+
+    const uniqueProviders = [...new Set(genAIOptions.providers)];
+    uniqueProviders.forEach((provider) => {
+      const pkg = providerPackages[provider];
+      if (pkg) genAIDeps.push(pkg);
+    });
+
+    genAIDeps.push('"python-dotenv>=1.0"');
+  }
+
+  const genAIDepsStr = genAIDeps.length > 0
+    ? '\n' + genAIDeps.map((dep) => `    ${dep},`).join('\n')
+    : '';
+
   return `[build-system]
 requires = ["setuptools"]
 build-backend = "setuptools.build_meta"
@@ -122,7 +158,7 @@ dependencies = [
     "notebook",
     "kedro[jupyter]~=1.0.0",
     ${datasetsDep},
-    "kedro-viz>=6.7.0",
+    "kedro-viz>=6.7.0",${genAIDepsStr}
 ]
 
 [project.scripts]

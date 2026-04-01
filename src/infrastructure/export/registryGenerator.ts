@@ -28,7 +28,16 @@ def register_pipelines() -> dict[str, Pipeline]:
 /**
  * Generate settings.py
  */
-export function generateSettings(): string {
+export function generateSettings(options?: { hasGenAI?: boolean }): string {
+  const configPatternsBlock = options?.hasGenAI
+    ? `    "config_patterns": {
+        "genai-config": ["genai-config*"],
+    },`
+    : `#     "config_patterns": {
+#         "spark": ["spark*/"],
+#         "parameters": ["parameters*", "parameters*/**", "**/parameters*"],
+#     }`;
+
   return `"""Project settings. There is no need to edit this file unless you want to change values
 from the Kedro defaults. For further information, including these default values, see
 https://docs.kedro.org/en/1.0.0/tutorials/settings/."""
@@ -62,10 +71,7 @@ CONFIG_LOADER_CLASS = OmegaConfigLoader
 CONFIG_LOADER_ARGS = {
     "base_env": "base",
     "default_run_env": "local",
-#     "config_patterns": {
-#         "spark": ["spark*/"],
-#         "parameters": ["parameters*", "parameters*/**", "**/parameters*"],
-#     }
+${configPatternsBlock}
 }
 
 # Class that manages Kedro's library components.

@@ -13,7 +13,7 @@ export interface FileTreeInput {
   connections: { byId: Record<string, KedroConnection>; allIds: string[] };
 }
 
-import { generateCatalog } from '../infrastructure/export/catalogGenerator';
+import { generateCatalog, generateGenAIConfig } from '../infrastructure/export/catalogGenerator';
 import { generateNodes } from '../infrastructure/export/nodesGenerator';
 import { generatePipeline } from '../infrastructure/export/pipelineGenerator';
 import {
@@ -68,21 +68,29 @@ export function generateFileTree(state: FileTreeInput): FileNode {
   // Extract dataset types for dependency generation
   const datasetTypes = datasetsList.map((d) => d.type).filter(Boolean);
 
+  // Compute GenAI context
+  const llmNodes = nodes.filter((n) => n.nodeKind === 'llm_context');
+  const hasGenAI = llmNodes.length > 0;
+  const llmProviders = [...new Set(llmNodes.map((n) => n.llmProvider ?? 'openai'))];
+  const genAIOptions = hasGenAI ? { providers: llmProviders } : undefined;
+
   // Generate all file contents
-  const files = {
+  const files: Record<string, string> = {
     // Root files
-    'pyproject.toml': generatePyproject(metadata, datasetTypes),
+    'pyproject.toml': generatePyproject(metadata, datasetTypes, genAIOptions),
     'README.md': generateReadme(metadata),
     '.gitignore': generateGitignore(),
 
     // Config files
     'conf/base/catalog.yml': generateCatalog(datasetsList),
     'conf/base/parameters.yml': generateParametersConfig(),
-    'conf/local/credentials.yml': generateCredentialsTemplate(),
+    'conf/local/credentials.yml': generateCredentialsTemplate(
+      hasGenAI ? { llmProviders } : undefined
+    ),
 
     // Source files
     [`src/${pythonPackage}/__init__.py`]: generateInitPy(),
-    [`src/${pythonPackage}/settings.py`]: generateSettings(),
+    [`src/${pythonPackage}/settings.py`]: generateSettings({ hasGenAI }),
     [`src/${pythonPackage}/pipeline_registry.py`]: generatePipelineRegistry(),
     [`src/${pythonPackage}/pipelines/${pipelineName}/__init__.py`]: generatePipelineInit(pipelineName),
     [`src/${pythonPackage}/pipelines/${pipelineName}/nodes.py`]: generateNodes(
@@ -98,6 +106,12 @@ export function generateFileTree(state: FileTreeInput): FileNode {
       pipelineName
     ),
   };
+
+  // Add genai-config.yml when LLM context nodes are present
+  const genaiConfig = generateGenAIConfig(nodes);
+  if (genaiConfig) {
+    files['conf/base/genai-config.yml'] = genaiConfig;
+  }
 
   // Build tree structure
   const root: FileNode = {
@@ -131,6 +145,17 @@ export function generateFileTree(state: FileTreeInput): FileNode {
                 path: 'conf/base/parameters.yml',
                 content: files['conf/base/parameters.yml'],
               },
+              ...(files['conf/base/genai-config.yml']
+                ? [
+                    {
+                      name: 'genai-config.yml',
+                      type: 'file' as const,
+                      path: 'conf/base/genai-config.yml',
+                      content: files['conf/base/genai-config.yml'],
+                      isKeyFile: true,
+                    },
+                  ]
+                : []),
             ],
           },
           {
