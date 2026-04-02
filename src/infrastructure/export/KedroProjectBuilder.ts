@@ -11,6 +11,7 @@ import type { ProjectMetadata } from './staticFilesGenerator';
 import { generateCatalog, generateGenAIConfig } from './catalogGenerator';
 import { generateNodes } from './nodesGenerator';
 import { generatePipeline } from './pipelineGenerator';
+import { getPromptDatasetIds } from './helpers';
 import {
   generateParametersConfig,
   generateCredentialsTemplate,
@@ -114,10 +115,14 @@ export class KedroProjectBuilder {
   }
 
   /**
-   * Add catalog.yml to the project
+   * Add catalog.yml to the project.
+   * Prompt datasets connected to LLM context nodes are excluded
+   * (they belong in genai-config.yml instead).
    */
   withCatalog(): this {
-    this.zip.file('conf/base/catalog.yml', generateCatalog(this.datasetsList));
+    const promptIds = getPromptDatasetIds(this.nodes, this.connections, this.datasets);
+    const catalogDatasets = this.datasetsList.filter((ds) => !promptIds.has(ds.id));
+    this.zip.file('conf/base/catalog.yml', generateCatalog(catalogDatasets));
     return this;
   }
 
@@ -125,7 +130,7 @@ export class KedroProjectBuilder {
    * Add genai-config.yml for LLM context nodes
    */
   withGenAIConfig(): this {
-    const genaiConfig = generateGenAIConfig(this.nodes);
+    const genaiConfig = generateGenAIConfig(this.nodes, this.connections, this.datasets);
     if (genaiConfig) {
       this.zip.file('conf/base/genai-config.yml', genaiConfig);
     }

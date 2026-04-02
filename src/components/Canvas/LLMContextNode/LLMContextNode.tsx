@@ -16,11 +16,9 @@ export const LLMContextNode = memo<NodeProps>(({ data, selected }) => {
 
   const providerLabel = (nodeData.llmProvider ?? 'openai').charAt(0).toUpperCase() +
     (nodeData.llmProvider ?? 'openai').slice(1);
-  const promptCount = (nodeData.promptNames ?? []).filter((p) => p.trim().length > 0).length;
   const subtitle = [
     providerLabel,
     nodeData.modelName ?? 'No model',
-    `${promptCount} prompt${promptCount !== 1 ? 's' : ''}`,
   ].join(' \u00B7 ');
 
   const nodeClasses = classNames(

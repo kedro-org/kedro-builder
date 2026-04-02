@@ -12,6 +12,7 @@ import {
   InvalidNameValidator,
   MissingCodeValidator,
   MissingConfigValidator,
+  MissingPromptValidator,
   OrphanedNodeValidator,
   OrphanedDatasetValidator,
   createDefaultValidatorRegistry,
@@ -459,18 +460,92 @@ describe('OrphanedDatasetValidator', () => {
   });
 });
 
+describe('MissingPromptValidator', () => {
+  const validator = new MissingPromptValidator();
+
+  it('should pass for LLM context nodes with connected prompt datasets', () => {
+    const nodes: KedroNode[] = [
+      { id: 'node-1', name: 'summarizer', nodeKind: 'llm_context', type: 'llm_context', inputs: [], outputs: [], position: { x: 0, y: 0 } },
+    ];
+    const datasets: KedroDataset[] = [
+      { id: 'dataset-1', name: 'system_prompt', type: 'text', position: { x: 0, y: 0 } },
+    ];
+    const connections: KedroConnection[] = [
+      { id: 'conn-1', source: 'dataset-1', target: 'node-1', sourceHandle: 'out', targetHandle: 'in' },
+    ];
+
+    expect(validator.validate(createTestState(nodes, datasets, connections))).toEqual([]);
+  });
+
+  it('should warn when LLM context node has no prompt datasets connected', () => {
+    const nodes: KedroNode[] = [
+      { id: 'node-1', name: 'summarizer', nodeKind: 'llm_context', type: 'llm_context', inputs: [], outputs: [], position: { x: 0, y: 0 } },
+    ];
+
+    const results = validator.validate(createTestState(nodes));
+    expect(results).toHaveLength(1);
+    expect(results[0].severity).toBe('warning');
+    expect(results[0].componentId).toBe('node-1');
+    expect(results[0].code).toBe('missing-prompt');
+    expect(results[0].message).toContain('summarizer');
+    expect(results[0].suggestion).toContain('text or YAML');
+  });
+
+  it('should not warn for regular function nodes without prompts', () => {
+    const nodes: KedroNode[] = [
+      { id: 'node-1', name: 'process_data', type: 'custom', inputs: [], outputs: [], position: { x: 0, y: 0 } },
+    ];
+
+    expect(validator.validate(createTestState(nodes))).toEqual([]);
+  });
+
+  it('should not count non-prompt datasets as prompts', () => {
+    const nodes: KedroNode[] = [
+      { id: 'node-1', name: 'summarizer', nodeKind: 'llm_context', type: 'llm_context', inputs: [], outputs: [], position: { x: 0, y: 0 } },
+    ];
+    const datasets: KedroDataset[] = [
+      { id: 'dataset-1', name: 'input_data', type: 'csv', position: { x: 0, y: 0 } },
+    ];
+    const connections: KedroConnection[] = [
+      { id: 'conn-1', source: 'dataset-1', target: 'node-1', sourceHandle: 'out', targetHandle: 'in' },
+    ];
+
+    const results = validator.validate(createTestState(nodes, datasets, connections));
+    expect(results).toHaveLength(1);
+    expect(results[0].code).toBe('missing-prompt');
+  });
+
+  it('should warn per LLM context node independently', () => {
+    const nodes: KedroNode[] = [
+      { id: 'node-1', name: 'has_prompt', nodeKind: 'llm_context', type: 'llm_context', inputs: [], outputs: [], position: { x: 0, y: 0 } },
+      { id: 'node-2', name: 'no_prompt', nodeKind: 'llm_context', type: 'llm_context', inputs: [], outputs: [], position: { x: 0, y: 0 } },
+    ];
+    const datasets: KedroDataset[] = [
+      { id: 'dataset-1', name: 'system_prompt', type: 'text', position: { x: 0, y: 0 } },
+    ];
+    const connections: KedroConnection[] = [
+      { id: 'conn-1', source: 'dataset-1', target: 'node-1', sourceHandle: 'out', targetHandle: 'in' },
+    ];
+
+    const results = validator.validate(createTestState(nodes, datasets, connections));
+    expect(results).toHaveLength(1);
+    expect(results[0].componentId).toBe('node-2');
+  });
+});
+
 describe('Factory functions', () => {
-  it('should create registry with all 8 validators (4 error, 4 warning)', () => {
+  it('should create registry with all 9 validators (4 error, 5 warning)', () => {
     const registry = createDefaultValidatorRegistry();
     const all = registry.getAll();
 
-    expect(all).toHaveLength(8);
+    expect(all).toHaveLength(9);
     expect(all.filter((v) => v.severity === 'error')).toHaveLength(4);
-    expect(all.filter((v) => v.severity === 'warning')).toHaveLength(4);
+    expect(all.filter((v) => v.severity === 'warning')).toHaveLength(5);
     expect(all.map((v) => v.id)).toEqual(
       expect.arrayContaining([
         'circular-dependency', 'duplicate-name', 'invalid-name', 'empty-name',
         'orphaned-node', 'orphaned-dataset', 'missing-code', 'missing-config',
+        'missing-prompt',
       ])
     );
   });

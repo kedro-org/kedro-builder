@@ -202,8 +202,7 @@ export const useNodeHandlers = ({ onNodesChange, setIsDraggingOver, isDraggingOv
             llmProvider: 'openai',
             modelName: 'gpt-4o',
             temperature: 0.0,
-            promptNames: ['system_prompt'],
-            position,
+             position,
           })
         );
 

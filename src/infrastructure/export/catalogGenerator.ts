@@ -2,9 +2,10 @@
  * Generate Kedro catalog.yml from datasets
  */
 
-import type { KedroDataset, KedroNode } from '../../types/kedro';
+import type { KedroDataset, KedroNode, KedroConnection } from '../../types/kedro';
 import { DATASET_TYPE_MAPPING } from '../../constants/datasetTypes';
-import { inferDataLayer, getFileExtension, escapeYamlString, toSnakeCase } from './helpers';
+import { PROMPT_DATASET_TYPES } from '../../constants/llm';
+import { inferDataLayer, getFileExtension, escapeYamlString, toSnakeCase, buildLLMNameMap } from './helpers';
 
 // Dataset types that use no filepath at all
 const NO_FILEPATH_TYPES = new Set([
@@ -115,7 +116,11 @@ function inferFilepath(name: string, kedroType: string): string {
  * @param nodes - LLM context nodes to generate catalog entries for
  * @returns Complete genai-config.yml file content, or empty string if no LLM nodes
  */
-export function generateGenAIConfig(nodes: KedroNode[]): string {
+export function generateGenAIConfig(
+  nodes: KedroNode[],
+  connections: KedroConnection[] = [],
+  datasets: Record<string, KedroDataset> = {}
+): string {
   const llmNodes = nodes.filter((n) => n.nodeKind === 'llm_context');
   if (llmNodes.length === 0) return '';
 
@@ -126,15 +131,6 @@ export function generateGenAIConfig(nodes: KedroNode[]): string {
 # Documentation: https://docs.kedro.org/en/stable/nodes/llm_context_node.html
 
 `;
-
-  const entries: string[] = [];
-
-  // Generate LLM dataset entry
-  // For simplicity, generate one "llm" entry using the first node's provider
-  const firstNode = llmNodes[0];
-  const provider = firstNode.llmProvider ?? 'openai';
-  const model = firstNode.modelName ?? 'gpt-4o';
-  const temperature = firstNode.temperature ?? 0.0;
 
   const catalogTypeMap: Record<string, string> = {
     openai: 'langchain.ChatOpenAIDataset',
@@ -148,30 +144,54 @@ export function generateGenAIConfig(nodes: KedroNode[]): string {
     cohere: 'cohere',
   };
 
-  const catalogType = catalogTypeMap[provider] ?? 'langchain.ChatOpenAIDataset';
-  const credentialKey = credentialKeyMap[provider] ?? 'openai';
+  const entries: string[] = [];
 
-  entries.push(`llm:
+  // Generate LLM dataset entries — one per unique config
+  const llmNameMap = buildLLMNameMap(nodes);
+  const emittedLLMNames = new Set<string>();
+
+  llmNodes.forEach((node) => {
+    const llmName = llmNameMap.get(node.id) ?? 'llm';
+    if (emittedLLMNames.has(llmName)) return;
+    emittedLLMNames.add(llmName);
+
+    const provider = node.llmProvider ?? 'openai';
+    const model = node.modelName ?? 'gpt-4o';
+    const temperature = node.temperature ?? 0.0;
+    const catalogType = catalogTypeMap[provider] ?? 'langchain.ChatOpenAIDataset';
+    const credentialKey = credentialKeyMap[provider] ?? 'openai';
+
+    entries.push(`${llmName}:
   type: ${catalogType}
   kwargs:
     model: "${model}"
     temperature: ${temperature}
   credentials: ${credentialKey}`);
+  });
 
-  // Collect all unique prompt names across all LLM context nodes
-  const allPromptNames = new Set<string>();
-  llmNodes.forEach((n) => {
-    (n.promptNames ?? []).forEach((p) => {
-      if (p.trim()) allPromptNames.add(p.trim());
+  // Collect all unique prompt datasets connected to LLM nodes
+  const seenPromptNames = new Set<string>();
+  const promptDatasets: { name: string; dsType: string }[] = [];
+
+  llmNodes.forEach((node) => {
+    connections.forEach((conn) => {
+      if (conn.target !== node.id || !conn.source.startsWith('dataset-')) return;
+      const ds = datasets[conn.source];
+      if (!ds || !PROMPT_DATASET_TYPES.has(ds.type)) return;
+      if (seenPromptNames.has(ds.name)) return;
+      seenPromptNames.add(ds.name);
+      promptDatasets.push({ name: ds.name, dsType: ds.type });
     });
   });
 
-  // Generate prompt dataset entries
-  allPromptNames.forEach((promptName) => {
-    const safeName = toSnakeCase(promptName);
+  // Generate prompt dataset entries with correct type and extension
+  promptDatasets.forEach(({ name, dsType }) => {
+    const safeName = toSnakeCase(name);
+    const kedroType = DATASET_TYPE_MAPPING[dsType] ?? 'text.TextDataset';
+    const ext = getFileExtension(kedroType);
     entries.push(`${safeName}:
-  type: text.TextDataset
-  filepath: data/01_raw/${safeName}.txt`);
+  type: ${kedroType}
+  filepath: data/01_raw/${safeName}${ext}`);
   });
 
   return header + entries.join('\n\n') + '\n';

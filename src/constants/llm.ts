@@ -4,7 +4,7 @@
  * Default values and options for LLM Context Node configuration.
  */
 
-import type { LLMProvider } from '../types/kedro';
+import type { LLMProvider, DatasetType } from '../types/kedro';
 
 export interface LLMProviderOption {
   value: LLMProvider;
@@ -33,6 +33,9 @@ export const LLM_PROVIDERS: LLMProviderOption[] = [
     catalogType: 'langchain.ChatCohereDataset',
   },
 ];
+
+/** Dataset types that can serve as prompt inputs to LLM context nodes */
+export const PROMPT_DATASET_TYPES: ReadonlySet<DatasetType> = new Set<DatasetType>(['text', 'yaml']);
 
 export const DEFAULT_LLM_PROVIDER: LLMProvider = 'openai';
 export const DEFAULT_MODEL = 'gpt-4o';

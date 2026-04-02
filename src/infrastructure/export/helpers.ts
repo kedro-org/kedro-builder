@@ -4,6 +4,7 @@
 
 import type { KedroNode, KedroDataset, KedroConnection } from '../../types/kedro';
 import { PYTHON_KEYWORDS } from '../../constants/python';
+import { PROMPT_DATASET_TYPES } from '../../constants/llm';
 
 /**
  * Convert string to snake_case for Python naming conventions
@@ -172,6 +173,84 @@ export function getNodeInputDatasets(
   });
 
   return inputs;
+}
+
+/**
+ * Get prompt dataset names connected as inputs to an LLM context node.
+ * Only includes datasets with prompt-compatible types (text, yaml).
+ */
+export function getNodeInputPromptDatasets(
+  node: KedroNode,
+  connections: KedroConnection[],
+  datasets: Record<string, KedroDataset>
+): string[] {
+  const promptNames: string[] = [];
+
+  connections.forEach((conn) => {
+    if (conn.target === node.id && conn.source.startsWith('dataset-')) {
+      const dataset = datasets[conn.source];
+      if (dataset && PROMPT_DATASET_TYPES.has(dataset.type)) {
+        promptNames.push(dataset.name);
+      }
+    }
+  });
+
+  return promptNames;
+}
+
+/**
+ * Get the IDs of datasets that serve as prompt inputs to LLM context nodes.
+ * These datasets belong in genai-config.yml, not catalog.yml.
+ */
+export function getPromptDatasetIds(
+  nodes: KedroNode[],
+  connections: KedroConnection[],
+  datasets: Record<string, KedroDataset>
+): Set<string> {
+  const promptDatasetIds = new Set<string>();
+  const llmNodes = nodes.filter((n) => n.nodeKind === 'llm_context');
+
+  llmNodes.forEach((node) => {
+    connections.forEach((conn) => {
+      if (conn.target === node.id && conn.source.startsWith('dataset-')) {
+        const dataset = datasets[conn.source];
+        if (dataset && PROMPT_DATASET_TYPES.has(dataset.type)) {
+          promptDatasetIds.add(dataset.id);
+        }
+      }
+    });
+  });
+
+  return promptDatasetIds;
+}
+
+/**
+ * Build a mapping from LLM context node ID → catalog LLM dataset name.
+ *
+ * When every LLM node shares the same (provider, model, temperature) config,
+ * all nodes reference a single "llm" entry. When configs differ, each unique
+ * config gets its own named entry (e.g. "llm_summarizer", "llm_translator").
+ */
+export function buildLLMNameMap(nodes: KedroNode[]): Map<string, string> {
+  const llmNodes = nodes.filter((n) => n.nodeKind === 'llm_context');
+  const map = new Map<string, string>();
+  if (llmNodes.length === 0) return map;
+
+  const configKey = (n: KedroNode) =>
+    `${n.llmProvider ?? 'openai'}|${n.modelName ?? 'gpt-4o'}|${n.temperature ?? 0}`;
+
+  const uniqueConfigs = new Set(llmNodes.map(configKey));
+
+  if (uniqueConfigs.size === 1) {
+    llmNodes.forEach((n) => map.set(n.id, 'llm'));
+  } else {
+    llmNodes.forEach((n) => {
+      const suffix = toSnakeCase(n.name) || n.id;
+      map.set(n.id, `llm_${suffix}`);
+    });
+  }
+
+  return map;
 }
 
 /**

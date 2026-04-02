@@ -3,7 +3,7 @@
  */
 
 import type { KedroNode, KedroDataset, KedroConnection } from '../../types/kedro';
-import { toSnakeCase, formatNodeInputs, formatNodeOutputs, getNodeInputDatasets, getNodeOutputDatasets } from './helpers';
+import { toSnakeCase, formatNodeInputs, formatNodeOutputs, getNodeInputDatasets, getNodeOutputDatasets, getNodeInputPromptDatasets, buildLLMNameMap } from './helpers';
 
 /**
  * Generate Kedro pipeline.py file content from pipeline structure.
@@ -34,12 +34,15 @@ export function generatePipeline(
   if (llmContextNodes.length > 0) pipelineImports.push('llm_context_node');
   pipelineImports.push('Pipeline');
 
+  // Build LLM name map so each node references its correct catalog entry
+  const llmNameMap = buildLLMNameMap(nodes);
+
   // Generate all node definitions (both types)
   const allDefinitions: string[] = [];
 
   // LLM context nodes first (they produce context objects consumed by function nodes)
   llmContextNodes.forEach((node) => {
-    allDefinitions.push(generateLLMContextNodeDefinition(node, connections, datasets));
+    allDefinitions.push(generateLLMContextNodeDefinition(node, connections, datasets, llmNameMap));
   });
 
   // Then function nodes
@@ -110,7 +113,8 @@ function generateNodeDefinition(
 function generateLLMContextNodeDefinition(
   node: KedroNode,
   connections: KedroConnection[],
-  datasets: Record<string, KedroDataset>
+  datasets: Record<string, KedroDataset>,
+  llmNameMap: Map<string, string>
 ): string {
   const contextName = toSnakeCase(node.name);
 
@@ -118,15 +122,17 @@ function generateLLMContextNodeDefinition(
   const outputDatasets = getNodeOutputDatasets(node, connections, datasets);
   const outputName = outputDatasets.length > 0 ? outputDatasets[0] : contextName;
 
-  const promptsList = (node.promptNames ?? [])
-    .filter((p) => p.trim().length > 0)
+  const llmCatalogName = llmNameMap.get(node.id) ?? 'llm';
+
+  const promptNames = getNodeInputPromptDatasets(node, connections, datasets);
+  const promptsList = promptNames
     .map((p) => `"${p}"`)
     .join(', ');
 
   return `llm_context_node(
                 name="${contextName}",
                 outputs="${outputName}",
-                llm="llm",
+                llm="${llmCatalogName}",
                 prompts=[${promptsList}],
             )`;
 }

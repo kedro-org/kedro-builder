@@ -16,6 +16,7 @@ export interface FileTreeInput {
 import { generateCatalog, generateGenAIConfig } from '../infrastructure/export/catalogGenerator';
 import { generateNodes } from '../infrastructure/export/nodesGenerator';
 import { generatePipeline } from '../infrastructure/export/pipelineGenerator';
+import { getPromptDatasetIds } from '../infrastructure/export/helpers';
 import {
   generateParametersConfig,
   generateCredentialsTemplate,
@@ -74,6 +75,10 @@ export function generateFileTree(state: FileTreeInput): FileNode {
   const llmProviders = [...new Set(llmNodes.map((n) => n.llmProvider ?? 'openai'))];
   const genAIOptions = hasGenAI ? { providers: llmProviders } : undefined;
 
+  // Exclude prompt datasets from catalog (they belong in genai-config.yml)
+  const promptIds = getPromptDatasetIds(nodes, connections, datasets);
+  const catalogDatasets = datasetsList.filter((ds) => !promptIds.has(ds.id));
+
   // Generate all file contents
   const files: Record<string, string> = {
     // Root files
@@ -82,7 +87,7 @@ export function generateFileTree(state: FileTreeInput): FileNode {
     '.gitignore': generateGitignore(),
 
     // Config files
-    'conf/base/catalog.yml': generateCatalog(datasetsList),
+    'conf/base/catalog.yml': generateCatalog(catalogDatasets),
     'conf/base/parameters.yml': generateParametersConfig(),
     'conf/local/credentials.yml': generateCredentialsTemplate(
       hasGenAI ? { llmProviders } : undefined
@@ -108,7 +113,7 @@ export function generateFileTree(state: FileTreeInput): FileNode {
   };
 
   // Add genai-config.yml when LLM context nodes are present
-  const genaiConfig = generateGenAIConfig(nodes);
+  const genaiConfig = generateGenAIConfig(nodes, connections, datasets);
   if (genaiConfig) {
     files['conf/base/genai-config.yml'] = genaiConfig;
   }

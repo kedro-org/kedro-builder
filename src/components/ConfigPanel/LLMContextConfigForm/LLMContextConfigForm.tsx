@@ -1,8 +1,9 @@
-import { useForm, useFieldArray } from 'react-hook-form';
-import { useEffect, useCallback } from 'react';
-import { useAppDispatch } from '@/store/hooks';
+import { useForm } from 'react-hook-form';
+import { useEffect, useCallback, useMemo } from 'react';
+import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import { updateNode, deleteNode } from '@/features/nodes/nodesSlice';
 import { clearPendingComponent } from '@/features/ui/uiSlice';
+import { selectAllConnections } from '@/features/connections/connectionsSelectors';
 import type { KedroNode, LLMProvider } from '@/types/kedro';
 import { Button } from '../../UI/Button/Button';
 import { Input } from '../../UI/Input/Input';
@@ -10,19 +11,15 @@ import { ConfirmDialog } from '../../UI/ConfirmDialog';
 import { isPythonKeyword } from '@/validation';
 import { useConfirmDialog } from '@/hooks/useConfirmDialog';
 import { dispatchConfigUpdated } from '@/constants';
-import { LLM_PROVIDERS, DEFAULT_LLM_PROVIDER, DEFAULT_MODEL, DEFAULT_TEMPERATURE } from '@/constants/llm';
+import { LLM_PROVIDERS, DEFAULT_LLM_PROVIDER, DEFAULT_MODEL, DEFAULT_TEMPERATURE, PROMPT_DATASET_TYPES } from '@/constants/llm';
+import { isDatasetId } from '@/domain/IdGenerator';
 import './LLMContextConfigForm.scss';
-
-interface PromptEntry {
-  name: string;
-}
 
 interface LLMContextFormData {
   name: string;
   llmProvider: LLMProvider;
   modelName: string;
   temperature: number;
-  prompts: PromptEntry[];
 }
 
 interface LLMContextConfigFormProps {
@@ -41,15 +38,20 @@ export const LLMContextConfigForm: React.FC<LLMContextConfigFormProps> = ({ node
 
   const deleteDialog = useConfirmDialog(handleConfirmDelete);
 
-  const initialPrompts: PromptEntry[] =
-    node.promptNames && node.promptNames.length > 0
-      ? node.promptNames.map((n) => ({ name: n }))
-      : [{ name: '' }];
+  const connections = useAppSelector(selectAllConnections);
+  const datasetsById = useAppSelector((s) => s.datasets.byId);
+
+  const connectedPromptNames = useMemo(() => {
+    return connections
+      .filter((c) => c.target === node.id && isDatasetId(c.source))
+      .map((c) => datasetsById[c.source])
+      .filter((ds) => ds && PROMPT_DATASET_TYPES.has(ds.type))
+      .map((ds) => ds.name);
+  }, [connections, datasetsById, node.id]);
 
   const {
     register,
     handleSubmit,
-    control,
     watch,
     setValue,
     reset,
@@ -60,27 +62,15 @@ export const LLMContextConfigForm: React.FC<LLMContextConfigFormProps> = ({ node
       llmProvider: node.llmProvider || DEFAULT_LLM_PROVIDER,
       modelName: node.modelName || DEFAULT_MODEL,
       temperature: node.temperature ?? DEFAULT_TEMPERATURE,
-      prompts: initialPrompts,
     },
   });
 
-  const { fields, append, remove } = useFieldArray({
-    control,
-    name: 'prompts',
-  });
-
   useEffect(() => {
-    const prompts: PromptEntry[] =
-      node.promptNames && node.promptNames.length > 0
-        ? node.promptNames.map((n) => ({ name: n }))
-        : [{ name: '' }];
-
     reset({
       name: node.name || '',
       llmProvider: node.llmProvider || DEFAULT_LLM_PROVIDER,
       modelName: node.modelName || DEFAULT_MODEL,
       temperature: node.temperature ?? DEFAULT_TEMPERATURE,
-      prompts,
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [node.id, reset]);
@@ -100,10 +90,6 @@ export const LLMContextConfigForm: React.FC<LLMContextConfigFormProps> = ({ node
   };
 
   const onSubmit = (data: LLMContextFormData) => {
-    const promptNames = data.prompts
-      .map((p) => p.name.trim())
-      .filter((n) => n.length > 0);
-
     dispatch(
       updateNode({
         id: node.id,
@@ -112,7 +98,6 @@ export const LLMContextConfigForm: React.FC<LLMContextConfigFormProps> = ({ node
           llmProvider: data.llmProvider,
           modelName: data.modelName,
           temperature: data.temperature,
-          promptNames,
         },
       })
     );
@@ -199,45 +184,19 @@ export const LLMContextConfigForm: React.FC<LLMContextConfigFormProps> = ({ node
 
       <div className="llm-context-form__section">
         <label className="llm-context-form__label">Prompts</label>
-        <span className="llm-context-form__helper">
-          Catalog dataset names for prompt templates (e.g., system_prompt, user_prompt)
-        </span>
-        <div className="llm-context-form__prompt-list">
-          {fields.map((field, index) => (
-            <div key={field.id} className="llm-context-form__prompt-row">
-              <input
-                className="llm-context-form__prompt-input"
-                placeholder="e.g., system_prompt"
-                {...register(`prompts.${index}.name`, {
-                  validate: (value) => {
-                    if (value.trim() === '') return true; // Allow empty (will be filtered)
-                    if (!/^[a-z][a-z0-9_]*$/.test(value.trim())) {
-                      return 'Use snake_case';
-                    }
-                    return true;
-                  },
-                })}
-              />
-              {fields.length > 1 && (
-                <button
-                  type="button"
-                  className="llm-context-form__prompt-remove"
-                  onClick={() => remove(index)}
-                  aria-label="Remove prompt"
-                >
-                  x
-                </button>
-              )}
-            </div>
-          ))}
-          <button
-            type="button"
-            className="llm-context-form__add-prompt"
-            onClick={() => append({ name: '' })}
-          >
-            + Add prompt
-          </button>
-        </div>
+        {connectedPromptNames.length > 0 ? (
+          <div className="llm-context-form__prompt-list">
+            {connectedPromptNames.map((name) => (
+              <div key={name} className="llm-context-form__prompt-row">
+                <span className="llm-context-form__prompt-readonly">{name}</span>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <span className="llm-context-form__helper">
+            Connect text or YAML dataset nodes to this node to add prompts.
+          </span>
+        )}
       </div>
 
       <div className="llm-context-form__actions">

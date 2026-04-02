@@ -9,6 +9,7 @@ import { wouldCreateCycle } from './utils/cycleDetection';
 import { useGhostPreview } from './useGhostPreview';
 import { useDragToCreate } from './useDragToCreate';
 import { isNodeId, isDatasetId, generateConnectionId } from '@/domain';
+import { PROMPT_DATASET_TYPES } from '@/constants/llm';
 
 // Re-export GhostPreviewState for backwards compatibility
 export type { GhostPreviewState } from './useGhostPreview';
@@ -52,6 +53,8 @@ export const useConnectionHandlers = ({
   const dispatch = useAppDispatch();
   const existingConnections = useAppSelector(selectAllConnections);
   const nodeIds = useAppSelector((s) => s.nodes.allIds);
+  const nodesById = useAppSelector((s) => s.nodes.byId);
+  const datasetsById = useAppSelector((s) => s.datasets.byId);
 
   // Track when a connection is made via onConnect to prevent duplicate component creation
   const connectionMadeRef = useRef(false);
@@ -113,11 +116,20 @@ export const useConnectionHandlers = ({
     // Block: node → node OR dataset → dataset
     if (!((isSourceNode && isTargetDataset) || (isSourceDataset && isTargetNode))) return false;
 
+    // Block non-prompt datasets from connecting to LLM context nodes
+    if (isSourceDataset && isTargetNode) {
+      const targetNode = nodesById[connection.target];
+      if (targetNode?.nodeKind === 'llm_context') {
+        const dataset = datasetsById[connection.source];
+        if (!dataset || !PROMPT_DATASET_TYPES.has(dataset.type)) return false;
+      }
+    }
+
     // Reject connections that would create a cycle — gives accurate visual feedback during drag
     if (wouldCreateCycle(connection.source, connection.target, existingConnections, nodeIds)) return false;
 
     return true;
-  }, [existingConnections, nodeIds]);
+  }, [existingConnections, nodeIds, nodesById, datasetsById]);
 
   // Handle node mouse enter - show connection validity
   const handleNodeMouseEnter = useCallback(
@@ -155,6 +167,21 @@ export const useConnectionHandlers = ({
   const handleConnect: OnConnect = useCallback(
     (connection) => {
       if (!connection.source || !connection.target) return;
+
+      // Block non-prompt datasets from connecting to LLM context nodes
+      if (isDatasetId(connection.source) && isNodeId(connection.target)) {
+        const targetNode = nodesById[connection.target];
+        if (targetNode?.nodeKind === 'llm_context') {
+          const dataset = datasetsById[connection.source];
+          if (!dataset || !PROMPT_DATASET_TYPES.has(dataset.type)) {
+            toast.error('Only text or YAML datasets can connect to LLM Context Nodes as prompts', {
+              duration: 4000,
+              position: 'bottom-right',
+            });
+            return;
+          }
+        }
+      }
 
       // Check for cycles using Redux-subscribed state
       if (wouldCreateCycle(connection.source, connection.target, existingConnections, nodeIds)) {
@@ -197,7 +224,7 @@ export const useConnectionHandlers = ({
         })
       );
     },
-    [setEdges, dispatch, existingConnections, nodeIds]
+    [setEdges, dispatch, existingConnections, nodeIds, nodesById, datasetsById]
   );
 
   return {

@@ -12,6 +12,7 @@ import { OrphanedNodeValidator } from './OrphanedNodeValidator';
 import { OrphanedDatasetValidator } from './OrphanedDatasetValidator';
 import { MissingCodeValidator } from './MissingCodeValidator';
 import { MissingConfigValidator } from './MissingConfigValidator';
+import { MissingPromptValidator } from './MissingPromptValidator';
 
 // Re-export all validators
 export {
@@ -25,6 +26,7 @@ export {
   OrphanedDatasetValidator,
   MissingCodeValidator,
   MissingConfigValidator,
+  MissingPromptValidator,
 };
 
 /**
@@ -46,7 +48,8 @@ export function createDefaultValidatorRegistry(): ValidatorRegistry {
     .register(new OrphanedNodeValidator())
     .register(new OrphanedDatasetValidator())
     .register(new MissingCodeValidator())
-    .register(new MissingConfigValidator());
+    .register(new MissingConfigValidator())
+    .register(new MissingPromptValidator());
 
   return registry;
 }

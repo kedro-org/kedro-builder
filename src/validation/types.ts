@@ -14,6 +14,7 @@ export const ValidationCode = {
   ORPHANED_DATASET: 'orphaned-dataset',
   MISSING_CODE: 'missing-code',
   MISSING_CONFIG: 'missing-config',
+  MISSING_PROMPT: 'missing-prompt',
 } as const;
 
 export type ValidationCode = (typeof ValidationCode)[keyof typeof ValidationCode];

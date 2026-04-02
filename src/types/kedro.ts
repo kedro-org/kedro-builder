@@ -109,7 +109,6 @@ export interface KedroNode {
   llmProvider?: LLMProvider;
   modelName?: string;
   temperature?: number;
-  promptNames?: string[];
   [key: string]: unknown;
 }
 
