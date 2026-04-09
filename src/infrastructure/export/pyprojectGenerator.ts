@@ -113,29 +113,34 @@ export function generatePyproject(
     datasetsExtras = ['pandas-csvdataset', 'pandas-exceldataset', 'pandas-parquetdataset'];
   }
 
+  // Add provider-specific langchain dataset extras when GenAI nodes are present
+  if (genAIOptions && genAIOptions.providers.length > 0) {
+    const providerDatasetExtras: Record<string, string> = {
+      openai: 'langchain-chatopenaidataset',
+      anthropic: 'langchain-chatanthropicdataset',
+      cohere: 'langchain-chatcoheredataset',
+    };
+
+    const uniqueProviders = [...new Set(genAIOptions.providers)];
+    uniqueProviders.forEach((provider) => {
+      const extra = providerDatasetExtras[provider];
+      if (extra) datasetsExtras.push(extra);
+    });
+
+    datasetsExtras.sort();
+  }
+
   // Format the kedro-datasets dependency
   const datasetsDep = datasetsExtras.length > 0
     ? `"kedro-datasets[${datasetsExtras.join(', ')}]>=3.0"`
     : '"kedro-datasets>=3.0"';
 
   // Generate GenAI dependencies when LLM context nodes are present
+  // Note: langchain + provider packages (langchain-openai, etc.) are pulled in
+  // transitively via kedro-datasets extras (e.g. langchain-chatopenaidataset),
+  // so we only need python-dotenv for .env credential loading.
   const genAIDeps: string[] = [];
   if (genAIOptions && genAIOptions.providers.length > 0) {
-    genAIDeps.push('"kedro-datasets-experimental>=0.1"');
-    genAIDeps.push('"langchain>=0.3"');
-
-    const providerPackages: Record<string, string> = {
-      openai: '"langchain-openai>=0.2"',
-      anthropic: '"langchain-anthropic>=0.3"',
-      cohere: '"langchain-cohere>=0.3"',
-    };
-
-    const uniqueProviders = [...new Set(genAIOptions.providers)];
-    uniqueProviders.forEach((provider) => {
-      const pkg = providerPackages[provider];
-      if (pkg) genAIDeps.push(pkg);
-    });
-
     genAIDeps.push('"python-dotenv>=1.0"');
   }
 

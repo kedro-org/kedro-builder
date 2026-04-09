@@ -16,7 +16,7 @@ export interface FileTreeInput {
 import { generateCatalog, generateGenAIConfig } from '../infrastructure/export/catalogGenerator';
 import { generateNodes } from '../infrastructure/export/nodesGenerator';
 import { generatePipeline } from '../infrastructure/export/pipelineGenerator';
-import { getPromptDatasetIds } from '../infrastructure/export/helpers';
+import { getPromptDatasetIds, getLLMContextOutputDatasetIds } from '../infrastructure/export/helpers';
 import {
   generateParametersConfig,
   generateCredentialsTemplate,
@@ -75,9 +75,14 @@ export function generateFileTree(state: FileTreeInput): FileNode {
   const llmProviders = [...new Set(llmNodes.map((n) => n.llmProvider ?? 'openai'))];
   const genAIOptions = hasGenAI ? { providers: llmProviders } : undefined;
 
-  // Exclude prompt datasets from catalog (they belong in genai-config.yml)
+  // Exclude prompt datasets and LLM context outputs from catalog.
+  // Prompts go in genai-config.yml; LLM context outputs are in-memory Python
+  // objects (LLMContext) that Kedro handles as MemoryDataset automatically.
   const promptIds = getPromptDatasetIds(nodes, connections, datasets);
-  const catalogDatasets = datasetsList.filter((ds) => !promptIds.has(ds.id));
+  const llmOutputIds = getLLMContextOutputDatasetIds(nodes, connections);
+  const catalogDatasets = datasetsList.filter(
+    (ds) => !promptIds.has(ds.id) && !llmOutputIds.has(ds.id)
+  );
 
   // Generate all file contents
   const files: Record<string, string> = {

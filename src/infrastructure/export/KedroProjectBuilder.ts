@@ -11,7 +11,7 @@ import type { ProjectMetadata } from './staticFilesGenerator';
 import { generateCatalog, generateGenAIConfig } from './catalogGenerator';
 import { generateNodes } from './nodesGenerator';
 import { generatePipeline } from './pipelineGenerator';
-import { getPromptDatasetIds } from './helpers';
+import { getPromptDatasetIds, getLLMContextOutputDatasetIds } from './helpers';
 import {
   generateParametersConfig,
   generateCredentialsTemplate,
@@ -121,7 +121,10 @@ export class KedroProjectBuilder {
    */
   withCatalog(): this {
     const promptIds = getPromptDatasetIds(this.nodes, this.connections, this.datasets);
-    const catalogDatasets = this.datasetsList.filter((ds) => !promptIds.has(ds.id));
+    const llmOutputIds = getLLMContextOutputDatasetIds(this.nodes, this.connections);
+    const catalogDatasets = this.datasetsList.filter(
+      (ds) => !promptIds.has(ds.id) && !llmOutputIds.has(ds.id)
+    );
     this.zip.file('conf/base/catalog.yml', generateCatalog(catalogDatasets));
     return this;
   }

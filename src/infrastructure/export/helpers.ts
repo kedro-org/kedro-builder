@@ -225,6 +225,29 @@ export function getPromptDatasetIds(
 }
 
 /**
+ * Get the IDs of datasets that are outputs of LLM context nodes.
+ * These are LLMContext Python objects passed between nodes in memory —
+ * they should not appear in catalog.yml (Kedro treats them as MemoryDataset by default).
+ */
+export function getLLMContextOutputDatasetIds(
+  nodes: KedroNode[],
+  connections: KedroConnection[]
+): Set<string> {
+  const outputIds = new Set<string>();
+  const llmNodes = nodes.filter((n) => n.nodeKind === 'llm_context');
+
+  llmNodes.forEach((node) => {
+    connections.forEach((conn) => {
+      if (conn.source === node.id && conn.target.startsWith('dataset-')) {
+        outputIds.add(conn.target);
+      }
+    });
+  });
+
+  return outputIds;
+}
+
+/**
  * Build a mapping from LLM context node ID → catalog LLM dataset name.
  *
  * When every LLM node shares the same (provider, model, temperature) config,
