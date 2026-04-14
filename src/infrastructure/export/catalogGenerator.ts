@@ -5,7 +5,7 @@
 import type { KedroDataset, KedroNode, KedroConnection } from '../../types/kedro';
 import { DATASET_TYPE_MAPPING } from '../../constants/datasetTypes';
 import { PROMPT_DATASET_TYPES } from '../../constants/llm';
-import { inferDataLayer, getFileExtension, escapeYamlString, toSnakeCase, buildLLMNameMap } from './helpers';
+import { inferDataLayer, getFileExtension, escapeYamlString, toSnakeCase, buildLLMNameMap, getNodeOutputDatasets } from './helpers';
 
 // Dataset types that use no filepath at all
 const NO_FILEPATH_TYPES = new Set([
@@ -192,6 +192,21 @@ export function generateGenAIConfig(
     entries.push(`${safeName}:
   type: ${kedroType}
   filepath: data/01_raw/${safeName}${ext}`);
+  });
+
+  // Generate MemoryDataset entries for LLM context output datasets.
+  // LLMContext contains an HTTP client with thread locks that can't be deepcopied,
+  // so copy_mode: assign is required to pass the object by reference between nodes.
+  const seenOutputNames = new Set<string>();
+  llmNodes.forEach((node) => {
+    const outputNames = getNodeOutputDatasets(node, connections, datasets);
+    outputNames.forEach((name) => {
+      if (seenOutputNames.has(name)) return;
+      seenOutputNames.add(name);
+      entries.push(`${name}:
+  type: MemoryDataset
+  copy_mode: assign`);
+    });
   });
 
   return header + entries.join('\n\n') + '\n';

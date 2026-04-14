@@ -161,9 +161,9 @@ dependencies = [
     "ipython>=8.10",
     "jupyterlab>=3.0",
     "notebook",
-    "kedro[jupyter]~=1.0.0",
+    ${genAIOptions ? '"kedro[jupyter] @ git+https://github.com/kedro-org/kedro.git@main"' : '"kedro[jupyter]~=1.0.0"'},
     ${datasetsDep},
-    "kedro-viz>=6.7.0",${genAIDepsStr}
+    "kedro-viz>=12.0.0",${genAIDepsStr}
 ]
 
 [project.scripts]

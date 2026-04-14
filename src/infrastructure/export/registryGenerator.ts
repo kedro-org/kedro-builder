@@ -31,7 +31,7 @@ def register_pipelines() -> dict[str, Pipeline]:
 export function generateSettings(options?: { hasGenAI?: boolean }): string {
   const configPatternsBlock = options?.hasGenAI
     ? `    "config_patterns": {
-        "genai-config": ["genai-config*"],
+        "catalog": ["catalog*", "genai-config*"],
     },`
     : `#     "config_patterns": {
 #         "spark": ["spark*/"],
