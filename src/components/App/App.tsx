@@ -38,9 +38,12 @@ function App() {
       showExportWizard,
     });
 
-  // Apply theme class to root element
+  // Apply theme class to root element without clobbering classes added by external scripts
   useEffect(() => {
-    document.documentElement.className = `kedro-builder kui-theme--${theme}`;
+    const root = document.documentElement;
+    root.classList.add('kedro-builder');
+    root.classList.remove('kui-theme--light', 'kui-theme--dark');
+    root.classList.add(`kui-theme--${theme}`);
   }, [theme]);
 
   // Initialize telemetry on app load - intentionally runs once on mount
