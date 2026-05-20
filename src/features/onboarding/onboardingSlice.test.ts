@@ -37,11 +37,11 @@ describe('onboardingSlice', () => {
     expect(state.walkthroughStep).toBe(1);
   });
 
-  it('nextTutorialStep should cap at step 7', () => {
-    const atStep7: OnboardingState = { ...initialState, tutorialStep: 7 };
+  it('nextTutorialStep should cap at step 6', () => {
+    const atStep6: OnboardingState = { ...initialState, tutorialStep: 6 };
 
-    const state = onboardingReducer(atStep7, nextTutorialStep());
+    const state = onboardingReducer(atStep6, nextTutorialStep());
 
-    expect(state.tutorialStep).toBe(7); // does not exceed 7
+    expect(state.tutorialStep).toBe(6); // does not exceed 6
   });
 });
